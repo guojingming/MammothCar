@@ -4,25 +4,28 @@
 
 
 #include <stdint.h>
+#include <vector>
 
 #ifndef _offsetof
 #define _offsetof(T,x) ((size_t)(&((T*)0)->x))
 #endif
-namespace glviewer {
-	struct DataFormatDesc {
-		uint32_t StructSize;
+namespace glviewer
+{
+	struct DataFormatDesc
+	{
+		size_t StructSize = 0;
 
-		uint32_t PositionOffset;
+		size_t PositionOffset = 0;
 
-		uint32_t ColorOffset;
+		size_t ColorOffset = 0;
 
-		uint32_t ColorDataFormat;
+		size_t ColorDataFormat = 0;
 
-		uint32_t PosDataFormat;
+		size_t PosDataFormat = 0;
 
-		bool bColorChannel;
+		bool bColorChannel = false;
 
-		bool bIsBGR;
+		bool bIsBGR = false;
 
 		bool operator>(const DataFormatDesc& _Right) const {
 #define CMP(x) if (_Right.x != x)return x > _Right.x;
@@ -39,15 +42,15 @@ namespace glviewer {
 
 		bool operator==(const DataFormatDesc& _Right) const {
 #define CMP(x) if (_Right.x != x)return false;
-			CMP(StructSize);
-			CMP(PosDataFormat);
-			CMP(ColorOffset);
-			CMP(ColorDataFormat);
-			CMP(PosDataFormat);
-			CMP(bColorChannel);
-			CMP(bIsBGR);
+		CMP(StructSize);
+		CMP(PosDataFormat);
+		CMP(ColorOffset);
+		CMP(ColorDataFormat);
+		CMP(PosDataFormat);
+		CMP(bColorChannel);
+		CMP(bIsBGR);
 #undef CMP
-			return true;
+		return true;
 		}
 		bool operator!=(const DataFormatDesc& _Right) const {
 			return !operator==(_Right);
@@ -55,27 +58,29 @@ namespace glviewer {
 	};
 
 	namespace _helpers {
-		template<typename> struct _DataType { static const uint32_t value = 0x00000000; };
-		template<> struct _DataType<float> { static const uint32_t value = 0x00040001; };
-		template<> struct _DataType<char> { static const uint32_t value = 0x00010002; };
-		template<> struct _DataType<int> { static const uint32_t value = 0x00040002; };
-		template<> struct _DataType<unsigned char> { static const uint32_t value = 0x00010012; };
-		template<> struct _DataType<unsigned int> { static const uint32_t value = 0x00040012; };
-		template<> struct _DataType<double> { static const uint32_t value = 0x00080002; };
-		template<> struct _DataType<unsigned short> { static const uint32_t value = 0x00020011; };
-		template<> struct _DataType<short> { static const uint32_t value = 0x00020001; };
+		template<typename> struct _DataType { static const size_t value = 0x00000000; };
+		template<> struct _DataType<float> { static const size_t value = 0x00040001; };
+		template<> struct _DataType<char> { static const size_t value = 0x00010002; };
+		template<> struct _DataType<int> { static const size_t value = 0x00040002; };
+		template<> struct _DataType<unsigned char> { static const size_t value = 0x00010012; };
+		template<> struct _DataType<unsigned int> { static const size_t value = 0x00040012; };
+		template<> struct _DataType<double> { static const size_t value = 0x00080002; };
+		template<> struct _DataType<unsigned short> { static const size_t value = 0x00020011; };
+		template<> struct _DataType<short> { static const size_t value = 0x00020001; };
 
-
+		
 		template<typename T>
-		struct is_member_contains_r {
+		struct is_member_contains_r
+		{
 			template<typename U> struct matcher;
-			template<typename V> static char test_func(matcher<decltype(V::r)>*) {}
-			template<typename V> static int test_func(...) {}
+			template<typename V> static char test_func(matcher<decltype(V::r)>*) { return ' '; }
+			template<typename V> static int test_func(...) { return 0; }
 			static const bool value = (sizeof(test_func<T>(0)) == sizeof(char));
 		};
 
 		template<typename T, bool _False_Type>
-		struct _DataFormat_Helper {
+		struct _DataFormat_Helper
+		{
 			static DataFormatDesc Get() {
 				DataFormatDesc desc;
 				desc.bColorChannel = false;
@@ -88,7 +93,8 @@ namespace glviewer {
 		};
 
 		template<typename T>
-		struct _DataFormat_Helper<T, true> {
+		struct _DataFormat_Helper<T, true>
+		{
 			static DataFormatDesc Get() {
 				DataFormatDesc desc;
 				desc.bColorChannel = true;
@@ -102,7 +108,7 @@ namespace glviewer {
 			}
 		};
 	}
-	inline uint32_t _Get_size(uint32_t _Type) { return _Type >> 16; }
+	inline size_t _Get_size(size_t _Type) { return _Type >> 16; }
 
 	template<typename _FwdIt, typename F>
 	void _FillColor(_FwdIt  _First, _FwdIt _End, F R, F G, F B) {

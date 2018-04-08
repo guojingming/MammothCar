@@ -33,6 +33,8 @@ namespace mammoth {
 			static float* buffer;
 			static int buffer_size;
 
+			
+
 			static SyncCom sync_com;
 
 		};

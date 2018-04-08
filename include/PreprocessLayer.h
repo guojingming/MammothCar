@@ -145,8 +145,8 @@ namespace mammoth {
 		template<typename T>
 		DataBuffer<T>::DataBuffer(const std::vector<T> & splits)
 			: m_splitElements(splits)
-			, m_splitId(0)
-			, m_chargingVectorId(0) {
+			, m_chargingVectorId(0)
+			, m_splitId(0) {
 			m_bufferVector.resize(1);
 		}
 

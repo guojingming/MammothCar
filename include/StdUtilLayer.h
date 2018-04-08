@@ -89,7 +89,7 @@ namespace mammoth{
 			char m_buffer[512];
 			size_t m_bufferLength;
 		};
-		/*
+
 		enum TIME_ITEM { YEAR, MONTH, DATE, HOUR, MINUTE, SECOND, DAY, MILLSECOND };
 		class TimeUtil {
 		public:
@@ -101,6 +101,6 @@ namespace mammoth{
 			static SYSTEMTIME sys_time;
 
 		};
-		*/
+
 	}
 }

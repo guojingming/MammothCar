@@ -138,10 +138,9 @@ PcapTransformLayer::PcapTransformLayer() {
 	angle_piece = 120;
 	storage_flag = false;
     path_prefix = "E:/DataSpace/LidarDataSpace/lidar_";
-	// TODO : add support for TimeUtil
-	//std::string time_code = TimeUtil::get_time_code();
+	std::string time_code = TimeUtil::get_time_code();
 	//std::string time_code_millsecond = TimeUtil::get_time_code_millsecond();
-	//root_path = path_prefix + time_code + "/";
+	root_path = path_prefix + time_code + "/";
 }
 
 PcapTransformLayer * PcapTransformLayer::get_instance() {
@@ -203,6 +202,7 @@ void PcapTransformLayer::trans_pcap_to_pcd(std::string pcap_path, std::vector<pc
 					angles[i] = angles[i] * 256 + data;
 				}
 				angles[i] = angles[i] / 100;
+				printf("%d %f\n", i, angles[i]);
 				for (int j = 0; j < channel_count; j++) {
 					for (int k = unit_distance_size - 1; k >= 0; k--) {
 						distance_mm[i * channel_count + j] = distance_mm[i * channel_count + j] * 256 + pktdata[head_size + flag_size + i * block_size + angle_size + j * channel_size + k];
@@ -213,6 +213,7 @@ void PcapTransformLayer::trans_pcap_to_pcd(std::string pcap_path, std::vector<pc
 						if (maxFlectivity < flectivity[i * channel_count + j]) {
 							maxFlectivity = flectivity[i * channel_count + j];
 						}
+						
 					}
 
 					MyPoint3D point;
@@ -228,6 +229,9 @@ void PcapTransformLayer::trans_pcap_to_pcd(std::string pcap_path, std::vector<pc
 					pclPoint.x = 2 * (point.y);
 					pclPoint.y = -2 * (point.x);
 					pclPoint.z = 2 * point.z;
+					if (pclPoint.z == 0) {
+						printf("%f %f %f\n", pclPoint.x, pclPoint.y, pclPoint.z);
+					}
 
 					pclPoint.r = 0;
 					pclPoint.b = flectivity_value;
@@ -241,7 +245,7 @@ void PcapTransformLayer::trans_pcap_to_pcd(std::string pcap_path, std::vector<pc
 					//	test_data[j % 32].push_back(temp_double);
 					//	/////////////////////////
 
-					vec[index_frame_count]->push_back(pclPoint);
+					//	vec[index_frame_count]->push_back(pclPoint);
 					//}
 				}
 			}
@@ -360,7 +364,7 @@ void PcapTransformLayer::play_pcap_file(std::string pcap_path, int start_packet_
 			angle_average /= block_count;
 			int angle_index = (int)(angle_average / 1.5);
 			if (angle_map[angle_index] == 0) {
-				//ï¿½ï¿½Óµï¿½ï¿½ï¿?
+				//Ìí¼ÓµãÔÆ
 				for (int i = 0; i < block_count; i++) {
 					for (int j = 0; j < channel_count; j++) {
 						MyPoint3D point;
@@ -383,7 +387,7 @@ void PcapTransformLayer::play_pcap_file(std::string pcap_path, int start_packet_
 				}
 				angle_map[angle_index] = 1;
 			}
-			//ï¿½ï¿½ï¿½ï¿½Ç·ï¿½Õ¹ï¿½ï¿½ï¿½Ò»È¦
+			//¼ì²éÊÇ·ñ´Õ¹»ÁËÒ»È¦
 			int angle_count = 0;
 			for (int i = 0; i < 240; i++) {
 				if (angle_map[i] == 1) {
@@ -391,7 +395,7 @@ void PcapTransformLayer::play_pcap_file(std::string pcap_path, int start_packet_
 				}
 			}
 			if (angle_count >= 235) {
-				//ï¿½ï¿½ï¿½ï¿½  ï¿½ï¿½Ê¾
+				//¼ÆËã  ÏÔÊ¾
 				float seg = maxFlectivity * 1.0 / 256;
 				int pointSize = scene->points.size();
 				for (int i = 0; i < scene->points.size(); i++) {
@@ -411,21 +415,18 @@ void PcapTransformLayer::play_pcap_file(std::string pcap_path, int start_packet_
 		if (res == 0) {
 			continue;
 		}
-		/*
 		static double m_Packet_Count = 0;
-		static bpf_u_int32 m_PacketsLen = 0;
-		static bpf_u_int32 m_TickCount = 0;
+		static DWORD  m_PacketsLen = 0;
+		static DWORD  m_TickCount = 0;
 		static double m_Speed = 0.0;
 		m_PacketsLen += pkthdr->len;
 		m_Packet_Count++;
-
 		if (GetTickCount() - m_TickCount > 1000) {
 			m_Speed = m_PacketsLen / 1000.0;
 			m_TickCount = GetTickCount();
 			m_PacketsLen = 0;
 			m_Packet_Count = 0;
 		}
-		*/
 	}
 	if (res == -1) {
 		printf("Error reading the packets: %s\n", pcap_geterr(adhandle));
@@ -473,7 +474,7 @@ pcap_t * PcapTransformLayer::get_pcap_dev_handle() {
 	}
 	printf("Enter the interface number (1-%d):", i);
 	//scanf("%d", &inum);
-	inum = 2;
+	inum = 1;
 	if (inum < 1 || inum > i) {
 		printf("\nInterface number out of range.\n");
 		/* Free the device list */
@@ -484,12 +485,12 @@ pcap_t * PcapTransformLayer::get_pcap_dev_handle() {
 	for (d = alldevs, i = 0; i< inum - 1; d = d->next, i++);
 	/* Open the device */
 	/* Open the adapter */
-	if ((adhandle = pcap_open_live(d->name,   // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-		65536,         // Òªï¿½ï¿½È¡ï¿½ï¿½ï¿½Ý°ï¿½ï¿½Ä´ï¿½Ð¡
+	if ((adhandle = pcap_open_live(d->name,   // Íø¿¨µÄÃû³Æ
+		65536,         // Òª¶ÁÈ¡Êý¾Ý°üµÄ´óÐ¡
 		// 65536 grants that the whole packet will be captured on all the MACs.
-		1,             // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú»ï¿½ï¿½ï¿½Ä£Ê½
-		1000,          // ï¿½ï¿½ï¿½Ý°ï¿½ï¿½ï¿½È¡ï¿½ï¿½Ê±
-		errbuf         // ï¿½ï¿½Å´ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½Ä»ï¿½ï¿½ï¿½ï¿½ï¿?
+		1,             // ÖÁÍø¿¨ÓÚ»ìÔÓÄ£Ê½
+		1000,          // Êý¾Ý°ü¶ÁÈ¡³¬Ê±
+		errbuf         // ´æ·Å´íÎóÐÅÏ¢µÄ»º³åÇø
 		)) == NULL) {
 		fprintf(stderr, "\nUnable to open the adapter. %s is not supported by WinPcap\n", d->name);
 		/* Free the device list */
@@ -572,7 +573,7 @@ void PcapTransformLayer::get_current_frame(pcl::PointCloud<PointType>::Ptr & sce
 			angle_average /= block_count;
 			int angle_index = (int)(angle_average / 1.5);
 			if (angle_map[angle_index] == 0) {
-				//ï¿½ï¿½Óµï¿½ï¿½ï¿?
+				//Ìí¼ÓµãÔÆ
 				for (int i = 0; i < block_count; i++) {
 					for (int j = 0; j < channel_count; j++) {
 						MyPoint3D point;
@@ -595,7 +596,7 @@ void PcapTransformLayer::get_current_frame(pcl::PointCloud<PointType>::Ptr & sce
 				}
 				angle_map[angle_index] = 1;
 			}
-			//ï¿½ï¿½ï¿½ï¿½Ç·ï¿½Õ¹ï¿½ï¿½ï¿½Ò»È¦
+			//¼ì²éÊÇ·ñ´Õ¹»ÁËÒ»È¦
 			int angle_count = 0;
 			for (int i = 0; i < 240; i++) {
 				if (angle_map[i] == 1) {
@@ -603,7 +604,7 @@ void PcapTransformLayer::get_current_frame(pcl::PointCloud<PointType>::Ptr & sce
 				}
 			}
 			if (angle_count >= 235) {
-				//ï¿½ï¿½ï¿½ï¿½  ï¿½ï¿½Ê¾
+				//¼ÆËã  ÏÔÊ¾
 				float seg = maxFlectivity * 1.0 / 256;
 				int pointSize = scene->points.size();
 				for (int i = 0; i < scene->points.size(); i++) {
@@ -676,7 +677,7 @@ void PcapTransformLayer::get_current_frame(const char * path, HPCD & file) {
 					float distance = distance_mm[i * channel_count + j] / 1000.0;
 					int flectivity_value = flectivity[i * channel_count + j];
 					float horizontal_angle = angles[i] * PI / 180;
-					float vertical_angle = PreprocessLayerConfig::hdl32_vertical_angles[j % 32] * PI / 180;
+					float vertical_angle = PreprocessLayerConfig::vlp16_vertical_angles[j % 32] * PI / 180;
 					point.z = distance * sin(vertical_angle);
 					point.y = distance * cos(vertical_angle) * sin(horizontal_angle);
 					point.x = distance * cos(vertical_angle) * cos(horizontal_angle);
@@ -688,10 +689,12 @@ void PcapTransformLayer::get_current_frame(const char * path, HPCD & file) {
 					pclPoint.b = 255 - flectivity_value;
 					pclPoint.g = flectivity_value * 5;
 					pclPoint.a = 0;
-					points.push_back(pclPoint);
+					if (!(pclPoint.x <= 0.02 && pclPoint.y <= 0.02 && pclPoint.z <= 0.02)) {
+						points.push_back(pclPoint);
+					}
 				}
 			}
-			if (count >= 235) {
+			if (count >= 240) {
 				count = 0;
 				//¼ÆËã  ÏÔÊ¾
 				file = PcdUtil::pcdOpen(path);

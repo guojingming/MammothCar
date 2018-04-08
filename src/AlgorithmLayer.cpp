@@ -25,26 +25,23 @@ JluSlamLayer * JluSlamLayer::get_instance() {
 
 void JluSlamLayer::start_slam(const std::string& gps_folder_path, const std::string& pcd_folder_path, int start_number) {
 	std::vector<std::string> file_names;
-	std::string folder_path = pcd_folder_path
-#ifdef _WIN32
-	+ "\\*.pcd"
-#endif
-	;
+	std::string folder_path = pcd_folder_path + "\\*.pcd";
 	FileUtil::get_all_files(folder_path, file_names);
-	HPCD hpcd = PcdUtil::pcdOpen("E:\\DataSpace\\map\\0206\\0206-1.pcd");
+	HPCD hpcd = PcdUtil::pcdOpen("C:\\DataSpace\\map\\0322-1-piece.pcd");
 	char temp[100];
-	FileUtil trace_file("E:\\DataSpace\\trace\\0206\\trace_0206-1.txt", 2);
-	for (int i = 0; i < file_names.size(); i++) {
+	FileUtil trace_file("C:\\DataSpace\\trace\\0406\\trace_0322-1-piece.txt", 2);
+	for (int i = 0; i < 5000; i++){
+	//for (int i = 0; i < file_names.size(); i++) {
 		std::string number_str = file_names[i].substr(0, file_names[i].find_first_of('_'));
 		std::string file_path = file_names[i];
-		//ï¿½ï¿½ï¿½Ä¼ï¿½
-		std::string read_pcd_path = pcd_folder_path + "/" + file_path;
+		//¶ÁÎÄ¼þ
+		std::string read_pcd_path = pcd_folder_path + "\\" + file_path;
 		printf("%s\n", file_path.c_str());
 		char temp[100];
 		sprintf(temp, "%d_gps.txt", atoi(number_str.c_str()));
 
 		std::string gps_path = temp;
-		std::string read_gps_path = gps_folder_path + "/" + gps_path;
+		std::string read_gps_path = gps_folder_path + "\\" + gps_path;
 		int a = 0;
 
 		PCDFILE pcd_file;
@@ -72,14 +69,15 @@ void JluSlamLayer::start_slam(const std::string& gps_folder_path, const std::str
 		gga_data.lat = atof(latitude_str.c_str());
 		PTNLAVR_Data ptnlavr_data;
 		ptnlavr_data.yaw = atof(yaw_str.c_str());
+		//¼ÆËãÎ»ÖÃÏòÁ¿
 		double lat0 = 4349.13958348;
 		double lon0 = 12516.60912408;
 		Vec2d location_vec = GnssTransformLayer::get_instance()->get_distance1(gga_data.lat, gga_data.lon, lat0, lon0);
 		Vec2d trans_vec;
 		trans_vec.x = -1 * location_vec.x;
 		trans_vec.y = -1 * location_vec.y;
-		//ï¿½ï¿½ï¿½ã³µï¿½Ä·ï¿½ï¿½ï¿½
-		//ï¿½ï¿½È¡ï¿½ï¿½ï¿½Ä·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½GPSï¿½Ú³ï¿½Î² ï¿½ï¿½ï¿½ï¿½ï¿½Ç³ï¿½Í·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ô°ï¿½GPSï¿½Ç¶ï¿½-90ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ë·½ï¿½ï¿½ï¿?
+		//¼ÆËã³µµÄ·½Ïò
+		//»ñÈ¡µ½µÄ·½Ïò½ÇÊÇÕý±±ÄæÊ±Õë½Ç  ÓÉÓÚGPSÔÚ³µÎ² ·½ÏòÊÇ³µÍ··½ÏòµÄ×ó²à ËùÒÔ°ÑGPS½Ç¶È-90¶ÈÎª³µµÄÕý±±ÄæÊ±Õë·½Ïò½Ç
 		float car_angle = (360 - ptnlavr_data.yaw) + 180;
 
 		float xoy_rotation_angle = car_angle * PI / 180;
@@ -116,9 +114,7 @@ void JluSlamLayer::start_slam(const std::string& gps_folder_path, const std::str
 		PcdUtil::pcdRelease(&pcd_file);
 	}
 	PcdUtil::pcdClose(hpcd);
-#ifdef _WIN32
 	system("pause");
-#endif
 }
 
 void JluSlamLayer::DoTransform(float theta1, float theta2, float trans_x, float trans_y, void* pData, size_t count) {
@@ -152,7 +148,7 @@ void JluSlamLayer::DoTransform(float theta1, float theta2, float trans_x, float 
 std::vector<uint32_t> DimensionReductionCluster::cube_handles;
 
 void DimensionReductionCluster::start_clusting(pcl::PointCloud<PointType>::Ptr & cloud) {
-	//ï¿½Ë²ï¿½
+	//ÂË²¨
 	pcl::PassThrough<PointType> passThrough;
 	passThrough.setInputCloud(cloud);
 	passThrough.setFilterLimitsNegative(false);
@@ -165,14 +161,14 @@ void DimensionReductionCluster::start_clusting(pcl::PointCloud<PointType>::Ptr &
 	passThrough.setFilterFieldName("z");
 	passThrough.setFilterLimits(-2.4, 30);
 	passThrough.filter(*cloud);
-	//É¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	//É¾³ý·½¿ò
 	PointViewer::get_instance()->remove_cubes(cube_handles);
 	cloud = birdview_picture_grid(cloud);
 	
 }
 
 pcl::PointCloud<PointType>::Ptr DimensionReductionCluster::birdview_picture_grid(pcl::PointCloud<PointType>::Ptr& cloud) {
-	//ï¿½ï¿½Î¬Ó³ï¿½ï¿½
+	//½µÎ¬Ó³Éä
 	//TIME_FUNC; 
 	//std::cout << " Start dimension reduction" << std::endl;
 	int grid_width = 20;//cm  20
@@ -200,7 +196,7 @@ pcl::PointCloud<PointType>::Ptr DimensionReductionCluster::birdview_picture_grid
 	cz_region(black_picture, filtered_contours, 0, true, 1000, 1000);
 	//TIME_FUNC;
 	//std::cout << " Finish 2-D clusting" << std::endl << std::endl;
-	//ï¿½ï¿½ï¿½ï¿½Ó³ï¿½ï¿½
+	//ÄæÏòÓ³Éä
 	//TIME_FUNC;
 	//std::cout << " Start rasing dimension" << std::endl;
 	int combined_count = 0;
@@ -280,7 +276,7 @@ int DimensionReductionCluster::cz_region(cv::Mat src, std::vector<std::vector<cv
 	int time_sum = 0;
 	int loop_sum = 0;
 	cv::Mat drawing(tmp.size(), CV_8UC1, cv::Scalar(0));
-	cv::Mat tplate3(tmp.size(), CV_8UC1, cv::Scalar(0)); //ï¿½ï¿½ï¿½ï¿½Ò»ï¿½Å´æ´¢Ô­Ê¼ï¿½ï¿½ï¿½Í?
+	cv::Mat tplate3(tmp.size(), CV_8UC1, cv::Scalar(0)); //Éú³ÉÒ»ÕÅ´æ´¢Ô­Ê¼µãµÄÍ¼
 	for (size_t i = 0; i < contours.size(); i++) {
 		if (contours[i].size() < 50 || contours[i].size() > 150) {
 			continue;

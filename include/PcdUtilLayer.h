@@ -2,7 +2,7 @@
 
 #include "PcdUtilLayerConfig.h"
 
-//#define USE_GLVIEWER
+#define USE_GLVIEWER
 
 namespace mammoth {
 	namespace layer {
@@ -107,7 +107,7 @@ namespace mammoth {
 			template<typename CustomType>
 			void set_point_cloud(PCDFILE scene, CustomType point_type);
 			uint32_t add_cube(PointType * cube_points);
-			void remove_cubes(std::vector<uint32_t>& cube_handles);
+			void PointViewer::remove_cubes(std::vector<uint32_t>& cube_handles);
 			static PointViewer* get_instance();
 		private:
 			static PointViewer* p_viewer;

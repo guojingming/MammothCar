@@ -20,9 +20,6 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 
-// used to find_all_files
-#include <boost/filesystem.hpp>
-
 #define CRS_SOCKET int
 #define CRS_INVALID_SOCKET -1
 #define CRS_SOCKET_ERROR -1

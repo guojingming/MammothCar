@@ -84,7 +84,7 @@ PointViewer* PointViewer::p_viewer = nullptr;
 void PointViewer::init_point_viewer() {
 #ifdef USE_GLVIEWER
 	p_glviewer->SetParam(glviewer::DeviceParams::Wave_ZPlane, -1.8f);
-	//p_glviewer->AddWavePlane(2, 0, 50);
+	p_glviewer->AddWavePlane(2, 0, 50);
 	p_glviewer->SetOnPickingCallback(selectResultHandle);
 	p_glviewer->RegisterCallback(' ', key_pressed);
 #endif
@@ -126,15 +126,6 @@ void PointViewer::selectResultHandle(glviewer::SelectResult<void*>* _Rx) {
 	float min_z = 100;
 	float average_z = 0;
 	float max_z = -100;
-
-	float min_y = 100;
-	float average_y = 0;
-	float max_y = -100;
-
-	float min_x = 100;
-	float average_x = 0;
-	float max_x = -100;
-
 	for (glviewer::SelectResult<PointType>::iterator it = _R->begin(); it != _R->end(); it++) {
 		if (count >= 1) {
 			if (it->z <= min_z) {
@@ -144,26 +135,6 @@ void PointViewer::selectResultHandle(glviewer::SelectResult<void*>* _Rx) {
 				max_z = it->z;
 			}
 			average_z += it->z;
-		}
-
-		if (count >= 1) {
-			if (it->x <= min_x) {
-				min_x = it->x;
-			}
-			if (it->x >= max_x) {
-				max_x = it->x;
-			}
-			average_x += it->x;
-		}
-
-		if (count >= 1) {
-			if (it->y <= min_y) {
-				min_y = it->y;
-			}
-			if (it->y >= max_y) {
-				max_y = it->y;
-			}
-			average_y += it->y;
 		}
 
 		/*if (count < 10 && count >= 1) {
@@ -176,19 +147,9 @@ void PointViewer::selectResultHandle(glviewer::SelectResult<void*>* _Rx) {
 		count++;
 	}
 	average_z /= (count - 1);
-	average_y /= (count - 1);
-	average_x /= (count - 1);
 	std::cout << "minZ: " << min_z << std::endl;
 	std::cout << "maxZ: " << max_z << std::endl;
 	std::cout << "averageZ: " << average_z << std::endl;
-
-	//std::cout << "minX: " << min_x << std::endl;
-	//std::cout << "maxX: " << max_x << std::endl;
-	//std::cout << "averageX: " << average_x << std::endl;
-
-	//std::cout << "minY: " << min_y << std::endl;
-	//std::cout << "maxY: " << max_y << std::endl;
-	//std::cout << "averageY: " << average_y << std::endl;
 	std::cout << "----------------------------------------------" << std::endl;
 	//std::cout << _R->size() << std::endl;
 }

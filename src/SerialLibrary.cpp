@@ -148,7 +148,7 @@ bool BaseCom::openLinuxPort(const SerialPortInfo& portinfo) {
 	}
 
 
-	if (fcntl(_fdSerial, F_SETFL, FNDELAY) < 0)//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç°ï¿½ï¿½openï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	if (fcntl(_fdSerial, F_SETFL, FNDELAY) < 0)//·Ç×èÈû£¬¸²¸ÇÇ°ÃæopenµÄÊôÐÔ
 	{
 		printf("set %s noblock failed\n", _portinfo.name.c_str());
 	} else {
@@ -156,7 +156,7 @@ bool BaseCom::openLinuxPort(const SerialPortInfo& portinfo) {
 	}
 
 	/*
-	int ifcntl = fcntl(_fdSerial, F_SETFL, 0); //ï¿½ï¿½ï¿½ï¿½
+	int ifcntl = fcntl(_fdSerial, F_SETFL, 0); //×èÈû
 	if (ifcntl < 0)
 	{
 	printf("fcntl %s  failed, result is %d!\n", portinfo.name.c_str(), ifcntl);
@@ -211,25 +211,25 @@ bool BaseCom::setLinuxPortOpt(const SerialPortInfo& portinfo) {
 
 	switch (portinfo.parity) {
 	case 'o':
-	case 'O':                     //ï¿½ï¿½Ð£ï¿½ï¿½
+	case 'O':                     //ÆæÐ£Ñé
 		newtio.c_cflag |= PARENB;
 		newtio.c_cflag |= PARODD;
 		newtio.c_iflag |= (INPCK);
 		break;
 	case 'e':
-	case 'E':                     //Å¼Ð£ï¿½ï¿½
+	case 'E':                     //Å¼Ð£Ñé
 		newtio.c_iflag |= (INPCK | ISTRIP);
 		newtio.c_cflag |= PARENB;
 		newtio.c_cflag &= ~PARODD;
 		break;
 	case 'n':
-	case 'N':                    //ï¿½ï¿½Ð£ï¿½ï¿½
+	case 'N':                    //ÎÞÐ£Ñé
 		newtio.c_cflag &= ~PARENB;
 		newtio.c_iflag &= ~INPCK;
 		break;
 	case 's':
 	case 'S':
-		newtio.c_cflag &= ~PARENB; //ï¿½ï¿½ï¿½Ð£ï¿½ï¿½Î»
+		newtio.c_cflag &= ~PARENB; //Çå³ýÐ£ÑéÎ»
 		newtio.c_cflag &= ~CSTOPB; //??????????????
 		newtio.c_iflag |= INPCK; //disable pairty checking
 		break;
@@ -244,9 +244,9 @@ bool BaseCom::setLinuxPortOpt(const SerialPortInfo& portinfo) {
 			cfsetispeed(&newtio, speed_arr[i]);
 			cfsetospeed(&newtio, speed_arr[i]);
 			/*
-			TCSANOWï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½È´ï¿½ï¿½ï¿½ï¿½Ý·ï¿½ï¿½Í»ï¿½ï¿½ß½ï¿½ï¿½ï¿½ï¿½ï¿½É¡ï¿½
-			TCSADRAINï¿½ï¿½ï¿½È´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý´ï¿½ï¿½ï¿½ï¿½ï¿½Éºï¿½Ö´ï¿½Ð¡ï¿½
-			TCSAFLUSHï¿½ï¿½Flush input and output buffers and make the change
+			TCSANOW£ºÁ¢¼´Ö´ÐÐ¶ø²»µÈ´ýÊý¾Ý·¢ËÍ»òÕß½ÓÊÜÍê³É¡£
+			TCSADRAIN£ºµÈ´ýËùÓÐÊý¾Ý´«µÝÍê³ÉºóÖ´ÐÐ¡£
+			TCSAFLUSH£ºFlush input and output buffers and make the change
 			*/
 			if ((tcsetattr(_fdSerial, TCSANOW, &newtio)) != 0) {
 				printf("%s set error", portinfo.name.c_str());
@@ -316,11 +316,11 @@ bool BaseCom::IsOpen() {
 
 
 
-
+#ifdef WIN32
 SyncCom::SyncCom() {
 }
 
-#ifdef WIN32
+
 bool SyncCom::OpenPort() {
 	if (IsOpen())
 		Close();
@@ -382,16 +382,6 @@ int SyncCom::SendData(const char* buf, int buf_len) {
 int SyncCom::SendData(const char* buf) {
 	return SendData(buf, strlen(buf));
 }
-#else
-
-int SyncCom::Read(char* buf, int buf_len) {
-	if (!IsOpen()) {
-		return 0;
-	}
-	
-	return read(_fdSerial, buf, buf_len);
-}
-
 #endif
 
 
@@ -489,7 +479,7 @@ int ASynCom::Read(char* buf, int buf_len) {
 	buf[r_len] = '\0';
 	return r_len;
 #else
-	return (int)readDataTty(_fdSerial, buf, 20, buf_len); //100 Ã»ï¿½ï¿½ï¿½ï¿½ï¿½Ý¾ÍµÈ´ï¿½100ï¿½ï¿½ï¿½ï¿½
+	return (int)readDataTty(_fdSerial, buf, 20, buf_len); //100 Ã»ÓÐÊý¾Ý¾ÍµÈ´ý100ºÁÃë
 #endif
 
 }

@@ -71,7 +71,7 @@ void DataGatherLayer::start_grab(const std::string& gps_folder_path, const std::
 	this->pcd_folder_path = pcd_folder_path;
 	this->imu_folder_path = imu_folder_path;
 	std::thread gps_t(gps_thread);
-	//std::thread pcd_t(pcd_thread);
+	std::thread pcd_t(pcd_thread);
 	//std::thread imu_t(imu_thread);
 	system("pause");
 }
@@ -87,13 +87,13 @@ void DataGatherLayer::gps_thread() {
 		//memset(gps_path, 0, 200);
 		//memset(gps_content, 0, 100);
 		if (tcpAttitudeSolver.Capture()) {
-			printf("%.8f %.8f %.3f %.4f %.4f %.3f\n",
+			/*printf("%.8f %.8f %.3f %.4f %.4f %.3f\n",
 				tcpAttitudeSolver.m_package.m_longitude,
 				tcpAttitudeSolver.m_package.m_latitude,
 				tcpAttitudeSolver.m_package.m_elevation,
 				tcpAttitudeSolver.m_package.m_yaw,
 				tcpAttitudeSolver.m_package.m_pitch,
-				tcpAttitudeSolver.m_package.m_roll);
+				tcpAttitudeSolver.m_package.m_roll);*/
 			sprintf(gps_content, "%d#%.8f %.8f %.3f %.4f %.4f %.3f",
 				gps_count,
 				tcpAttitudeSolver.m_package.m_longitude,
@@ -136,10 +136,10 @@ void DataGatherLayer::imu_thread() {
 
 	char ori_imu_path[200];
 
-	std::string ori_imu_folder_path = "E:\\DataSpace\\LidarDataSpace\\test\\ori_imu_data";
+	std::string ori_imu_folder_path = "C:\\DataSpace\\LidarDataSpace\\lidar_20180322\\ori_imu_data";
 
 
-	SyncCom sync_com = SerialUtil::openSync("COM4", 115200);
+	SyncCom sync_com = SerialUtil::openSync("COM5", 115200);
 	char buffer[512];
 	ImuSolver imuSolver;
 	std::vector<unsigned char> splits;

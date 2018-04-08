@@ -306,7 +306,7 @@ void SerialUtil::openAsync(const char * serial, int baut_rate, void(*read_func)(
 	ASynCom com1;
 	Com1info.name = serial;
 	Com1info.baudRate = baut_rate;
-	Com1info.parity = 'N';
+	Com1info.parity = NOPARITY;
 	Com1info.dataBits = 8;
 	Com1info.stopBits = 1;
 	com1.SetRecvDataCallBack(read_func, &Com1info);
@@ -326,12 +326,13 @@ SyncCom SerialUtil::openSync(const char * serial, int baut_rate) {
 	SyncCom com1;
 	Com1info.name = serial;
 	Com1info.baudRate = baut_rate;
-	Com1info.parity = 'N';
+	Com1info.parity = NOPARITY;
 	Com1info.dataBits = 8;
 	Com1info.stopBits = 1;
 	com1.Connect(Com1info);
 	return com1;
 }
+
 
 
 void SerialUtil::close() {
@@ -344,17 +345,13 @@ void SerialUtil::read_gps(const std::string& data, void* context) {
 
 void SerialUtil::write(ASynCom* com, const std::string& msg, int* cont) {
 	std::string temp;
-	//Ñ­ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	//Ñ­»··¢ËÍ
 	while (true) {
 		(*cont)++;
 		temp = msg + " times is " + std::to_string(*cont);
 		com->SendData(temp);
 		temp = "";
-#ifdef _WIN32
 		Sleep(800);
-#else
-		usleep(800000);
-#endif
 	}
 }
 
@@ -418,7 +415,6 @@ void FileUtil::write_line(const std::string & content, bool new_line) {
 
 
 void FileUtil::get_all_files(std::string path, std::vector<std::string>& files) {
-#ifdef _WIN32
 	WIN32_FIND_DATAA fdata;
 	HANDLE hFind = FindFirstFileA(path.c_str(), &fdata);
 	if (hFind != INVALID_HANDLE_VALUE) {
@@ -431,25 +427,10 @@ void FileUtil::get_all_files(std::string path, std::vector<std::string>& files) 
 		} while (FindNextFileA(hFind, &fdata));
 		FindClose(hFind);
 	}
-#elif __linux__
-	boost::filesystem::path _path(path);
-	if (boost::filesystem::exists(_path))
-	{
-		boost::filesystem::directory_iterator item_begin(_path);
-		boost::filesystem::directory_iterator item_end;
-		for (; item_begin != item_end; item_begin++)
-		{
-			if(!boost::filesystem::is_directory(*item_begin))
-			{
-				files.push_back(item_begin->path().filename().string());
-			}
-		}
-	}
-#endif
 
 	int length = files.size();
 	std::string * strs = new std::string[length];
-	//ï¿½Öµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	//×ÖµäÐòÅÅÐò
 	for (int i = 0; i < length; i++) {
 		std::string str = files[i];
 		std::string temp = str.substr(0, str.find_first_of("_"));
@@ -463,7 +444,9 @@ void FileUtil::get_all_files(std::string path, std::vector<std::string>& files) 
 	}
 	//delete strs;
 }
-/*
+
+
+
 SYSTEMTIME TimeUtil::sys_time;
 
 std::string TimeUtil::get_time_str() {
@@ -527,4 +510,5 @@ std::string TimeUtil::get_time_code_millsecond() {
 	time_str = temp;
 	return time_str;
 }
-*/
+
+

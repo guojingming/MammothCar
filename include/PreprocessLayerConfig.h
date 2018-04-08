@@ -10,8 +10,6 @@
 #include <omp.h>
 #include <direct.h>  
 #include <io.h>
-#elif __linux__
-#include <pcap.h>
 #endif
 
 #include "StdUtilLayer.h"
@@ -24,6 +22,8 @@ namespace mammoth {
 		public:
 			static double * hdl32_vertical_angles;
 			static uint8_t * hdl32_vertical_ids;
+			static double * vlp16_vertical_angles;
+			static uint8_t * vlp16_vertical_ids;
 		};
 	}
 }

@@ -16,9 +16,6 @@
 #include <sys/types.h>
 #include <errno.h>
 #include <sys/stat.h>
-
-// for memset?
-#include <string.h>
 #endif
 
 /* #include <winbase.h>
@@ -83,7 +80,7 @@ protected:
 	SerialPortInfo _portinfo;
 };
 
-#ifdef _WIN32
+#ifdef WIN32
 class SyncCom : public BaseCom {
 public:
 	SyncCom();
@@ -92,14 +89,6 @@ public:
 	int SendData(const char* buf);
 protected:
 	virtual bool OpenPort();
-};
-#else
-class SyncCom : public BaseCom {
-public:
-	SyncCom();
-	int Read(char *buf, int buf_len);
-	//int SendData(const char* buf, int buf_len);
-	//int SendData(const char* buf);
 };
 #endif
 

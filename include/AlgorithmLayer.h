@@ -41,7 +41,7 @@ namespace mammoth {
 		};
 
 		class ObjectTracing {
-
+			
 		};
 
 		class ObjectRecognition {

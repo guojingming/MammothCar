@@ -2,6 +2,8 @@
 
 using namespace mammoth::config;
 using namespace mammoth::layer;
+using namespace cv;
+
 using Eigen::MatrixXd;
 
 JluSlamLayer * JluSlamLayer::layer = nullptr;
@@ -34,7 +36,7 @@ void JluSlamLayer::start_slam(const std::string& gps_folder_path, const std::str
 	//for (int i = 0; i < file_names.size(); i++) {
 		std::string number_str = file_names[i].substr(0, file_names[i].find_first_of('_'));
 		std::string file_path = file_names[i];
-		//¶ÁÎÄ¼ş
+		//ï¿½ï¿½ï¿½Ä¼ï¿½
 		std::string read_pcd_path = pcd_folder_path + "\\" + file_path;
 		printf("%s\n", file_path.c_str());
 		char temp[100];
@@ -69,15 +71,14 @@ void JluSlamLayer::start_slam(const std::string& gps_folder_path, const std::str
 		gga_data.lat = atof(latitude_str.c_str());
 		PTNLAVR_Data ptnlavr_data;
 		ptnlavr_data.yaw = atof(yaw_str.c_str());
-		//¼ÆËãÎ»ÖÃÏòÁ¿
+
 		double lat0 = 4349.13958348;
 		double lon0 = 12516.60912408;
 		Vec2d location_vec = GnssTransformLayer::get_instance()->get_distance1(gga_data.lat, gga_data.lon, lat0, lon0);
 		Vec2d trans_vec;
 		trans_vec.x = -1 * location_vec.x;
 		trans_vec.y = -1 * location_vec.y;
-		//¼ÆËã³µµÄ·½Ïò
-		//»ñÈ¡µ½µÄ·½Ïò½ÇÊÇÕı±±ÄæÊ±Õë½Ç  ÓÉÓÚGPSÔÚ³µÎ² ·½ÏòÊÇ³µÍ··½ÏòµÄ×ó²à ËùÒÔ°ÑGPS½Ç¶È-90¶ÈÎª³µµÄÕı±±ÄæÊ±Õë·½Ïò½Ç
+
 		float car_angle = (360 - ptnlavr_data.yaw) + 180;
 
 		float xoy_rotation_angle = car_angle * PI / 180;
@@ -85,19 +86,7 @@ void JluSlamLayer::start_slam(const std::string& gps_folder_path, const std::str
 
 		float theta1 = xoz_rotation_angle;
 		float theta2 = xoy_rotation_angle;
-		//¼ÆËã±ä»»¾ØÕó
-		//Ô­Ê¼¾ØÕóÒ»¹²5¸ö T1~T5
-		//T1 XOZÄæÊ±ÕëĞı×ª
-		//T2 XOYÄæÊ±ÕëĞı×ª
-		//T3 YÖá·­×ª
-		//T4 XOYÆ½ÒÆ
-		//T5 YÖá·­×ª
-		//Êµ¼ÊÊ¹ÓÃ3¸ö¾ØÕó Q1~Q3
-		//Q1ÎªÔ­Ê¼¾ØÕóÖĞµÄÇ°Èı¸ö¾ØÕóÏà³Ë
-		//Q2ÎªÔ­Ê¼¾ØÕóT4
-		//Q3ÎªÔ­Ê¼¾ØÕóT5
-		//¼ÙÉèÊı¾İ¾ØÕóÎªnĞĞ3ÁĞµÄÏòÁ¿D
-		//Ôò±ä»»ºóµÄ½á¹ûÊÇ ((D * Q1) + Q2) * Q3
+
 		float * data = (float *)pcd_file.pData;
 		data[0] = 0;
 		data[1] = 0;
@@ -143,12 +132,9 @@ void JluSlamLayer::DoTransform(float theta1, float theta2, float trans_x, float 
 	}
 }
 
-
-
 std::vector<uint32_t> DimensionReductionCluster::cube_handles;
-
 void DimensionReductionCluster::start_clusting(pcl::PointCloud<PointType>::Ptr & cloud) {
-	//ÂË²¨
+	//ï¿½Ë²ï¿½
 	pcl::PassThrough<PointType> passThrough;
 	passThrough.setInputCloud(cloud);
 	passThrough.setFilterLimitsNegative(false);
@@ -161,14 +147,14 @@ void DimensionReductionCluster::start_clusting(pcl::PointCloud<PointType>::Ptr &
 	passThrough.setFilterFieldName("z");
 	passThrough.setFilterLimits(-2.4, 30);
 	passThrough.filter(*cloud);
-	//É¾³ı·½¿ò
+	//É¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	PointViewer::get_instance()->remove_cubes(cube_handles);
 	cloud = birdview_picture_grid(cloud);
 	
 }
 
 pcl::PointCloud<PointType>::Ptr DimensionReductionCluster::birdview_picture_grid(pcl::PointCloud<PointType>::Ptr& cloud) {
-	//½µÎ¬Ó³Éä
+	//ï¿½ï¿½Î¬Ó³ï¿½ï¿½
 	//TIME_FUNC; 
 	//std::cout << " Start dimension reduction" << std::endl;
 	int grid_width = 20;//cm  20
@@ -196,7 +182,7 @@ pcl::PointCloud<PointType>::Ptr DimensionReductionCluster::birdview_picture_grid
 	cz_region(black_picture, filtered_contours, 0, true, 1000, 1000);
 	//TIME_FUNC;
 	//std::cout << " Finish 2-D clusting" << std::endl << std::endl;
-	//ÄæÏòÓ³Éä
+	//ï¿½ï¿½ï¿½ï¿½Ó³ï¿½ï¿½
 	//TIME_FUNC;
 	//std::cout << " Start rasing dimension" << std::endl;
 	int combined_count = 0;
@@ -276,7 +262,7 @@ int DimensionReductionCluster::cz_region(cv::Mat src, std::vector<std::vector<cv
 	int time_sum = 0;
 	int loop_sum = 0;
 	cv::Mat drawing(tmp.size(), CV_8UC1, cv::Scalar(0));
-	cv::Mat tplate3(tmp.size(), CV_8UC1, cv::Scalar(0)); //Éú³ÉÒ»ÕÅ´æ´¢Ô­Ê¼µãµÄÍ¼
+	cv::Mat tplate3(tmp.size(), CV_8UC1, cv::Scalar(0)); //ï¿½ï¿½ï¿½ï¿½Ò»ï¿½Å´æ´¢Ô­Ê¼ï¿½ï¿½ï¿½Í¼
 	for (size_t i = 0; i < contours.size(); i++) {
 		if (contours[i].size() < 50 || contours[i].size() > 150) {
 			continue;
@@ -304,23 +290,83 @@ int DimensionReductionCluster::cz_region(cv::Mat src, std::vector<std::vector<cv
 	return 0;
 }
 
-ImuLocalization::ImuLocalization(float v0, float delta_t) {
-	this->v0 = v0;
-	this->delta_t = delta_t;
-}
 
-void ImuLocalization::calculate_distance(
-	float * s,
-	float * v,
-	float * delta_v) {
+ObjectTracingConfig ObjectTracing::config;
+
+void ObjectTracing::start_tracing(int mode, int ethernet_number) {
+	pcl::PointCloud<PointType>::Ptr cloud(new pcl::PointCloud<PointType>());
+#ifdef TRACING_SOURCE_ETHERNET
+	PcapTransformLayer::get_instance()->get_current_frame(cloud, 32);
+#endif
+#ifdef TRACING_SOURCE_FILE
+	PcdUtil::read_pcd_file("D:\\single_frame_data.pcd", cloud);
+#endif
+
+	filting(cloud);
+	GridMap* p_map = gridding(cloud);
+	ground_segment(*p_map);
+	std::vector<std::vector<Grid*>>& objs = clustering(*p_map);
 	
-	v[0] = v[0] + delta_v[0];
-	s[0] += (v[0] - 0.5 * delta_v[0]) * delta_t;
 
-	v[1] = v[1] + delta_v[1];
-	s[1] += (v[1] - 0.5 * delta_v[1]) * delta_t;
-
-	v[2] = v[2] + delta_v[2];
-	s[2] += (v[2] - 0.5 * delta_v[2]) * delta_t;
 }
 
+void ObjectTracing::filting(pcl::PointCloud<PointType>::Ptr input_cloud) {
+	pcl::PointCloud<PointType>::Ptr filtered_cloud(new pcl::PointCloud<PointType>);
+	filtered_cloud->reserve(input_cloud->size());
+	for (pcl::PointCloud<PointType>::iterator iterator = input_cloud->begin(); iterator != input_cloud->end(); iterator++) {
+		if ((*iterator).x >= 0.3 && (*iterator).x <= 50 && (*iterator).y >= 0.3 && (*iterator).y <= 50) {
+			filtered_cloud->push_back((*iterator));
+		}
+	}
+	input_cloud->clear();
+	input_cloud = filtered_cloud;
+}
+
+GridMap* ObjectTracing::gridding(pcl::PointCloud<PointType>::Ptr input_cloud) {
+	if (config.grid_width < config.grid_width_limit || config.grid_height < config.grid_height_limit) {
+		printf("[ERROR] The width or height is lower than the limit!\n");
+		return nullptr;
+	}
+	unsigned short map_width = config.map_width / config.grid_width;
+	unsigned short map_height = config.map_width / config.grid_width;
+	unsigned short temp_x_index = 0;
+	unsigned short temp_y_index = 0;
+	unsigned short x_index_offset = map_width / 2;
+	unsigned short y_index_offset = map_height / 2;
+	static GridMap grid_map(map_width, map_height);
+	for (int i = 0; i < input_cloud->size(); i++) {
+		PointType point = (*input_cloud)[i];
+		temp_x_index = point.x * 100 / config.grid_width + x_index_offset;
+		temp_y_index = point.y * 100 / config.grid_height + y_index_offset;
+		grid_map.add_point_to_grid(temp_y_index, temp_x_index, point);
+		grid_map.set_tag(temp_y_index, temp_x_index, 255);
+	}
+	return &grid_map;
+}
+
+void ObjectTracing::ground_segment(GridMap & grid_map) {
+	for (int i = 0; i < grid_map.map_height; i++) {
+		for (int j = 0; j < grid_map.map_width; j++) {
+			
+		}
+	}
+}
+
+std::vector<std::vector<Grid*>>& ObjectTracing::clustering(GridMap & grid_map) {
+	std::vector<std::vector<Grid*>> objs;
+	unsigned short obj_number = 0;
+	for (int i = 0; i < grid_map.map_height; i++) {
+		for (int j = 0; j < grid_map.map_width; j++) {
+			if (grid_map.get_tag(i, j) == 1) {
+				//growing
+				grid_map.find_neighbors(*grid_map.get_grid(i, j), objs, obj_number);
+				obj_number++;
+			}
+		}
+	}
+	return objs;
+}
+
+void ObjectTracing::tracing() {
+
+}

@@ -1,7 +1,6 @@
 #include "Mammoth.h"
 
 using namespace mammoth::layer;
-using Eigen::MatrixXd;
 
 void cz_test();
 void gjm_test();
@@ -9,30 +8,35 @@ void byz_test();
 
 int main(int argc, char ** argv) {
 	
-	//cz_test();
-	gjm_test();
+	cz_test();
+	//gjm_test();
 	//byz_test();
 
 	return 0;
 }
 
 void cz_test() {
-	int frame_count = 1;
+	int frame_count = 5;
 	std::vector<pcl::PointCloud<PointType>::Ptr> vec;
 	for (int i = 0; i < frame_count; i++) {
 		pcl::PointCloud<PointType>::Ptr cloud(new pcl::PointCloud<PointType>());
 		vec.push_back(cloud);
 	}
-	PcapTransformLayer::get_instance()->trans_pcap_to_pcd("D:\\Download\\8.pcap", vec, 1);
-	printf("%d\n", vec[0]->size());
-
-	PcdUtil::save_pcd_file("D:\\1.pcd", vec[0]);
+	PcapTransformLayer::get_instance()->trans_pcap_to_pcd("D:\\Download\\8.pcap", vec, 2);
+	
+	for (int i = 0; i < frame_count; i++) {
+		printf("%d\n", vec[i]->size());
+		char temp[32];
+		sprintf(temp, "D:\\%d.pcd", i);
+		PcdUtil::save_pcd_file(temp, vec[i]);
+	}
 
 	system("pause");
 }
 
 
 void gjm_test() {
+	ObjectTracing::start_tracing(0, 0);
 	//新的pcd读取函数
 	//PointViewer::get_instance()->init_point_viewer();
 	/*PCDFILE f;
@@ -57,7 +61,7 @@ void gjm_test() {
 	
 
 	//SLAM
-	JluSlamLayer::get_instance()->start_slam("C:\\DataSpace\\LidarDataSpace\\lidar_20180322-1\\gps_data","C:\\DataSpace\\LidarDataSpace\\lidar_20180322-1\\pcd_data");
+	//JluSlamLayer::get_instance()->start_slam("C:\\DataSpace\\LidarDataSpace\\lidar_20180322-1\\gps_data","C:\\DataSpace\\LidarDataSpace\\lidar_20180322-1\\pcd_data");
 } 
 
 void byz_test() {

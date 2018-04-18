@@ -122,7 +122,7 @@ void DataGatherLayer::pcd_thread() {
 		memset(pcd_path, 0, 200);
 		HPCD file;
 		sprintf(pcd_path, "%s\\%d_pcd.pcd", pcd_folder_path.c_str(), pcd_count);
-		PcapTransformLayer::get_instance()->get_current_frame(pcd_path, file);
+		PcapTransformLayer::get_instance()->get_current_frame(pcd_path, file, 16);
 		
 		pcd_count++;
 	}

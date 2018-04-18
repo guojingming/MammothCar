@@ -51,8 +51,8 @@ namespace mammoth {
 			static PcapTransformLayer * get_instance();
 			void trans_pcap_to_pcd(std::string pcap_path, std::vector<pcl::PointCloud<PointType>::Ptr> & vec, int seg_count = 0);
 			void play_pcap_file(std::string pcap_path, int start_packet_number = 0);
-			void get_current_frame(pcl::PointCloud<PointType>::Ptr & cloud);
-			void get_current_frame(const char * path, HPCD & file);
+			void get_current_frame(pcl::PointCloud<PointType>::Ptr & cloud, int laser_lines_number);
+			void get_current_frame(const char * path, HPCD & file, int laser_lines_number);
 			void parameter_init(float angle_piece, std::string path_prefix);
 			~PcapTransformLayer();
 		private:

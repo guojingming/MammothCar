@@ -1,3 +1,13 @@
+/*Mat test_image = Mat::zeros(p_map->map_width, p_map->map_height, CV_8UC3);
+for (int i = 0; i < p_map->map_height; i++) {
+for (int j = 0; j < p_map->map_width; j++) {
+std::vector<PointType> & temp_vec = p_map->get_grid(i, j);
+test_image.at<cv::Vec3b>(i, j)[2] += temp_vec.size() * 6>255 ? 255 : temp_vec.size() * 6;
+}
+}
+imshow("window1", test_image);
+cv::waitKey(0);*/
+
 //旧版本的点云叠加
 //void JluSlamLayer::start_slam(const std::string& gps_folder_path, const std::string& pcd_folder_path, int start_number) {
 //	PointViewer::get_instance()->init_point_viewer();

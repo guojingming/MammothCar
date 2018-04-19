@@ -13,7 +13,9 @@ float* GyroscopeSerialInput::buffer = nullptr;
 int GyroscopeSerialInput::buffer_size = -1;
 int GyroscopeSerialInput::cmd_count = 0;
 int GyroscopeSerialInput::gyroscope_flag = 0;
+#ifdef WIN32
 SyncCom GyroscopeSerialInput::sync_com;
+#endif
 bool GyroscopeSerialInput::has_angle_data = false;
 
 int GyroscopeSerialInput::packet_count0 = 0;
@@ -30,18 +32,23 @@ void GyroscopeSerialInput::startAsync(std::string serial_number, int baud_rate, 
 void GyroscopeSerialInput::startSync(std::string serial_number, int baud_rate, float* buffer, int buffer_size) {
 	GyroscopeSerialInput::buffer = buffer;
 	GyroscopeSerialInput::buffer_size = buffer_size;
+#ifdef WIN32
 	sync_com = SerialUtil::openSync(serial_number.c_str(), baud_rate);
+#endif
 }
 
 int GyroscopeSerialInput::readSync(char * buffer, int buffer_size) {
-	int count = sync_com.Read(buffer, buffer_size);
+	int count = 0;
+#ifdef WIN32
+	count = sync_com.Read(buffer, buffer_size);
 	for (int i = 0; i < count; i++) {
 		if (buffer[i] == 0x53) {
 			packet_count3++;
 		}
 	}
-
+#endif
 	return count;
+
 }
 
 void GyroscopeSerialInput::stop() {
@@ -210,7 +217,7 @@ void GyroscopeSerialInput::read_gyroscope(const std::string& real_data, void* co
 	char* b = new char[teststr.length() + 1];
 	memset(b, 0, teststr.length() + 1);
 	memcpy(b, a, teststr.length());
-	unsigned char* c = (unsigned char*)b;  //  byte与  unsigned char*相同
+	unsigned char* c = (unsigned char*)b;  //  byte锟斤拷  unsigned char*锟斤拷同
 	for (int i = 0; i < teststr.length(); i++) {
 		if ((int)(c[i]) == 0x55) {
 			if (temp_count == 11) {

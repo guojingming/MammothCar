@@ -34,9 +34,9 @@ namespace mammoth {
 			static int buffer_size;
 
 			
-
+#ifdef WIN32
 			static SyncCom sync_com;
-
+#endif
 		};
 
 

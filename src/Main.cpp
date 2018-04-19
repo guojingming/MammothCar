@@ -37,17 +37,17 @@ void cz_test() {
 
 void gjm_test() {
 	ObjectTracing::start_tracing(0, 0);
-	//ÐÂµÄpcd¶ÁÈ¡º¯Êý
+	//ï¿½Âµï¿½pcdï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½
 	//PointViewer::get_instance()->init_point_viewer();
 	/*PCDFILE f;
 	PcdUtil::read_pcd_file("C:\\DataSpace\\map\\0406-1.pcd", &f);
 	PointViewer::get_instance()->set_point_cloud(f);
 	system("pause");*/
 
-	//¼ÇÂ¼Êý¾Ý
+	//ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½
 	//DataGatherLayer::get_instance()->start_grab("C:\\DataSpace\\LidarDataSpace\\lidar_20180322\\gps_data","C:\\DataSpace\\LidarDataSpace\\lidar_20180322\\pcd_data","C:\\DataSpace\\LidarDataSpace\\lidar_20180322\\imu_data");
 	
-	//¾ÛÀàËã·¨
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ã·¨
 	/*PointViewer::get_instance()->init_point_viewer();
 	pcl::PointCloud<PointType>::Ptr cloud(new pcl::PointCloud<PointType>());
 	PcdUtil::read_pcd_file("D:\\TTT.pcd", cloud);
@@ -65,8 +65,9 @@ void gjm_test() {
 } 
 
 void byz_test() {
+#ifdef WIN32
 	SyncCom sync_com = SerialUtil::openSync("COM4", 460800);
-	
+
 	char buffer[512];
 	ImuSolver imuSolver;
 	std::vector<unsigned char> splits;
@@ -105,5 +106,6 @@ void byz_test() {
 		// else printf("Read data failure times=%d\n",j);
 	}
 	printf("Receive data finished!\n");
+#endif
 }
 

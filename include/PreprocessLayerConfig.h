@@ -1,11 +1,12 @@
 #pragma once
 
-#include "UnionConfig.h"
 
+#include "UnionConfig.h"
 #include "PcdUtilLayerConfig.h"
 
+#include <pcap.h>
 #ifdef WIN32
-#include "pcap.h"
+
 #include <windows.h>
 #include <omp.h>
 #include <direct.h>  

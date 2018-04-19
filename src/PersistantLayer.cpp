@@ -9,18 +9,18 @@ void MysqlPersistantLayer::connect() {
 	//sql::Connection *con;
 	//sql::Statement *state;
 	//sql::ResultSet *result;
-	//// ³õÊ¼»¯Çý¶¯  
+	//// ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  
 	//driver = sql::mysql::get_mysql_driver_instance();
-	//// ½¨Á¢Á´½Ó  
+	//// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  
 	////con = driver->connect("tcp://192.168.0.243:3306", "root", "1234");
 	//con = driver->connect(PersistantLayerConfig::mysql_address.c_str(), PersistantLayerConfig::mysql_user.c_str(), PersistantLayerConfig::mysql_password.c_str());
 	//state = con->createStatement();
 	//std::string change_database_cmd = "use " + PersistantLayerConfig::mysql_database;
 	//state->execute("use lidar");
 	////state->execute(change_database_cmd);
-	//// ²éÑ¯  
+	//// ï¿½ï¿½Ñ¯  
 	//result = state->executeQuery("select * from test");
-	//// Êä³ö²éÑ¯  
+	//// ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¯  
 	//while (result->next()) {
 	//	int id = result->getInt("test_id");
 	//	std::string name = result->getString("test_value");
@@ -138,7 +138,7 @@ void DataGatherLayer::imu_thread() {
 
 	std::string ori_imu_folder_path = "C:\\DataSpace\\LidarDataSpace\\lidar_20180322\\ori_imu_data";
 
-
+#ifdef WIN32
 	SyncCom sync_com = SerialUtil::openSync("COM5", 115200);
 	char buffer[512];
 	ImuSolver imuSolver;
@@ -205,4 +205,5 @@ void DataGatherLayer::imu_thread() {
 		}
 	}
 	printf("Receive data finished!\n");
+#endif
 }

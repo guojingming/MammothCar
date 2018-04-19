@@ -20,7 +20,9 @@ namespace mammoth{
 		class SerialUtil {
 		public:
 			static void openAsync(const char * serial, int baut_rate, void(*read_func)(const std::string& data, void* context));
+#ifdef WIN32
 			static SyncCom openSync(const char * serial, int baut_rate);
+#endif
 			static void close();
 			static void read_gps(const std::string& data, void* context);
 			static void write(ASynCom* com, const std::string& msg, int* cont);
@@ -98,7 +100,9 @@ namespace mammoth{
 			static std::string get_time_code();
 			static std::string get_time_code_millsecond();
 		private:
+#ifdef WIN32
 			static SYSTEMTIME sys_time;
+#endif
 
 		};
 

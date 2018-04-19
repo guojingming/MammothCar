@@ -90,8 +90,8 @@ namespace mammoth {
 			static const char* parse_int(const char* str, UT* val);
 			static const char* parse_strid(const char* str, char* buf);
 			static const char* parse_version(const char* str, uint32_t* Major, uint32_t* Sub);
-			static const char* PcdUtil::parse_datatype(const char* str, int size, uint32_t* val);
-			static uint32_t PcdUtil::parse_field_count(const char* str);
+			static const char* parse_datatype(const char* str, int size, uint32_t* val);
+			static uint32_t parse_field_count(const char* str);
 			static void calc_offset(PCDHEADER* pHeader);
 			static bool check_header(PCDHEADER* pHeader);
 			static void read_binary(FILE* fp, PCDFILE* File);
@@ -107,7 +107,7 @@ namespace mammoth {
 			template<typename CustomType>
 			void set_point_cloud(PCDFILE scene, CustomType point_type);
 			uint32_t add_cube(PointType * cube_points);
-			void PointViewer::remove_cubes(std::vector<uint32_t>& cube_handles);
+			void remove_cubes(std::vector<uint32_t>& cube_handles);
 			static PointViewer* get_instance();
 		private:
 			static PointViewer* p_viewer;

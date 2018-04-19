@@ -390,9 +390,15 @@ void PcapTransformLayer::play_pcap_file(std::string pcap_path, int start_packet_
 			continue;
 		}
 		static double m_Packet_Count = 0;
+#ifdef WIN32
 		static DWORD  m_PacketsLen = 0;
 		static DWORD  m_TickCount = 0;
+#else 
+		static long long  m_PacketsLen = 0;
+		static long long  m_TickCount = 0;
+#endif
 		static double m_Speed = 0.0;
+#ifdef WIN32
 		m_PacketsLen += pkthdr->len;
 		m_Packet_Count++;
 		if (GetTickCount() - m_TickCount > 1000) {
@@ -401,6 +407,7 @@ void PcapTransformLayer::play_pcap_file(std::string pcap_path, int start_packet_
 			m_PacketsLen = 0;
 			m_Packet_Count = 0;
 		}
+#endif
 	}
 	if (res == -1) {
 		printf("Error reading the packets: %s\n", pcap_geterr(adhandle));

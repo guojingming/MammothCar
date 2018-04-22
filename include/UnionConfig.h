@@ -12,6 +12,7 @@
 #include <sys/types.h>
 #include <chrono>
 #include <fstream>
+#include <xmmintrin.h>
 
 #define PI 3.14159265357
 

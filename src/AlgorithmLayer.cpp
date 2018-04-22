@@ -125,8 +125,11 @@ void JluSlamLayer::DoTransform(float theta1, float theta2, float trans_x, float 
 		R = _mm_add_ps(R, T);
 		R = _mm_add_ps(R, Q2_1); // (D1*Q1)+Q2
 		R = _mm_mul_ps(R, Q3_1); // ((D1*Q1) + Q2) * Q3
-		R = _mm_shuffle_ps(R, R, 0xE1);
-		R.m128_f32[3] = V.m128_f32[3];
+
+		register __m128 X11 = _mm_shuffle_ps(V,V,0xFF);
+		R = _mm_shuffle_ps(R,R,0x87);
+		R = _mm_move_ss(R,V);
+		R = _mm_shuffle_ps(R,R,0x39);
 		_mm_store_ps(fv, R);
 		fv += 4;
 	}

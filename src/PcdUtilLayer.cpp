@@ -14,7 +14,11 @@ int PcdUtil::read_pcd_file(const std::string pcd_file_path, pcl::PointCloud<Poin
 
 int PcdUtil::read_pcd_file(const std::string pcd_file_path, PCDFILE* pcd_file) {
 	FILE * p;
+#ifdef WIN32
 	fopen_s(&p, pcd_file_path.c_str(), "rb");
+#else
+	p = fopen(pcd_file_path.c_str(), "rb");
+#endif
 	PcdUtil::pcdLoad(p, pcd_file);
 	fclose(p);
 	return 0;
@@ -109,7 +113,7 @@ void PointViewer::set_point_cloud(PCDFILE scene) {
 template<typename CustomType>
 void PointViewer::set_point_cloud(PCDFILE scene, CustomType point_type) {
 #ifdef USE_GLVIEWER
-	p_glviewer->SetPointCloud((point_type *)scene.pData, scene.header.Points);
+	p_glviewer->SetPointCloud((CustomType *)scene.pData, scene.header.Points);
 #endif
 }
 
@@ -229,7 +233,7 @@ const char* PcdUtil::parse_int(const char* str, UT* val) {
 }
 
 const char* PcdUtil::parse_strid(const char* str, char* buf) {
-	while (*str >= 'a' && *str <= 'z' || *str >= 'A' && *str <= 'Z' || *str == '_') {
+	while ((*str >= 'a' && *str <= 'z') || (*str >= 'A' && *str <= 'Z') || *str == '_') {
 		*buf++ = *str++;
 	}
 	*buf = 0;
@@ -473,7 +477,11 @@ FiledDesc* PcdUtil::pcdContains(PCDHEADER* pHeader, const char* field) {
 
 HPCD PcdUtil::pcdOpen(const char* filename) {
 	HPCD p = new tagPCD;
+#ifdef WIN32
 	fopen_s(&p->fp, filename, "wb");
+#else
+	p->fp = fopen(filename, "wb");
+#endif
 	p->DataWrited = false;
 	p->TotalPoints = 0;
 	return p;
@@ -499,7 +507,11 @@ void PcdUtil::pcdWrite(HPCD hpcd, glviewer::DataFormatDesc dsc, void* Arr, size_
 
 void PcdUtil::pcdClose(HPCD hp) {
 	char W[24];
+#ifdef WIN32
 	sprintf_s(W, "%llu", hp->TotalPoints);
+#else
+    sprintf(W, "%llu", hp->TotalPoints);
+#endif
 	fseek(hp->fp, hp->POffset, SEEK_SET);
 	fwrite(W, strlen(W), 1, hp->fp);
 	fseek(hp->fp, hp->WOffset, SEEK_SET);

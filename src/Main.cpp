@@ -8,8 +8,8 @@ void byz_test();
 
 int main(int argc, char ** argv) {
 	
-	cz_test();
-	//gjm_test();
+	//cz_test();
+	gjm_test();
 	//byz_test();
 
 	return 0;

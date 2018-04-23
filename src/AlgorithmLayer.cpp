@@ -294,9 +294,9 @@ int DimensionReductionCluster::cz_region(cv::Mat src, std::vector<std::vector<cv
 }
 
 
-ObjectTracingConfig ObjectTracing::config;
+ObjectTrackingConfig ObjectTracking::config;
 
-void ObjectTracing::start_tracing(int mode, int ethernet_number) {
+void ObjectTracking::start_tracking(int mode, int ethernet_number) {
 	pcl::PointCloud<PointType>::Ptr cloud(new pcl::PointCloud<PointType>());
 #ifdef TRACING_SOURCE_ETHERNET
 	PcapTransformLayer::get_instance()->get_current_frame(cloud, 32);
@@ -313,7 +313,7 @@ void ObjectTracing::start_tracing(int mode, int ethernet_number) {
 
 }
 
-void ObjectTracing::filting(pcl::PointCloud<PointType>::Ptr input_cloud) {
+void ObjectTracking::filting(pcl::PointCloud<PointType>::Ptr input_cloud) {
 	pcl::PointCloud<PointType>::Ptr filtered_cloud(new pcl::PointCloud<PointType>);
 	filtered_cloud->reserve(input_cloud->size());
 	for (pcl::PointCloud<PointType>::iterator iterator = input_cloud->begin(); iterator != input_cloud->end(); iterator++) {
@@ -325,7 +325,7 @@ void ObjectTracing::filting(pcl::PointCloud<PointType>::Ptr input_cloud) {
 	input_cloud = filtered_cloud;
 }
 
-GridMap* ObjectTracing::gridding(pcl::PointCloud<PointType>::Ptr input_cloud) {
+GridMap* ObjectTracking::gridding(pcl::PointCloud<PointType>::Ptr input_cloud) {
 	if (config.grid_width < config.grid_width_limit || config.grid_height < config.grid_height_limit) {
 		printf("[ERROR] The width or height is lower than the limit!\n");
 		return nullptr;
@@ -347,15 +347,40 @@ GridMap* ObjectTracing::gridding(pcl::PointCloud<PointType>::Ptr input_cloud) {
 	return &grid_map;
 }
 
-void ObjectTracing::ground_segment(GridMap & grid_map) {
+void ObjectTracking::ground_segment(GridMap & grid_map) {
+	//max - min = delta
+	float max_height;
+	float min_height;
+	float delta_height;
+	float delta_threshold = 0.2;
+	float max_ground_height = -1.35;
+	float min_ground_height = -1.45;
 	for (int i = 0; i < grid_map.map_height; i++) {
 		for (int j = 0; j < grid_map.map_width; j++) {
-			
+			Grid * p_grid = grid_map.get_grid(i, j);
+			std::vector<PointType>& points =  p_grid->points;
+			max_height = -FLT_MAX;
+			min_height = FLT_MAX;
+			for(std::vector<PointType>::iterator iterator = points.begin();iterator!=points.end();iterator++){
+				PointType& point = (*iterator);
+				if(point.z > max_height){
+					max_height = point.z;
+				}
+				if(point.z < min_height){
+					min_height = point.z;
+				}
+			}
+			delta_height = max_height - min_height;
+			if(delta_height <= delta_threshold && min_height <= max_ground_height && min_height >= min_ground_height){
+				p_grid->tag = 0;
+			}else{
+				p_grid->tag = 1;
+			}
 		}
 	}
 }
 
-std::vector<std::vector<Grid*>>& ObjectTracing::clustering(GridMap & grid_map) {
+std::vector<std::vector<Grid*>>& ObjectTracking::clustering(GridMap & grid_map) {
 	std::vector<std::vector<Grid*>> objs;
 	unsigned short obj_number = 0;
 	for (int i = 0; i < grid_map.map_height; i++) {
@@ -370,6 +395,7 @@ std::vector<std::vector<Grid*>>& ObjectTracing::clustering(GridMap & grid_map) {
 	return objs;
 }
 
-void ObjectTracing::tracing() {
+void ObjectTracking::tracking() {
+	//updating objs table
 
 }

@@ -36,7 +36,9 @@ void cz_test() {
 
 
 void gjm_test() {
-	ObjectTracing::start_tracing(0, 0);
+	GNSSFilter gnssFilter(0,0,0,0,0,0);
+
+	ObjectTracking::start_tracking(0, 0);
 	//�µ�pcd��ȡ����
 	//PointViewer::get_instance()->init_point_viewer();
 	/*PCDFILE f;

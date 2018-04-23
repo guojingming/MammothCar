@@ -153,8 +153,8 @@ namespace mammoth {
 			}
 		};
 
-		struct ObjectTracingConfig {
-			ObjectTracingConfig() : grid_width_limit(1), grid_height_limit(1) {
+		struct ObjectTrackingConfig {
+			ObjectTrackingConfig() : grid_width_limit(1), grid_height_limit(1) {
 				grid_width = 200; //20cm
 				grid_height = 200; //20cm
 				map_width = 10000; //100m
@@ -168,17 +168,19 @@ namespace mammoth {
 			float map_height;
 		};
 
-		class ObjectTracing {
+		
+
+		class ObjectTracking {
 		public:
-			static ObjectTracingConfig config;
+			static ObjectTrackingConfig config;
 			//mode = 0
-			static void start_tracing(int mode, int ethernet_number);
+			static void start_tracking(int mode, int ethernet_number);
 		private:
 			static void filting(pcl::PointCloud<PointType>::Ptr input_cloud);
 			static GridMap* gridding(pcl::PointCloud<PointType>::Ptr input_cloud);
 			static void ground_segment(GridMap & grid_map);
 			static std::vector<std::vector<Grid*>>& clustering(GridMap & grid_map);
-			static void tracing();
+			static void tracking();
 		};
 
 		class ObjectRecognition {

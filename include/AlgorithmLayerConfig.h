@@ -1,5 +1,7 @@
 #pragma once
 
+#include "GNSSFilter.h"
+
 #include <opencv2/highgui/highgui.hpp>
 
 #include "UnionConfig.h"

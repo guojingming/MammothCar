@@ -11,6 +11,7 @@
 class GNSSFilter: public mrpt::bayes::CKalmanFilterCapable<4, 4, 0, 0>
 {
   public:
+    GNSSFilter(){};
     GNSSFilter(float init_x, float init_y, float init_vx, float init_vy, float measure_noise, float model_noise);
     virtual ~GNSSFilter();
 

@@ -534,4 +534,13 @@ std::string TimeUtil::get_time_code_millsecond() {
 #endif
 }
 
+long TimeUtil::get_millsecond(){
+#ifdef WIN32
 
+#else
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	long millsecond = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+	return millsecond;
+#endif
+}

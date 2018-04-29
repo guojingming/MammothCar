@@ -99,6 +99,7 @@ namespace mammoth{
 			static int get_time(const TIME_ITEM&);
 			static std::string get_time_code();
 			static std::string get_time_code_millsecond();
+			static long get_millsecond();
 		private:
 #ifdef WIN32
 			static SYSTEMTIME sys_time;

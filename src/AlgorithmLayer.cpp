@@ -294,7 +294,18 @@ int DimensionReductionCluster::cz_region(cv::Mat src, std::vector<std::vector<cv
 }
 
 
-ObjectTrackingConfig ObjectTracking::config;
+
+
+float ObjectTrackingConfig::grid_width = 200; //20cm
+float ObjectTrackingConfig::grid_height = 200; //20cm
+float ObjectTrackingConfig::map_width = 10000; //100m
+float ObjectTrackingConfig::map_height = 10000; //100m
+float ObjectTrackingConfig::grid_width_limit = 1;
+float ObjectTrackingConfig::grid_height_limit = 1;
+short ObjectTrackingConfig::max_disappear_frame_count = 8;
+float ObjectTrackingConfig::max_search_radius = 10.0; 
+
+std::vector<TrackedObject> ObjectTracking::tracked_objs;
 
 void ObjectTracking::start_tracking(int mode, int ethernet_number) {
 	pcl::PointCloud<PointType>::Ptr cloud(new pcl::PointCloud<PointType>());
@@ -309,7 +320,7 @@ void ObjectTracking::start_tracking(int mode, int ethernet_number) {
 	GridMap* p_map = gridding(cloud);
 	ground_segment(*p_map);
 	std::vector<std::vector<Grid*>>& objs = clustering(*p_map);
-	
+	tracking(objs, p_map);
 
 }
 
@@ -395,7 +406,53 @@ std::vector<std::vector<Grid*>>& ObjectTracking::clustering(GridMap & grid_map) 
 	return objs;
 }
 
-void ObjectTracking::tracking() {
-	//updating objs table
+void ObjectTracking::tracking(std::vector<std::vector<Grid*>>& objs,GridMap* p_map) {
+	//describe every obj's attribute by TrackedObject model
+	for(std::vector<std::vector<Grid*>>::iterator iter = objs.begin();iter!=objs.end();iter++){
+		std::vector<Grid*>& detected_obj = (*iter);
+		float init_location_x = 0;
+		float init_location_y = 0;
+		unsigned short x_index_min = 65535;
+		unsigned short x_index_max = 0;
+		unsigned short y_index_min = 65535;
+		unsigned short y_index_max = 0;
+		for(std::vector<Grid*>::iterator sub_iter = detected_obj.begin();sub_iter!=detected_obj.end();sub_iter++){
+			Grid* p_grid = (*sub_iter);
+			x_index_min = p_grid->x_index < x_index_min ? p_grid->x_index : x_index_min;
+			x_index_max = p_grid->x_index > x_index_max ? p_grid->x_index : x_index_max;
 
+			y_index_min = p_grid->y_index < y_index_min ? p_grid->y_index : y_index_min;
+			y_index_max = p_grid->y_index > y_index_max ? p_grid->y_index : y_index_max;
+		}
+		float center_x_index = (x_index_min + x_index_max) / 2;
+		float center_y_index = (y_index_min + y_index_max) / 2;
+		init_location_x = center_x_index * ObjectTrackingConfig::grid_width;
+		init_location_y = center_y_index * ObjectTrackingConfig::grid_height;
+		//create temp TrackedObject ;
+		TrackedObject temp_obj(center_x_index, center_y_index);
+		TrackedObject* p_candidate_object = nullptr;
+		//updating objs table
+		//compare to trackedobjs in tracking_obj_table
+		float min_distance = 65535;
+		for(std::vector<TrackedObject>::iterator sub_iter = tracked_objs.begin();sub_iter!=tracked_objs.end();sub_iter++){
+			TrackedObject& tracked_object = (*sub_iter); 
+			//select the nearest object and estimate if the values are smaller than the threshold values.
+			float distance = tracked_object.center_localtion.distance(temp_obj.center_localtion);
+			if(distance <= ObjectTrackingConfig::max_search_radius && distance <= min_distance){
+				min_distance = distance;
+				p_candidate_object = &tracked_object;
+			}
+		}
+		//update tracked objs
+		if(p_candidate_object != nullptr){
+			//if a suitable obj is exsist, update state.
+			//calculate new velocity
+
+			//update state
+			p_candidate_object->update_state(p_candidate_object);
+		}else{
+			//else, is a new obj, add to the tracking objs table.
+			tracked_objs.push_back(temp_obj);
+		}
+	}
 }

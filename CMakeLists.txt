@@ -24,7 +24,7 @@ file(GLOB_RECURSE HEADERS "include/*.h" "include/*.hpp")
 file(GLOB_RECURSE SRCS "src/*.c" "src/*.cpp")
 
 
-add_definitions(-Wno-unknown-pragmas -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable -Wno-comment -Wno-return-type -Wno-format)
+add_definitions(-Wno-return-local-addr -Wno-unknown-pragmas -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable -Wno-comment -Wno-return-type -Wno-format)
 add_executable(${PROJECT_NAME} ${SRCS} ${HEADERS})
 #target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} pthread pcap)
 target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES} ${OpenCV_LIBRARIES} pcap ${CMAKE_CURRENT_SOURCE_DIR}/lib/libptvisualizier.so ${MRPT_LIBS})

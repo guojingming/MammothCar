@@ -38,6 +38,7 @@ void GNSSFilter::OnGetAction(KFArray_ACT & out_u) const
 }
 void GNSSFilter::OnTransitionModel(const KFArray_ACT &in_u, KFArray_VEH &inout_x, bool &out_skipPrediction) const
 {
+  //x,y,vx,vy 
   inout_x[0] += inout_x[3] * m_deltaTime;
   inout_x[1] += inout_x[4] * m_deltaTime;
   inout_x[2] = inout_x[2];

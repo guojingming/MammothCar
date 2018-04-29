@@ -2,6 +2,8 @@
 
 #include "AlgorithmLayerConfig.h"
 
+using namespace mammoth::config;
+
 namespace mammoth {
 	namespace layer {
 		class JluSlamLayer {
@@ -30,12 +32,14 @@ namespace mammoth {
 		};
 
 
+
+
 		enum GRID_DIRECTION {UP, DOWN, LEFT, RIGHT};
 
 		struct Grid {
 			Grid() {
-				y_index = NAN;
-				x_index = NAN;
+				y_index = 65535;
+				x_index = 65535;
 				max_z = NAN;
 				min_z = NAN;
 				tag = 255;
@@ -60,7 +64,10 @@ namespace mammoth {
 			const unsigned short map_height;
 
 			GridMap(unsigned short width, unsigned short height) :map_width(width), map_height(height) {
-				grids = new Grid[map_height * map_width];
+				// MyPoint2D observer_vx, 
+				// 				MyPoint2D observer_vy,
+				// 				MyPoint2D lidar_vx,
+				// 				MyPoint2D lidar_vy		grids = new Grid[map_height * map_width];
 			}
 			~GridMap() {
 				if (grids != nullptr) {
@@ -153,22 +160,90 @@ namespace mammoth {
 			}
 		};
 
-		struct ObjectTrackingConfig {
-			ObjectTrackingConfig() : grid_width_limit(1), grid_height_limit(1) {
-				grid_width = 200; //20cm
-				grid_height = 200; //20cm
-				map_width = 10000; //100m
-				map_height = 10000; //100m
-			}
-			const float grid_width_limit;
-			const float grid_height_limit;
-			float grid_width; //0.01 == 1cm
-			float grid_height; //0.01 == 1cm
-			float map_width;
-			float map_height;
+		class ObjectTrackingConfig {
+		public:
+			static float grid_width_limit;
+			static float grid_height_limit;
+			static float grid_width; //0.01 == 1cm
+			static float grid_height; //0.01 == 1cm
+			static float map_width;
+			static float map_height;
+			static float max_search_radius;
+			static short max_disappear_frame_count;
 		};
 
-		
+
+
+		struct TrackedObject{
+			TrackedObject(float init_location_x, float init_location_y){
+				//GNSSFilter();
+				center_localtion.x = init_location_x;
+				center_localtion.y = init_location_y;
+				disappear_frame_count = 0;
+			}
+
+			GNSSFilter kalman_filter;
+			MyPoint2D center_localtion;
+			std::vector<Grid*> grids;
+			MyPoint2D last_lidar_velocity;
+			MyPoint2D relative_velocity;
+			std::vector<MyPoint2D> trace;
+			unsigned long last_update_time;
+			unsigned int disappear_frame_count;
+
+			void predict_next_location(MyPoint2D& predict_location, unsigned int delta_time){
+				predict_location.x = center_localtion.x + relative_velocity.x * delta_time / 1000.0;
+				predict_location.y = center_localtion.y + relative_velocity.y * delta_time / 1000.0;
+			}
+
+			TrackedObject* search_current_location(MyPoint2D predict_location, std::vector<TrackedObject> current_objects){
+				float min_distance = 65535;
+				std::vector<TrackedObject>::iterator * p_candidate_obj = nullptr;
+				//traverse obeserved objs to find the nearest object
+				for(std::vector<TrackedObject>::iterator iter = current_objects.begin();iter!=current_objects.end();iter++){
+					TrackedObject& obj = (*iter);
+					float distance = predict_location.distance(obj.center_localtion);
+					if(distance <= min_distance && distance <= ObjectTrackingConfig::max_search_radius){
+						min_distance = distance;
+						p_candidate_obj = &iter;
+					}
+				}
+				if(p_candidate_obj != nullptr){
+					return &(**p_candidate_obj);
+				}else{
+					return nullptr;
+				}
+			}
+
+			void update_state(TrackedObject* p_current_obj){
+				if(p_current_obj == nullptr){
+					//disappear
+					disappear_frame_count++;
+				}else{
+					//tracked
+					disappear_frame_count = 0;
+					//update location
+					center_localtion = p_current_obj->center_localtion;
+					//update trace
+					trace.push_back(center_localtion);
+					if(trace.size() == 30){
+						std::vector<MyPoint2D>::iterator iterator = trace.begin();
+						trace.erase(iterator);
+					}
+					//update grid
+					grids.clear();
+					for(std::vector<Grid*>::iterator iter = p_current_obj->grids.begin();iter != p_current_obj->grids.end();iter++){
+						grids.push_back(*iter);
+					}
+					//update velocity
+					relative_velocity = p_current_obj->relative_velocity;
+				}
+			}
+		};
+
+		struct ObjectTrackingTable{
+			std::vector<TrackedObject> tracked_objects;
+		};
 
 		class ObjectTracking {
 		public:
@@ -180,8 +255,11 @@ namespace mammoth {
 			static GridMap* gridding(pcl::PointCloud<PointType>::Ptr input_cloud);
 			static void ground_segment(GridMap & grid_map);
 			static std::vector<std::vector<Grid*>>& clustering(GridMap & grid_map);
-			static void tracking();
+			static void tracking(std::vector<std::vector<Grid*>>& objs, GridMap* p_map);
+
+			static std::vector<TrackedObject> tracked_objs;
 		};
+
 
 		class ObjectRecognition {
 

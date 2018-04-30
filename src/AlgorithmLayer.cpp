@@ -306,14 +306,18 @@ short ObjectTrackingConfig::max_disappear_frame_count = 8;
 float ObjectTrackingConfig::max_search_radius = 10.0; 
 
 std::vector<TrackedObject> ObjectTracking::tracked_objs;
+long ObjectTracking::current_frame_time = 0;
+
 
 void ObjectTracking::start_tracking(int mode, int ethernet_number) {
 	pcl::PointCloud<PointType>::Ptr cloud(new pcl::PointCloud<PointType>());
 #ifdef TRACING_SOURCE_ETHERNET
 	PcapTransformLayer::get_instance()->get_current_frame(cloud, 32);
+	current_frame_time = TimeUtil::get_millsecond();
 #endif
 #ifdef TRACING_SOURCE_FILE
 	PcdUtil::read_pcd_file("D:\\single_frame_data.pcd", cloud);
+	current_frame_time = TimeUtil::get_millsecond();
 #endif
 
 	filting(cloud);
@@ -447,11 +451,27 @@ void ObjectTracking::tracking(std::vector<std::vector<Grid*>>& objs,GridMap* p_m
 		if(p_candidate_object != nullptr){
 			//if a suitable obj is exsist, update state.
 			//calculate new velocity
-
+			p_candidate_object->last_lidar_velocity.x = 0;
+			p_candidate_object->last_lidar_velocity.y = 0;			
+			MyPoint2D last_location = p_candidate_object->center_localtion;
+			MyPoint2D current_location = temp_obj.center_localtion;
+			long delta_time = current_frame_time - p_candidate_object->last_update_time;
+			float x_distance = current_location.x - last_location.x;
+			float y_distance = current_location.y - last_location.y;
+			float last_x_velocity = p_candidate_object->relative_velocity.x;
+			float last_y_velocity = p_candidate_object->relative_velocity.y;
+			p_candidate_object->relative_velocity.x = 1000 * 2 * x_distance / delta_time - last_x_velocity;
+			p_candidate_object->relative_velocity.y = 1000 * 2 * y_distance / delta_time - last_y_velocity;
 			//update state
 			p_candidate_object->update_state(p_candidate_object);
 		}else{
 			//else, is a new obj, add to the tracking objs table.
+			temp_obj.last_lidar_velocity.x = 0;
+			temp_obj.last_lidar_velocity.y = 0;
+			temp_obj.relative_velocity.x = 0;
+			temp_obj.relative_velocity.y = 0;
+			temp_obj.last_update_time = current_frame_time;
+			temp_obj.disappear_frame_count = 0;
 			tracked_objs.push_back(temp_obj);
 		}
 	}

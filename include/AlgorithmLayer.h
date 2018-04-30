@@ -188,7 +188,7 @@ namespace mammoth {
 			MyPoint2D last_lidar_velocity;
 			MyPoint2D relative_velocity;
 			std::vector<MyPoint2D> trace;
-			unsigned long last_update_time;
+			long last_update_time;
 			unsigned int disappear_frame_count;
 
 			void predict_next_location(MyPoint2D& predict_location, unsigned int delta_time){
@@ -248,6 +248,7 @@ namespace mammoth {
 		class ObjectTracking {
 		public:
 			static ObjectTrackingConfig config;
+			static long current_frame_time;
 			//mode = 0
 			static void start_tracking(int mode, int ethernet_number);
 		private:
@@ -258,6 +259,7 @@ namespace mammoth {
 			static void tracking(std::vector<std::vector<Grid*>>& objs, GridMap* p_map);
 
 			static std::vector<TrackedObject> tracked_objs;
+			
 		};
 
 

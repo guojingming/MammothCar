@@ -67,7 +67,8 @@ namespace mammoth {
 				// MyPoint2D observer_vx, 
 				// 				MyPoint2D observer_vy,
 				// 				MyPoint2D lidar_vx,
-				// 				MyPoint2D lidar_vy		grids = new Grid[map_height * map_width];
+				// 				MyPoint2D lidar_vy		
+				grids = new Grid[map_height * map_width];
 			}
 			~GridMap() {
 				if (grids != nullptr) {
@@ -96,6 +97,7 @@ namespace mammoth {
 					new_point.x = value.x;
 					new_point.y = value.y;
 					new_point.z = value.z;
+					int index = y_index * map_width + x_index;
 					grids[y_index * map_width + x_index].points.push_back(new_point);
 				}
 			}
@@ -252,8 +254,8 @@ namespace mammoth {
 			//mode = 0
 			static void start_tracking(int mode, int ethernet_number);
 		private:
-			static void filting(pcl::PointCloud<PointType>::Ptr input_cloud);
-			static GridMap* gridding(pcl::PointCloud<PointType>::Ptr input_cloud);
+			static void filting(pcl::PointCloud<PointType>::Ptr& input_cloud);
+			static GridMap* gridding(pcl::PointCloud<PointType>::Ptr& input_cloud);
 			static void ground_segment(GridMap & grid_map);
 			static std::vector<std::vector<Grid*>>& clustering(GridMap & grid_map);
 			static void tracking(std::vector<std::vector<Grid*>>& objs, GridMap* p_map);

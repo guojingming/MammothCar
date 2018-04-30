@@ -316,19 +316,31 @@ void ObjectTracking::start_tracking(int mode, int ethernet_number) {
 	current_frame_time = TimeUtil::get_millsecond();
 #endif
 #ifdef TRACING_SOURCE_FILE
-	PcdUtil::read_pcd_file("D:\\single_frame_data.pcd", cloud);
+	pcl::PointCloud<PointType>::Ptr cloud1(new pcl::PointCloud<PointType>());
+	pcl::PointCloud<PointType>::Ptr cloud2(new pcl::PointCloud<PointType>());
+	pcl::PointCloud<PointType>::Ptr cloud3(new pcl::PointCloud<PointType>());
+	PcdUtil::read_pcd_file("/home/jlurobot/data/pcds/sequence1/pro_pcds1/6.pcd", cloud1);
+	PcdUtil::read_pcd_file("/home/jlurobot/data/pcds/sequence1/pro_pcds1/7.pcd", cloud2);
+	PcdUtil::read_pcd_file("/home/jlurobot/data/pcds/sequence1/pro_pcds1/8.pcd", cloud3);
+	for(int i = 0;i<(*cloud1).size();i++){
+		(*cloud).push_back((*cloud1)[i]);
+	}
+	for(int i = 0;i<(*cloud2).size();i++){
+		(*cloud).push_back((*cloud2)[i]);
+	}
+	for(int i = 0;i<(*cloud3).size();i++){
+		(*cloud).push_back((*cloud3)[i]);
+	}
 	current_frame_time = TimeUtil::get_millsecond();
 #endif
-
 	filting(cloud);
 	GridMap* p_map = gridding(cloud);
 	ground_segment(*p_map);
 	std::vector<std::vector<Grid*>>& objs = clustering(*p_map);
 	tracking(objs, p_map);
-
 }
 
-void ObjectTracking::filting(pcl::PointCloud<PointType>::Ptr input_cloud) {
+void ObjectTracking::filting(pcl::PointCloud<PointType>::Ptr& input_cloud) {
 	pcl::PointCloud<PointType>::Ptr filtered_cloud(new pcl::PointCloud<PointType>);
 	filtered_cloud->reserve(input_cloud->size());
 	for (pcl::PointCloud<PointType>::iterator iterator = input_cloud->begin(); iterator != input_cloud->end(); iterator++) {
@@ -340,13 +352,13 @@ void ObjectTracking::filting(pcl::PointCloud<PointType>::Ptr input_cloud) {
 	input_cloud = filtered_cloud;
 }
 
-GridMap* ObjectTracking::gridding(pcl::PointCloud<PointType>::Ptr input_cloud) {
+GridMap* ObjectTracking::gridding(pcl::PointCloud<PointType>::Ptr& input_cloud) {
 	if (config.grid_width < config.grid_width_limit || config.grid_height < config.grid_height_limit) {
 		printf("[ERROR] The width or height is lower than the limit!\n");
 		return nullptr;
 	}
 	unsigned short map_width = config.map_width / config.grid_width;
-	unsigned short map_height = config.map_width / config.grid_width;
+	unsigned short map_height = config.map_height / config.grid_height;
 	unsigned short temp_x_index = 0;
 	unsigned short temp_y_index = 0;
 	unsigned short x_index_offset = map_width / 2;
@@ -386,10 +398,12 @@ void ObjectTracking::ground_segment(GridMap & grid_map) {
 				}
 			}
 			delta_height = max_height - min_height;
-			if(delta_height <= delta_threshold && min_height <= max_ground_height && min_height >= min_ground_height){
+			if(points.size()!=0 && delta_height <= delta_threshold && min_height <= max_ground_height && min_height >= min_ground_height){
 				p_grid->tag = 0;
-			}else{
+			}else if(points.size()!=0){
 				p_grid->tag = 1;
+			}else{
+				p_grid->tag = 255;
 			}
 		}
 	}

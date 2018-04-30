@@ -2,9 +2,9 @@
 
 #include "UnionConfig.h"
 
-#include "RPYV.h"
+#include <opencv2/highgui/highgui.hpp>
 
-#pragma comment(lib, "RPYV.lib")
+
 
 namespace mammoth {
 	namespace config {

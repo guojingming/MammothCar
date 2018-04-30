@@ -45,11 +45,21 @@ namespace mammoth {
 			}
 		};
 
-		typedef struct {
+	    struct MyPoint3D{
+			MyPoint3D(){
+				x = 0;
+				y = 0;
+				z = 0;
+			}
+			MyPoint3D(float input_x, float input_y, float input_z){
+				x = input_x;
+				y = input_y;
+				z = input_z;
+			}
 			float x;
 			float y;
 			float z;
-		}MyPoint3D;
+		};
 
 		typedef struct {
 			float x;

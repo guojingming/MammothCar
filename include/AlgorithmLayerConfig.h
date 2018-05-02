@@ -9,6 +9,7 @@
 #include "PcdUtilLayer.h"
 #include "StdUtilLayer.h"
 #include "PreprocessLayer.h"
+#include "VisualizationLayer.h"
 #include "Eigen/Dense"
 
 

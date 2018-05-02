@@ -38,27 +38,8 @@ void cz_test() {
 void gjm_test() {
 	//GNSSFilter gnssFilter(0,0,0,0,0,0);
 
-	//ObjectTracking::start_tracking(0, 0);
-	MammothViewer* p_viewer = OpencvViewerManager::get_instance()->create_viewer("hello", MyPoint2D(0, 0), MyPoint2D(1440, 1080));
-	int i = 0;
-	while(true){
-		p_viewer->clear_window();
-		MyBox box;
-		box.point1.x = 500 + 100 * sin(i * 3.1415926 / 180);
-		box.point1.y = 500 + 100 * cos(i * 3.1415926 / 180);
-		box.point2.x = 500 + 100 * sin(i * 3.1415926 / 180) + 100;
-		box.point2.y = 500 + 100 * cos(i * 3.1415926 / 180);
-		box.point4.x = 500 + 100 * sin(i * 3.1415926 / 180);
-		box.point4.y = 500 + 100 * cos(i * 3.1415926 / 180) + 100;
-		box.point3.x = 500 + 100 * sin(i * 3.1415926 / 180) + 100;
-		box.point3.y = 500 + 100 * cos(i * 3.1415926 / 180) + 100;
-		MyPoint3D color(255, 0, 0);
-		p_viewer->draw_rectangle(box,color, 2, true);
-		p_viewer->wait_rendering(1);
-		i+=4;
-		
-	}
-
+	ObjectTracking::start_tracking(0, 0);
+	
 	//�µ�pcd��ȡ����
 	//PointViewer::get_instance()->init_point_viewer();
 	/*PCDFILE f;

@@ -294,10 +294,8 @@ int DimensionReductionCluster::cz_region(cv::Mat src, std::vector<std::vector<cv
 }
 
 
-
-
-float ObjectTrackingConfig::grid_width = 200; //20cm
-float ObjectTrackingConfig::grid_height = 200; //20cm
+float ObjectTrackingConfig::grid_width = 20; //20cm
+float ObjectTrackingConfig::grid_height = 20; //20cm
 float ObjectTrackingConfig::map_width = 10000; //100m
 float ObjectTrackingConfig::map_height = 10000; //100m
 float ObjectTrackingConfig::grid_width_limit = 1;
@@ -371,6 +369,9 @@ GridMap* ObjectTracking::gridding(pcl::PointCloud<PointType>::Ptr& input_cloud) 
 		grid_map.add_point_to_grid(temp_y_index, temp_x_index, point);
 		grid_map.set_tag(temp_y_index, temp_x_index, 255);
 	}
+
+	
+
 	return &grid_map;
 }
 
@@ -379,9 +380,9 @@ void ObjectTracking::ground_segment(GridMap & grid_map) {
 	float max_height;
 	float min_height;
 	float delta_height;
-	float delta_threshold = 0.2;
-	float max_ground_height = -1.35;
-	float min_ground_height = -1.45;
+	float delta_threshold = 0.5;
+	float max_ground_height = -2.5;
+	float min_ground_height = -2.8;
 	for (int i = 0; i < grid_map.map_height; i++) {
 		for (int j = 0; j < grid_map.map_width; j++) {
 			Grid * p_grid = grid_map.get_grid(i, j);
@@ -398,7 +399,9 @@ void ObjectTracking::ground_segment(GridMap & grid_map) {
 				}
 			}
 			delta_height = max_height - min_height;
-			if(points.size()!=0 && delta_height <= delta_threshold && min_height <= max_ground_height && min_height >= min_ground_height){
+			if(points.size()!=0 
+			//&& delta_height <= delta_threshold 
+			&& min_height <= max_ground_height && min_height >= min_ground_height){
 				p_grid->tag = 0;
 			}else if(points.size()!=0){
 				p_grid->tag = 1;
@@ -407,6 +410,30 @@ void ObjectTracking::ground_segment(GridMap & grid_map) {
 			}
 		}
 	}
+
+	MammothViewer * viewer = OpencvViewerManager::get_instance()->create_viewer("Grid", MyPoint2D(0, 0), MyPoint2D(1500, 1500));
+	for (int i = 0; i < grid_map.map_height; i++) {
+		for (int j = 0; j < grid_map.map_width; j++) {
+			Grid * p_grid = grid_map.get_grid(i, j);
+			MyBox box;
+			box.point1.x = j * 3 - 1;
+			box.point1.y = i * 3 - 1;
+			box.point2.x = j * 3 - 1;
+			box.point2.y = i * 3 + 1;
+			box.point3.x = j * 3 + 1;
+			box.point3.y = i * 3 + 1;
+			box.point4.x = j * 3 + 1;
+			box.point4.y = i * 3 - 1;
+			if(p_grid->tag == 1){
+				viewer->draw_rectangle(box, MyPoint3D(255, 0, 0), 2, true);
+			}else if(p_grid->tag == 0){
+				viewer->draw_rectangle(box, MyPoint3D(0, 255, 0), 2, true);
+			}else{
+				//viewer->draw_rectangle(box, MyPoint3D(0, 0, 255), 2, true);
+			}
+		}
+	}
+	viewer->wait_rendering(0);
 }
 
 std::vector<std::vector<Grid*>>& ObjectTracking::clustering(GridMap & grid_map) {

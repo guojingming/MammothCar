@@ -16,9 +16,10 @@ namespace mammoth {
 
 		class MammothViewer{
 		public:
+			virtual void wait_rendering(int millseconds) = 0;
 			virtual void clear_window() = 0;
-			virtual void draw_rectangle(MyBox& box, MyPoint3D rgb) = 0;
-			virtual void draw_circle(MyPoint2D center, int radius, MyPoint3D rgb) = 0;
+			virtual void draw_rectangle(MyBox& box, MyPoint3D rgb, int line_width = 2, bool filled = false) = 0;
+			virtual void draw_circle(MyPoint2D center, int radius, MyPoint3D rgb,  int line_width = 2, bool filled = false) = 0;
 		};
 
 		class MammothViewerManager{
@@ -30,9 +31,10 @@ namespace mammoth {
 		class OpencvViewer : public MammothViewer{
 		public:
 			OpencvViewer(const char * name, MyPoint2D start_location, MyPoint2D window_size);
+			virtual void wait_rendering(int millseconds);
 			virtual void clear_window();
-			virtual void draw_rectangle(MyBox& box, MyPoint3D rgb);
-			virtual void draw_circle(MyPoint2D center, int radius, MyPoint3D rgb);
+			virtual void draw_rectangle(MyBox& box, MyPoint3D rgb, int line_width = 2, bool filled = false);
+			virtual void draw_circle(MyPoint2D center, int radius, MyPoint3D rgb,  int line_width = 2, bool filled = false);
 		private:
 			const char * window_name;
 			cv::Mat* p_window;

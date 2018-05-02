@@ -18,8 +18,6 @@ void OpencvViewer::clear_window(){
     for (i = 0; i < (*p_window).rows; i++)
     {
         pxvec = (*p_window).ptr<uchar>(i);
-        //三通道数据都在第一行依次排列，按照BGR顺序
-        //依次赋值为1
         for (j = 0; j < (*p_window).cols*(*p_window).channels(); j++)
         {
             pxvec[j] = 0;
@@ -27,14 +25,37 @@ void OpencvViewer::clear_window(){
     }
 }
 
-void OpencvViewer::draw_rectangle(MyBox& box, MyPoint3D rgb){
-	
+void OpencvViewer::draw_rectangle(MyBox& box, MyPoint3D rgb, int line_width, bool filled){
+	IplImage tmp(*p_window);
+	CvPoint points[1][4] = {CvPoint(box.point1.x, box.point1.y),
+					CvPoint(box.point2.x, box.point2.y),
+					CvPoint(box.point3.x, box.point3.y),
+					CvPoint(box.point4.x, box.point4.y)};
+	CvPoint* ppt[1] = {points[0]};
+	int npt[] = {4};
+
+	if(filled){
+		cvFillPoly((CvArr*)&tmp, ppt, npt, 1, Scalar(rgb.z, rgb.y, rgb.x));
+
+	}else{
+		cvLine((CvArr*)&tmp, points[0][0], points[0][1], Scalar(rgb.z, rgb.y, rgb.x), line_width);
+		cvLine((CvArr*)&tmp, points[0][1], points[0][2], Scalar(rgb.z, rgb.y, rgb.x), line_width);
+		cvLine((CvArr*)&tmp, points[0][2], points[0][3], Scalar(rgb.z, rgb.y, rgb.x), line_width);
+		cvLine((CvArr*)&tmp, points[0][3], points[0][0], Scalar(rgb.z, rgb.y, rgb.x), line_width);
+	}
+
+	//cvRectangle((CvArr*)&tmp, Point(box.point1.x, box.point1.y), Point(box.point3.x, box.point3.y), Scalar(rgb.z, rgb.y, rgb.x));
+	imshow(window_name, *p_window);
 }
 
-void OpencvViewer::draw_circle(MyPoint2D center, int radius, MyPoint3D rgb){
+void OpencvViewer::draw_circle(MyPoint2D center, int radius, MyPoint3D rgb,  int line_width, bool filled){
 	IplImage tmp(*p_window);
 	cvDrawCircle((CvArr*)&tmp, Point(center.x, center.y), radius, Scalar(rgb.z, rgb.y, rgb.x));
 	imshow(window_name, *p_window);
+}
+
+void OpencvViewer::wait_rendering(int millseconds){
+	cvWaitKey(millseconds);
 }
 
 

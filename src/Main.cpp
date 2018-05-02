@@ -43,9 +43,20 @@ void gjm_test() {
 	int i = 0;
 	while(true){
 		p_viewer->clear_window();
-		p_viewer->draw_circle(MyPoint2D(500 + 100*sin(i * 3.1415926 / 180),500 + 100*cos(i * 3.1415926 / 180)),50,MyPoint3D(100,255,0));
+		MyBox box;
+		box.point1.x = 500 + 100 * sin(i * 3.1415926 / 180);
+		box.point1.y = 500 + 100 * cos(i * 3.1415926 / 180);
+		box.point2.x = 500 + 100 * sin(i * 3.1415926 / 180) + 100;
+		box.point2.y = 500 + 100 * cos(i * 3.1415926 / 180);
+		box.point4.x = 500 + 100 * sin(i * 3.1415926 / 180);
+		box.point4.y = 500 + 100 * cos(i * 3.1415926 / 180) + 100;
+		box.point3.x = 500 + 100 * sin(i * 3.1415926 / 180) + 100;
+		box.point3.y = 500 + 100 * cos(i * 3.1415926 / 180) + 100;
+		MyPoint3D color(255, 0, 0);
+		p_viewer->draw_rectangle(box,color, 2, true);
+		p_viewer->wait_rendering(1);
 		i+=4;
-		cvWaitKey(1);
+		
 	}
 
 	//�µ�pcd��ȡ����

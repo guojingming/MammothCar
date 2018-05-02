@@ -221,11 +221,11 @@ void PcapTransformLayer::trans_pcap_to_pcd(std::string pcap_path, std::vector<pc
 					float vertical_angle = PreprocessLayerConfig::hdl32_vertical_angles[j % 32] * PI / 180;
 					point.z = distance * sin(vertical_angle);
 					//printf("%f\n", horizontal_angle);
-					point.y = distance * cos(vertical_angle) * sin(horizontal_angle);
-					point.x = distance * cos(vertical_angle) * cos(horizontal_angle);
+					point.y = distance * cos(vertical_angle) * sin(-horizontal_angle);
+					point.x = distance * cos(vertical_angle) * cos(-horizontal_angle);
 					PointType pclPoint;
 					pclPoint.x = 2 * (point.y);
-					pclPoint.y = -2 * (point.x);
+					pclPoint.y = 2 * (point.x);
 					pclPoint.z = 2 * point.z;
 					//if (pclPoint.z == 0) {
 					//	//printf("%f %f %f\n", pclPoint.x, pclPoint.y, pclPoint.z);
@@ -571,11 +571,11 @@ void PcapTransformLayer::get_current_frame(pcl::PointCloud<PointType>::Ptr & sce
 							vertical_angle = PreprocessLayerConfig::vlp16_vertical_angles[j % 32] * PI / 180;
 						}	
 						point.z = distance * sin(vertical_angle);
-						point.y = distance * cos(vertical_angle) * sin(horizontal_angle);
-						point.x = distance * cos(vertical_angle) * cos(horizontal_angle);
+						point.y = distance * cos(vertical_angle) * sin(-horizontal_angle);
+						point.x = distance * cos(vertical_angle) * cos(-horizontal_angle);
 						PointType pclPoint;
 						pclPoint.x = 2 * (point.y);
-						pclPoint.y = -2 * (point.x);
+						pclPoint.y = 2 * (point.x);
 						pclPoint.z = 2 * point.z;
 						pclPoint.r = 0;
 						pclPoint.b = flectivity_value;

@@ -2,6 +2,7 @@
 
 #include "PreprocessLayerConfig.h"
 
+
 namespace mammoth {
 	namespace layer {
 		class AttitudeLayerBase {

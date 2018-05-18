@@ -1,20 +1,20 @@
 #pragma once
 
-#ifdef WIN32
-	#include <windows.h>
-#else
-	#include <stdio.h>
-	#include <stdlib.h>
-	#include <stdint.h>
-	#include <iostream>
-	#include <string.h>
-	#include <vector>
-	#include <map>
-	#include <algorithm>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <map>
+#include <algorithm>
+#include <sstream>
+#include <sys/types.h>
+#include <chrono>
+#include <fstream>
+
+#ifndef WIN32
 	#include <sstream>
-	#include <sys/types.h>
-	#include <chrono>
-	#include <fstream>
 	#include <xmmintrin.h>
 	#include <sys/time.h>
 	#include <unistd.h>
@@ -65,10 +65,18 @@ namespace mammoth {
 			float x;
 			float y;
 			float z;
+
+#ifdef WIN32
+			unsigned short b;
+			unsigned short g;
+			unsigned short r;
+			unsigned short a;
+#else // WIN32
 			uint8_t b;
 			uint8_t g;
 			uint8_t r;
 			uint8_t a;
+#endif
 		}XYZRGBA;
 	}
 }

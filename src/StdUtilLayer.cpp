@@ -536,7 +536,7 @@ std::string TimeUtil::get_time_code_millsecond() {
 
 long TimeUtil::get_millsecond(){
 #ifdef WIN32
-
+	return 0;
 #else
 	struct timeval tv;
 	gettimeofday(&tv, NULL);

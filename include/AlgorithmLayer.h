@@ -184,7 +184,7 @@ namespace mammoth {
 				disappear_frame_count = 0;
 			}
 
-			GNSSFilter kalman_filter;
+			//GNSSFilter kalman_filter;
 			MyPoint2D center_localtion;
 			std::vector<Grid*> grids;
 			MyPoint2D last_lidar_velocity;

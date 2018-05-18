@@ -5,8 +5,10 @@
 
 #include "PcdUtilLayerConfig.h"
 
-#ifdef WIN32
+
 #include "pcap.h"
+#ifdef WIN32
+
 #include <windows.h>
 #include <omp.h>
 #include <direct.h>  

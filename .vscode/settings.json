@@ -1,5 +1,5 @@
 {
-    "cmake.cmakePath": "/usr/bin/cmake",
+    "cmake.cmakePath": "D:\\CMake\\bin\\cmake.exe",
     "files.associations": {
         "dense": "cpp",
         "cctype": "cpp",

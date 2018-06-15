@@ -41,17 +41,17 @@ void gjm_test() {
 
 	//ObjectTracking::start_tracking(0, 0);
 	
-	//�µ�pcd��ȡ����
+	//Show one frame of point cloud
 	//PointViewer::get_instance()->init_point_viewer();
 	/*PCDFILE f;
 	PcdUtil::read_pcd_file("C:\\DataSpace\\map\\0406-1.pcd", &f);
 	PointViewer::get_instance()->set_point_cloud(f);
 	system("pause");*/
 
-	//��¼����
+	//Grab data from sensors
 	//DataGatherLayer::get_instance()->start_grab("C:\\DataSpace\\LidarDataSpace\\lidar_20180322\\gps_data","C:\\DataSpace\\LidarDataSpace\\lidar_20180322\\pcd_data","C:\\DataSpace\\LidarDataSpace\\lidar_20180322\\imu_data");
 	
-	//�����㷨
+	//Object Detection
 	/*PointViewer::get_instance()->init_point_viewer();
 	pcl::PointCloud<PointType>::Ptr cloud(new pcl::PointCloud<PointType>());
 	PcdUtil::read_pcd_file("D:\\TTT.pcd", cloud);
@@ -60,7 +60,7 @@ void gjm_test() {
 	PointViewer::get_instance()->set_point_cloud(cloud);
 	system("pause");*/
 	
-	//PCDתXYZ
+	//PCD to XYZ
 	//PcdUtil::trans_pcd_to_xyz("D:/map.pcd","D:/map.xyz");
 	
 

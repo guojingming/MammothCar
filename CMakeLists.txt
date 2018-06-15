@@ -28,6 +28,8 @@ if(WIN32)
     file(GLOB_RECURSE MY_LIBS "E:/CrossPlatformCpp/MammothCar/lib/*.lib")
 elseif(UNIX)
     set(PCL_DIR /usr/local/pcl/share/pcl-1.8)
+    file(GLOB_RECURSE SRCS "src/*.c" "src/*.cpp")
+    file(GLOB_RECURSE HEADERS "include/*.h" "include/*.hpp")
     find_package(Boost COMPONENTS filesystem REQUIRED)
 endif()
 

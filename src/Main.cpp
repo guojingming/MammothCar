@@ -2,6 +2,7 @@
 
 using namespace mammoth::layer;
 
+
 void cz_test();
 void gjm_test();
 void byz_test();
@@ -38,7 +39,7 @@ void cz_test() {
 void gjm_test() {
 	//GNSSFilter gnssFilter(0,0,0,0,0,0);
 
-	ObjectTracking::start_tracking(0, 0);
+	//ObjectTracking::start_tracking(0, 0);
 	
 	//�µ�pcd��ȡ����
 	//PointViewer::get_instance()->init_point_viewer();
@@ -64,7 +65,7 @@ void gjm_test() {
 	
 
 	//SLAM
-	//JluSlamLayer::get_instance()->start_slam("C:\\DataSpace\\LidarDataSpace\\lidar_20180322-1\\gps_data","C:\\DataSpace\\LidarDataSpace\\lidar_20180322-1\\pcd_data");
+	JluSlamLayer::get_instance()->start_slam("C:\\DataSpace\\LidarDataSpace\\lidar_20180322-1\\gps_data","C:\\DataSpace\\LidarDataSpace\\lidar_20180322-1\\pcd_data");
 } 
 
 void byz_test() {

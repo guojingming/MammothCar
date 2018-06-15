@@ -1,7 +1,7 @@
 #include "Mammoth.h"
 
 using namespace mammoth::layer;
-
+using Eigen::MatrixXd;
 
 void cz_test();
 void gjm_test();
@@ -17,41 +17,34 @@ int main(int argc, char ** argv) {
 }
 
 void cz_test() {
-	int frame_count = 5;
+	int frame_count = 1;
 	std::vector<pcl::PointCloud<PointType>::Ptr> vec;
 	for (int i = 0; i < frame_count; i++) {
 		pcl::PointCloud<PointType>::Ptr cloud(new pcl::PointCloud<PointType>());
 		vec.push_back(cloud);
 	}
-	PcapTransformLayer::get_instance()->trans_pcap_to_pcd("D:\\Download\\8.pcap", vec, 2);
-	
-	for (int i = 0; i < frame_count; i++) {
-		printf("%d\n", vec[i]->size());
-		char temp[32];
-		sprintf(temp, "D:\\%d.pcd", i);
-		PcdUtil::save_pcd_file(temp, vec[i]);
-	}
+	PcapTransformLayer::get_instance()->trans_pcap_to_pcd("D:\\Download\\8.pcap", vec, 1);
+	printf("%d\n", vec[0]->size());
+
+	PcdUtil::save_pcd_file("D:\\1.pcd", vec[0]);
 
 	system("pause");
 }
 
 
 void gjm_test() {
-	//GNSSFilter gnssFilter(0,0,0,0,0,0);
-
-	//ObjectTracking::start_tracking(0, 0);
-	
-	//Show one frame of point cloud
+	//新的pcd读取函数
 	//PointViewer::get_instance()->init_point_viewer();
 	/*PCDFILE f;
 	PcdUtil::read_pcd_file("C:\\DataSpace\\map\\0406-1.pcd", &f);
 	PointViewer::get_instance()->set_point_cloud(f);
 	system("pause");*/
 
-	//Grab data from sensors
-	//DataGatherLayer::get_instance()->start_grab("C:\\DataSpace\\LidarDataSpace\\lidar_20180322\\gps_data","C:\\DataSpace\\LidarDataSpace\\lidar_20180322\\pcd_data","C:\\DataSpace\\LidarDataSpace\\lidar_20180322\\imu_data");
+	//记录数据
+	//PointViewer::get_instance()->init_point_viewer();
+	DataGatherLayer::get_instance()->start_grab("E:\\DataSpace\\LidarDataSpace\\test_lidar_20180529\\gps_data", "E:\\DataSpace\\LidarDataSpace\\test_lidar_20180529\\pcd_data", "E:\\DataSpace\\LidarDataSpace\\test_lidar_20180529\\imu_data", "E:\\DataSpace\\LidarDataSpace\\test_lidar_20180529\\ori_imu_data");
 	
-	//Object Detection
+	//聚类算法
 	/*PointViewer::get_instance()->init_point_viewer();
 	pcl::PointCloud<PointType>::Ptr cloud(new pcl::PointCloud<PointType>());
 	PcdUtil::read_pcd_file("D:\\TTT.pcd", cloud);
@@ -60,18 +53,17 @@ void gjm_test() {
 	PointViewer::get_instance()->set_point_cloud(cloud);
 	system("pause");*/
 	
-	//PCD to XYZ
+	//PCD转XYZ
 	//PcdUtil::trans_pcd_to_xyz("D:/map.pcd","D:/map.xyz");
 	
 
 	//SLAM
-	JluSlamLayer::get_instance()->start_slam("C:\\DataSpace\\LidarDataSpace\\lidar_20180322-1\\gps_data","C:\\DataSpace\\LidarDataSpace\\lidar_20180322-1\\pcd_data");
+	//JluSlamLayer::get_instance()->start_slam("E:\\DataSpace\\LidarDataSpace\\new_lidar_20180226-1\\gps_data","E:\\DataSpace\\LidarDataSpace\\new_lidar_20180226-1\\pcd_data");
 } 
 
 void byz_test() {
-#ifdef WIN32
 	SyncCom sync_com = SerialUtil::openSync("COM4", 460800);
-
+	
 	char buffer[512];
 	ImuSolver imuSolver;
 	std::vector<unsigned char> splits;
@@ -110,6 +102,5 @@ void byz_test() {
 		// else printf("Read data failure times=%d\n",j);
 	}
 	printf("Receive data finished!\n");
-#endif
 }
 

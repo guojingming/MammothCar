@@ -9,18 +9,18 @@ void MysqlPersistantLayer::connect() {
 	//sql::Connection *con;
 	//sql::Statement *state;
 	//sql::ResultSet *result;
-	//// ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  
+	//// ³õÊ¼»¯Çý¶¯  
 	//driver = sql::mysql::get_mysql_driver_instance();
-	//// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  
+	//// ½¨Á¢Á´½Ó  
 	////con = driver->connect("tcp://192.168.0.243:3306", "root", "1234");
 	//con = driver->connect(PersistantLayerConfig::mysql_address.c_str(), PersistantLayerConfig::mysql_user.c_str(), PersistantLayerConfig::mysql_password.c_str());
 	//state = con->createStatement();
 	//std::string change_database_cmd = "use " + PersistantLayerConfig::mysql_database;
 	//state->execute("use lidar");
 	////state->execute(change_database_cmd);
-	//// ï¿½ï¿½Ñ¯  
+	//// ²éÑ¯  
 	//result = state->executeQuery("select * from test");
-	//// ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¯  
+	//// Êä³ö²éÑ¯  
 	//while (result->next()) {
 	//	int id = result->getInt("test_id");
 	//	std::string name = result->getString("test_value");
@@ -62,15 +62,17 @@ DataGatherLayer* DataGatherLayer::get_instance() {
 std::string DataGatherLayer::gps_folder_path = "";
 std::string DataGatherLayer::pcd_folder_path = "";
 std::string DataGatherLayer::imu_folder_path = "";
+std::string DataGatherLayer::ori_imu_folder_path = "";
 int DataGatherLayer::gps_count = 0;
 int DataGatherLayer::pcd_count = 0; 
 int DataGatherLayer::imu_count = 0;
 
-void DataGatherLayer::start_grab(const std::string& gps_folder_path, const std::string& pcd_folder_path, const std::string& imu_folder_path) {
+void DataGatherLayer::start_grab(const std::string& gps_folder_path, const std::string& pcd_folder_path, const std::string& imu_folder_path, const std::string& ori_imu_folder_path) {
 	this->gps_folder_path = gps_folder_path;
 	this->pcd_folder_path = pcd_folder_path;
 	this->imu_folder_path = imu_folder_path;
-	std::thread gps_t(gps_thread);
+	this->ori_imu_folder_path = ori_imu_folder_path;
+	//std::thread gps_t(gps_thread);
 	std::thread pcd_t(pcd_thread);
 	//std::thread imu_t(imu_thread);
 	system("pause");
@@ -96,8 +98,8 @@ void DataGatherLayer::gps_thread() {
 				tcpAttitudeSolver.m_package.m_roll);*/
 			sprintf(gps_content, "%d#%.8f %.8f %.3f %.4f %.4f %.3f",
 				gps_count,
-				tcpAttitudeSolver.m_package.m_longitude,
 				tcpAttitudeSolver.m_package.m_latitude,
+				tcpAttitudeSolver.m_package.m_longitude,
 				tcpAttitudeSolver.m_package.m_elevation,
 				tcpAttitudeSolver.m_package.m_yaw,
 				tcpAttitudeSolver.m_package.m_pitch,
@@ -116,14 +118,35 @@ void DataGatherLayer::gps_thread() {
 }
 
 void DataGatherLayer::pcd_thread() {
+
+	cv::VideoCapture cap(1);//¿ªÆôµçÄÔÉãÏñÍ·  
+	if (cap.isOpened())
+		std::cout << "camera is opened" << std::endl;
+	else
+		std::cout << "camera is not opened" << std::endl;
+	cv::Mat frame;
+	cap >> frame;
+	cap >> frame;
+	//ÉèÖÃÉãÏñÍ··Ö±æÂÊ640*480  
+	cap.set(CV_CAP_PROP_FRAME_HEIGHT, 720);
+	cap.set(CV_CAP_PROP_FRAME_WIDTH, 1280);
+
 	pcd_count = 0;
 	char pcd_path[200];
+	char temp[200];
 	while (true) {
 		memset(pcd_path, 0, 200);
+		memset(temp, 0, 10);
 		HPCD file;
 		sprintf(pcd_path, "%s\\%d_pcd.pcd", pcd_folder_path.c_str(), pcd_count);
-		PcapTransformLayer::get_instance()->get_current_frame(pcd_path, file, 16);
-		
+		sprintf(temp, "%s\\%d.png", pcd_folder_path.c_str(), pcd_count);
+		//save photo
+		cap >> frame;
+		imshow("cam", frame);
+		cv::waitKey(5);
+ 		imwrite(temp, frame);
+		PcapTransformLayer::get_instance()->get_current_frame_pandar(pcd_path, file);
+
 		pcd_count++;
 	}
 }
@@ -136,13 +159,11 @@ void DataGatherLayer::imu_thread() {
 
 	char ori_imu_path[200];
 
-	std::string ori_imu_folder_path = "C:\\DataSpace\\LidarDataSpace\\lidar_20180322\\ori_imu_data";
-
-#ifdef WIN32
 	SyncCom sync_com = SerialUtil::openSync("COM5", 115200);
 	char buffer[512];
 	ImuSolver imuSolver;
 	std::vector<unsigned char> splits;
+	splits.push_back('*');
 	splits.push_back('\r');
 	splits.push_back('\n');
 	DataBuffer<unsigned char> dataBuffer(splits);
@@ -159,7 +180,7 @@ void DataGatherLayer::imu_thread() {
 				std::string seg(it->begin(), it->end());
 				imuSolver.Solve(*it);
 				memset(imu_content, 0, 100);
-				sprintf(imu_content, "%d#%d#%f %f %f %f %f %f",
+				sprintf(imu_content, "%d#%d#%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f",
 					imu_count,
 					gps_count,
 					imuSolver.m_imuPackage.m_acclX,
@@ -167,7 +188,16 @@ void DataGatherLayer::imu_thread() {
 					imuSolver.m_imuPackage.m_acclZ,
 					imuSolver.m_imuPackage.m_gyroX,
 					imuSolver.m_imuPackage.m_gyroY,
-					imuSolver.m_imuPackage.m_gyroZ);
+					imuSolver.m_imuPackage.m_gyroZ,
+					imuSolver.m_imuPackage.m_deltaAngleX,
+					imuSolver.m_imuPackage.m_deltaAngleY,
+					imuSolver.m_imuPackage.m_deltaAngleZ,
+					imuSolver.m_imuPackage.m_deltaVelX,
+					imuSolver.m_imuPackage.m_deltaVelY,
+					imuSolver.m_imuPackage.m_deltaVelZ,
+					imuSolver.m_imuPackage.m_maginX,
+					imuSolver.m_imuPackage.m_maginY,
+					imuSolver.m_imuPackage.m_maginZ);
 				//printf("%s\n", imu_content);
 				if (last_pcd_count != pcd_count) {
 					last_pcd_count = pcd_count;
@@ -192,18 +222,17 @@ void DataGatherLayer::imu_thread() {
 
 					current_ori_imu_file->write((char *)&imu_count, sizeof(imu_count));
 					current_ori_imu_file->write((char *)&gps_count, sizeof(gps_count));
-					current_ori_imu_file->write(seg.c_str(), 48);
+					current_ori_imu_file->write(seg.c_str(), 54);
 				} else {
 					current_imu_file->write_line(imu_content);
 
 					current_ori_imu_file->write((char *)&imu_count, sizeof(imu_count));
 					current_ori_imu_file->write((char *)&gps_count, sizeof(gps_count));
-					current_ori_imu_file->write(seg.c_str(), 48);
+					current_ori_imu_file->write(seg.c_str(), 54);
 				}
 				imu_count++;
 			}
 		}
 	}
 	printf("Receive data finished!\n");
-#endif
 }

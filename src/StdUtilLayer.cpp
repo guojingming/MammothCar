@@ -302,7 +302,6 @@ void ThreadUtil::kill(std::thread& thread) {
 
 
 void SerialUtil::openAsync(const char * serial, int baut_rate, void(*read_func)(const std::string& data, void* context)) {
-#ifdef WIN32
 	SerialPortInfo Com1info;
 	ASynCom com1;
 	Com1info.name = serial;
@@ -320,10 +319,8 @@ void SerialUtil::openAsync(const char * serial, int baut_rate, void(*read_func)(
 		}*/
 	}
 	system("pause");
-#endif
 }
 
-#ifdef WIN32
 SyncCom SerialUtil::openSync(const char * serial, int baut_rate) {
 	SerialPortInfo Com1info;
 	SyncCom com1;
@@ -335,7 +332,7 @@ SyncCom SerialUtil::openSync(const char * serial, int baut_rate) {
 	com1.Connect(Com1info);
 	return com1;
 }
-#endif
+
 
 
 void SerialUtil::close() {
@@ -347,9 +344,8 @@ void SerialUtil::read_gps(const std::string& data, void* context) {
 }
 
 void SerialUtil::write(ASynCom* com, const std::string& msg, int* cont) {
-#ifdef WIN32
 	std::string temp;
-	//Ñ­ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	//Ñ­»··¢ËÍ
 	while (true) {
 		(*cont)++;
 		temp = msg + " times is " + std::to_string(*cont);
@@ -357,7 +353,6 @@ void SerialUtil::write(ASynCom* com, const std::string& msg, int* cont) {
 		temp = "";
 		Sleep(800);
 	}
-#endif
 }
 
 
@@ -420,7 +415,6 @@ void FileUtil::write_line(const std::string & content, bool new_line) {
 
 
 void FileUtil::get_all_files(std::string path, std::vector<std::string>& files) {
-#ifdef WIN32
 	WIN32_FIND_DATAA fdata;
 	HANDLE hFind = FindFirstFileA(path.c_str(), &fdata);
 	if (hFind != INVALID_HANDLE_VALUE) {
@@ -436,7 +430,7 @@ void FileUtil::get_all_files(std::string path, std::vector<std::string>& files) 
 
 	int length = files.size();
 	std::string * strs = new std::string[length];
-	//ï¿½Öµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	//×ÖµäÐòÅÅÐò
 	for (int i = 0; i < length; i++) {
 		std::string str = files[i];
 		std::string temp = str.substr(0, str.find_first_of("_"));
@@ -449,16 +443,13 @@ void FileUtil::get_all_files(std::string path, std::vector<std::string>& files) 
 		files.push_back(strs[i]);
 	}
 	//delete strs;
-#endif
 }
 
 
-#ifdef WIN32
+
 SYSTEMTIME TimeUtil::sys_time;
-#endif
 
 std::string TimeUtil::get_time_str() {
-#ifdef WIN32
 	std::string time_str;
 	char temp[40];
 	memset(temp, 0, sizeof(char) * 40);
@@ -467,14 +458,9 @@ std::string TimeUtil::get_time_str() {
 	time_str = temp;
 	printf("%s\n", temp);
 	return time_str;
-#else
-	return "";
-#endif
-
 }
 
 int TimeUtil::get_time(const TIME_ITEM& time_item) {
-#ifdef WIN32
 	GetLocalTime(&sys_time);
 	switch (time_item) {
 	case TIME_ITEM::YEAR:{
@@ -502,12 +488,10 @@ int TimeUtil::get_time(const TIME_ITEM& time_item) {
 		return sys_time.wDayOfWeek;
 	}
 	}
-#endif
 	return 0;
 }
 
 std::string TimeUtil::get_time_code() {
-#ifdef WIN32
 	std::string time_str;
 	char temp[40];
 	memset(temp, 0, sizeof(char) * 40);
@@ -515,13 +499,9 @@ std::string TimeUtil::get_time_code() {
 	sprintf(temp, "%04d%02d%02d%02d%02d%02d", sys_time.wYear, sys_time.wMonth, sys_time.wDay, sys_time.wHour, sys_time.wMinute, sys_time.wSecond, sys_time.wMilliseconds);
 	time_str = temp;
 	return time_str;
-#else
-	return "";
-#endif
 }
 
 std::string TimeUtil::get_time_code_millsecond() {
-#ifdef WIN32
 	std::string time_str;
 	char temp[40];
 	memset(temp, 0, sizeof(char) * 40);
@@ -529,18 +509,6 @@ std::string TimeUtil::get_time_code_millsecond() {
 	sprintf(temp, "%04d%02d%02d%02d%02d%02d%03d", sys_time.wYear, sys_time.wMonth, sys_time.wDay, sys_time.wHour, sys_time.wMinute, sys_time.wSecond, sys_time.wMilliseconds);
 	time_str = temp;
 	return time_str;
-#else
-	return "";
-#endif
 }
 
-long TimeUtil::get_millsecond(){
-#ifdef WIN32
-	return 0;
-#else
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
-	long millsecond = tv.tv_sec * 1000 + tv.tv_usec / 1000;
-	return millsecond;
-#endif
-}
+

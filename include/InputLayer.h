@@ -34,9 +34,9 @@ namespace mammoth {
 			static int buffer_size;
 
 			
-#ifdef WIN32
+
 			static SyncCom sync_com;
-#endif
+
 		};
 
 
@@ -149,9 +149,15 @@ namespace mammoth {
 			double m_deltaAngleX;
 			double m_deltaAngleY;
 			double m_deltaAngleZ;
+			double m_deltaVelX;
+			double m_deltaVelY;
+			double m_deltaVelZ;
 			double m_angleX;
 			double m_angleY;
 			double m_angleZ;
+			double m_maginX;
+			double m_maginY;
+			double m_maginZ;
 			void Output() {
 				std::cout << "Gyro : [ " << std::setprecision(10) << std::setiosflags(std::ios::fixed) << m_gyroX << " , " << m_gyroY << " , " << m_gyroZ << " ]\n";
 				std::cout << "Accl : [ " << std::setprecision(10) << std::setiosflags(std::ios::fixed) << m_acclX << " , " << m_acclY << " , " << m_acclZ << " ]\n";
@@ -176,12 +182,14 @@ namespace mammoth {
 			bool Solve(std::vector<unsigned char> & msg);
 			ImuPackage m_imuPackage;
 		private:
+			
 			bool _Phrase(const std::string& msg, std::vector<std::string>& token);
 
 			bool _GyroSolver(short lowHex, short highHex, double & value);
 			bool _AcclSolver(short lowHex, short highHex, double & value);
 			bool _AngleSolver(short lowHex, short highHex, double & value);
 			bool _VelSolver(short lowHex, short highHex, double & value);
+			bool _MaginSolver(short highHex, double & value);
 
 		};
 	}

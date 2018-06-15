@@ -2,8 +2,6 @@
 
 using namespace mammoth::config;
 using namespace mammoth::layer;
-using namespace cv;
-
 using Eigen::MatrixXd;
 
 JluSlamLayer * JluSlamLayer::layer = nullptr;
@@ -29,10 +27,10 @@ void JluSlamLayer::start_slam(const std::string& gps_folder_path, const std::str
 	std::vector<std::string> file_names;
 	std::string folder_path = pcd_folder_path + "\\*.pcd";
 	FileUtil::get_all_files(folder_path, file_names);
-	HPCD hpcd = PcdUtil::pcdOpen("C:\\DataSpace\\map\\0322-1-piece.pcd");
+	HPCD hpcd = PcdUtil::pcdOpen("E:\\DataSpace\\map\\0322-1-piece.pcd");
 	char temp[100];
-	FileUtil trace_file("C:\\DataSpace\\trace\\0406\\trace_0322-1-piece.txt", 2);
-	for (int i = 0; i < 5000; i++){
+	FileUtil trace_file("E:\\DataSpace\\trace\\0406\\trace_0322-1-piece.txt", 2);
+	for (int i = 0; i < 100; i++){
 	//for (int i = 0; i < file_names.size(); i++) {
 		std::string number_str = file_names[i].substr(0, file_names[i].find_first_of('_'));
 		std::string file_path = file_names[i];
@@ -71,22 +69,18 @@ void JluSlamLayer::start_slam(const std::string& gps_folder_path, const std::str
 		gga_data.lat = atof(latitude_str.c_str());
 		PTNLAVR_Data ptnlavr_data;
 		ptnlavr_data.yaw = atof(yaw_str.c_str());
-
+		//����λ������
 		double lat0 = 4349.13958348;
 		double lon0 = 12516.60912408;
 		Vec2d location_vec = GnssTransformLayer::get_instance()->get_distance1(gga_data.lat, gga_data.lon, lat0, lon0);
 		Vec2d trans_vec;
 		trans_vec.x = -1 * location_vec.x;
 		trans_vec.y = -1 * location_vec.y;
-
 		float car_angle = (360 - ptnlavr_data.yaw) + 180;
-
 		float xoy_rotation_angle = car_angle * PI / 180;
 		float xoz_rotation_angle = -73 * PI / 180;
-
 		float theta1 = xoz_rotation_angle;
 		float theta2 = xoy_rotation_angle;
-
 		float * data = (float *)pcd_file.pData;
 		data[0] = 0;
 		data[1] = 0;
@@ -125,19 +119,18 @@ void JluSlamLayer::DoTransform(float theta1, float theta2, float trans_x, float 
 		R = _mm_add_ps(R, T);
 		R = _mm_add_ps(R, Q2_1); // (D1*Q1)+Q2
 		R = _mm_mul_ps(R, Q3_1); // ((D1*Q1) + Q2) * Q3
-
-		register __m128 X11 = _mm_shuffle_ps(V,V,0xFF);
-		R = _mm_shuffle_ps(R,R,0x87);
-		R = _mm_move_ss(R,V);
-		R = _mm_shuffle_ps(R,R,0x39);
+		R = _mm_shuffle_ps(R, R, 0xE1);
+		R.m128_f32[3] = V.m128_f32[3];
 		_mm_store_ps(fv, R);
 		fv += 4;
 	}
 }
 
+
+
 std::vector<uint32_t> DimensionReductionCluster::cube_handles;
+
 void DimensionReductionCluster::start_clusting(pcl::PointCloud<PointType>::Ptr & cloud) {
-	//�˲�
 	pcl::PassThrough<PointType> passThrough;
 	passThrough.setInputCloud(cloud);
 	passThrough.setFilterLimitsNegative(false);
@@ -150,14 +143,12 @@ void DimensionReductionCluster::start_clusting(pcl::PointCloud<PointType>::Ptr &
 	passThrough.setFilterFieldName("z");
 	passThrough.setFilterLimits(-2.4, 30);
 	passThrough.filter(*cloud);
-	//ɾ������
 	PointViewer::get_instance()->remove_cubes(cube_handles);
 	cloud = birdview_picture_grid(cloud);
 	
 }
 
 pcl::PointCloud<PointType>::Ptr DimensionReductionCluster::birdview_picture_grid(pcl::PointCloud<PointType>::Ptr& cloud) {
-	//��άӳ��
 	//TIME_FUNC; 
 	//std::cout << " Start dimension reduction" << std::endl;
 	int grid_width = 20;//cm  20
@@ -185,7 +176,6 @@ pcl::PointCloud<PointType>::Ptr DimensionReductionCluster::birdview_picture_grid
 	cz_region(black_picture, filtered_contours, 0, true, 1000, 1000);
 	//TIME_FUNC;
 	//std::cout << " Finish 2-D clusting" << std::endl << std::endl;
-	//����ӳ��
 	//TIME_FUNC;
 	//std::cout << " Start rasing dimension" << std::endl;
 	int combined_count = 0;
@@ -293,227 +283,3 @@ int DimensionReductionCluster::cz_region(cv::Mat src, std::vector<std::vector<cv
 	return 0;
 }
 
-
-float ObjectTrackingConfig::grid_width = 20; //20cm
-float ObjectTrackingConfig::grid_height = 20; //20cm
-float ObjectTrackingConfig::map_width = 10000; //100m
-float ObjectTrackingConfig::map_height = 10000; //100m
-float ObjectTrackingConfig::grid_width_limit = 1;
-float ObjectTrackingConfig::grid_height_limit = 1;
-short ObjectTrackingConfig::max_disappear_frame_count = 8;
-float ObjectTrackingConfig::max_search_radius = 10.0; 
-
-std::vector<TrackedObject> ObjectTracking::tracked_objs;
-long ObjectTracking::current_frame_time = 0;
-
-
-void ObjectTracking::start_tracking(int mode, int ethernet_number) {
-	pcl::PointCloud<PointType>::Ptr cloud(new pcl::PointCloud<PointType>());
-#ifdef TRACING_SOURCE_ETHERNET
-	PcapTransformLayer::get_instance()->get_current_frame(cloud, 32);
-	current_frame_time = TimeUtil::get_millsecond();
-#endif
-#ifdef TRACING_SOURCE_FILE
-	pcl::PointCloud<PointType>::Ptr cloud1(new pcl::PointCloud<PointType>());
-	pcl::PointCloud<PointType>::Ptr cloud2(new pcl::PointCloud<PointType>());
-	pcl::PointCloud<PointType>::Ptr cloud3(new pcl::PointCloud<PointType>());
-	PcdUtil::read_pcd_file("/home/jlurobot/data/pcds/sequence1/pro_pcds1/6.pcd", cloud1);
-	PcdUtil::read_pcd_file("/home/jlurobot/data/pcds/sequence1/pro_pcds1/7.pcd", cloud2);
-	PcdUtil::read_pcd_file("/home/jlurobot/data/pcds/sequence1/pro_pcds1/8.pcd", cloud3);
-	for(int i = 0;i<(*cloud1).size();i++){
-		(*cloud).push_back((*cloud1)[i]);
-	}
-	for(int i = 0;i<(*cloud2).size();i++){
-		(*cloud).push_back((*cloud2)[i]);
-	}
-	for(int i = 0;i<(*cloud3).size();i++){
-		(*cloud).push_back((*cloud3)[i]);
-	}
-	current_frame_time = TimeUtil::get_millsecond();
-#endif
-	filting(cloud);
-	GridMap* p_map = gridding(cloud);
-	ground_segment(*p_map);
-	std::vector<std::vector<Grid*>>& objs = clustering(*p_map);
-	tracking(objs, p_map);
-}
-
-void ObjectTracking::filting(pcl::PointCloud<PointType>::Ptr& input_cloud) {
-	pcl::PointCloud<PointType>::Ptr filtered_cloud(new pcl::PointCloud<PointType>);
-	filtered_cloud->reserve(input_cloud->size());
-	for (pcl::PointCloud<PointType>::iterator iterator = input_cloud->begin(); iterator != input_cloud->end(); iterator++) {
-		if ((*iterator).x >= 0.3 && (*iterator).x <= 50 && (*iterator).y >= 0.3 && (*iterator).y <= 50) {
-			filtered_cloud->push_back((*iterator));
-		}
-	}
-	input_cloud->clear();
-	input_cloud = filtered_cloud;
-}
-
-GridMap* ObjectTracking::gridding(pcl::PointCloud<PointType>::Ptr& input_cloud) {
-	if (config.grid_width < config.grid_width_limit || config.grid_height < config.grid_height_limit) {
-		printf("[ERROR] The width or height is lower than the limit!\n");
-		return nullptr;
-	}
-	unsigned short map_width = config.map_width / config.grid_width;
-	unsigned short map_height = config.map_height / config.grid_height;
-	unsigned short temp_x_index = 0;
-	unsigned short temp_y_index = 0;
-	unsigned short x_index_offset = map_width / 2;
-	unsigned short y_index_offset = map_height / 2;
-	static GridMap grid_map(map_width, map_height);
-	for (int i = 0; i < input_cloud->size(); i++) {
-		PointType point = (*input_cloud)[i];
-		temp_x_index = point.x * 100 / config.grid_width + x_index_offset;
-		temp_y_index = point.y * 100 / config.grid_height + y_index_offset;
-		grid_map.add_point_to_grid(temp_y_index, temp_x_index, point);
-		grid_map.set_tag(temp_y_index, temp_x_index, 255);
-	}
-
-	
-
-	return &grid_map;
-}
-
-void ObjectTracking::ground_segment(GridMap & grid_map) {
-	//max - min = delta
-	float max_height;
-	float min_height;
-	float delta_height;
-	float delta_threshold = 0.5;
-	float max_ground_height = -2.5;
-	float min_ground_height = -2.8;
-	for (int i = 0; i < grid_map.map_height; i++) {
-		for (int j = 0; j < grid_map.map_width; j++) {
-			Grid * p_grid = grid_map.get_grid(i, j);
-			std::vector<PointType>& points =  p_grid->points;
-			max_height = -FLT_MAX;
-			min_height = FLT_MAX;
-			for(std::vector<PointType>::iterator iterator = points.begin();iterator!=points.end();iterator++){
-				PointType& point = (*iterator);
-				if(point.z > max_height){
-					max_height = point.z;
-				}
-				if(point.z < min_height){
-					min_height = point.z;
-				}
-			}
-			delta_height = max_height - min_height;
-			if(points.size()!=0 
-			//&& delta_height <= delta_threshold 
-			&& min_height <= max_ground_height && min_height >= min_ground_height){
-				p_grid->tag = 0;
-			}else if(points.size()!=0){
-				p_grid->tag = 1;
-			}else{
-				p_grid->tag = 255;
-			}
-		}
-	}
-
-	MammothViewer * viewer = OpencvViewerManager::get_instance()->create_viewer("Grid", MyPoint2D(0, 0), MyPoint2D(1500, 1500));
-	for (int i = 0; i < grid_map.map_height; i++) {
-		for (int j = 0; j < grid_map.map_width; j++) {
-			Grid * p_grid = grid_map.get_grid(i, j);
-			MyBox box;
-			box.point1.x = j * 3 - 1;
-			box.point1.y = i * 3 - 1;
-			box.point2.x = j * 3 - 1;
-			box.point2.y = i * 3 + 1;
-			box.point3.x = j * 3 + 1;
-			box.point3.y = i * 3 + 1;
-			box.point4.x = j * 3 + 1;
-			box.point4.y = i * 3 - 1;
-			if(p_grid->tag == 1){
-				viewer->draw_rectangle(box, MyPoint3D(255, 0, 0), 2, true);
-			}else if(p_grid->tag == 0){
-				viewer->draw_rectangle(box, MyPoint3D(0, 255, 0), 2, true);
-			}else{
-				//viewer->draw_rectangle(box, MyPoint3D(0, 0, 255), 2, true);
-			}
-		}
-	}
-	viewer->wait_rendering(0);
-}
-
-std::vector<std::vector<Grid*>>& ObjectTracking::clustering(GridMap & grid_map) {
-	std::vector<std::vector<Grid*>> objs;
-	unsigned short obj_number = 0;
-	for (int i = 0; i < grid_map.map_height; i++) {
-		for (int j = 0; j < grid_map.map_width; j++) {
-			if (grid_map.get_tag(i, j) == 1) {
-				//growing
-				grid_map.find_neighbors(*grid_map.get_grid(i, j), objs, obj_number);
-				obj_number++;
-			}
-		}
-	}
-	return objs;
-}
-
-void ObjectTracking::tracking(std::vector<std::vector<Grid*>>& objs,GridMap* p_map) {
-	//describe every obj's attribute by TrackedObject model
-	for(std::vector<std::vector<Grid*>>::iterator iter = objs.begin();iter!=objs.end();iter++){
-		std::vector<Grid*>& detected_obj = (*iter);
-		float init_location_x = 0;
-		float init_location_y = 0;
-		unsigned short x_index_min = 65535;
-		unsigned short x_index_max = 0;
-		unsigned short y_index_min = 65535;
-		unsigned short y_index_max = 0;
-		for(std::vector<Grid*>::iterator sub_iter = detected_obj.begin();sub_iter!=detected_obj.end();sub_iter++){
-			Grid* p_grid = (*sub_iter);
-			x_index_min = p_grid->x_index < x_index_min ? p_grid->x_index : x_index_min;
-			x_index_max = p_grid->x_index > x_index_max ? p_grid->x_index : x_index_max;
-
-			y_index_min = p_grid->y_index < y_index_min ? p_grid->y_index : y_index_min;
-			y_index_max = p_grid->y_index > y_index_max ? p_grid->y_index : y_index_max;
-		}
-		float center_x_index = (x_index_min + x_index_max) / 2;
-		float center_y_index = (y_index_min + y_index_max) / 2;
-		init_location_x = center_x_index * ObjectTrackingConfig::grid_width;
-		init_location_y = center_y_index * ObjectTrackingConfig::grid_height;
-		//create temp TrackedObject ;
-		TrackedObject temp_obj(center_x_index, center_y_index);
-		TrackedObject* p_candidate_object = nullptr;
-		//updating objs table
-		//compare to trackedobjs in tracking_obj_table
-		float min_distance = 65535;
-		for(std::vector<TrackedObject>::iterator sub_iter = tracked_objs.begin();sub_iter!=tracked_objs.end();sub_iter++){
-			TrackedObject& tracked_object = (*sub_iter); 
-			//select the nearest object and estimate if the values are smaller than the threshold values.
-			float distance = tracked_object.center_localtion.distance(temp_obj.center_localtion);
-			if(distance <= ObjectTrackingConfig::max_search_radius && distance <= min_distance){
-				min_distance = distance;
-				p_candidate_object = &tracked_object;
-			}
-		}
-		//update tracked objs
-		if(p_candidate_object != nullptr){
-			//if a suitable obj is exsist, update state.
-			//calculate new velocity
-			p_candidate_object->last_lidar_velocity.x = 0;
-			p_candidate_object->last_lidar_velocity.y = 0;			
-			MyPoint2D last_location = p_candidate_object->center_localtion;
-			MyPoint2D current_location = temp_obj.center_localtion;
-			long delta_time = current_frame_time - p_candidate_object->last_update_time;
-			float x_distance = current_location.x - last_location.x;
-			float y_distance = current_location.y - last_location.y;
-			float last_x_velocity = p_candidate_object->relative_velocity.x;
-			float last_y_velocity = p_candidate_object->relative_velocity.y;
-			p_candidate_object->relative_velocity.x = 1000 * 2 * x_distance / delta_time - last_x_velocity;
-			p_candidate_object->relative_velocity.y = 1000 * 2 * y_distance / delta_time - last_y_velocity;
-			//update state
-			p_candidate_object->update_state(p_candidate_object);
-		}else{
-			//else, is a new obj, add to the tracking objs table.
-			temp_obj.last_lidar_velocity.x = 0;
-			temp_obj.last_lidar_velocity.y = 0;
-			temp_obj.relative_velocity.x = 0;
-			temp_obj.relative_velocity.y = 0;
-			temp_obj.last_update_time = current_frame_time;
-			temp_obj.disappear_frame_count = 0;
-			tracked_objs.push_back(temp_obj);
-		}
-	}
-}

@@ -13,9 +13,7 @@ float* GyroscopeSerialInput::buffer = nullptr;
 int GyroscopeSerialInput::buffer_size = -1;
 int GyroscopeSerialInput::cmd_count = 0;
 int GyroscopeSerialInput::gyroscope_flag = 0;
-#ifdef WIN32
 SyncCom GyroscopeSerialInput::sync_com;
-#endif
 bool GyroscopeSerialInput::has_angle_data = false;
 
 int GyroscopeSerialInput::packet_count0 = 0;
@@ -32,23 +30,18 @@ void GyroscopeSerialInput::startAsync(std::string serial_number, int baud_rate, 
 void GyroscopeSerialInput::startSync(std::string serial_number, int baud_rate, float* buffer, int buffer_size) {
 	GyroscopeSerialInput::buffer = buffer;
 	GyroscopeSerialInput::buffer_size = buffer_size;
-#ifdef WIN32
 	sync_com = SerialUtil::openSync(serial_number.c_str(), baud_rate);
-#endif
 }
 
 int GyroscopeSerialInput::readSync(char * buffer, int buffer_size) {
-	int count = 0;
-#ifdef WIN32
-	count = sync_com.Read(buffer, buffer_size);
+	int count = sync_com.Read(buffer, buffer_size);
 	for (int i = 0; i < count; i++) {
 		if (buffer[i] == 0x53) {
 			packet_count3++;
 		}
 	}
-#endif
-	return count;
 
+	return count;
 }
 
 void GyroscopeSerialInput::stop() {
@@ -217,7 +210,7 @@ void GyroscopeSerialInput::read_gyroscope(const std::string& real_data, void* co
 	char* b = new char[teststr.length() + 1];
 	memset(b, 0, teststr.length() + 1);
 	memcpy(b, a, teststr.length());
-	unsigned char* c = (unsigned char*)b;  //  byte锟斤拷  unsigned char*锟斤拷同
+	unsigned char* c = (unsigned char*)b;  //  byte与  unsigned char*相同
 	for (int i = 0; i < teststr.length(); i++) {
 		if ((int)(c[i]) == 0x55) {
 			if (temp_count == 11) {
@@ -284,6 +277,7 @@ GnssEthernetInput::GnssEthernetInput(const std::string& entry, const ConnMode& c
 		if (!m_tcpClient.Init()) {
 			std::cout << "[GPSSolver]TCP is not work currently." << std::endl;
 		}
+		//m_tcpClient.Connect(ip.c_str(), port);
 		while (!m_tcpClient.Connect(ip.c_str(), port)) {
 			std::cout << "[GPSSolver]TCP is not connected." << std::endl;
 		}
@@ -415,9 +409,9 @@ bool ImuSolver::Solve(std::vector<unsigned char> & msg) {
 	//   return true;
 	// }
 	// return false;
-	unsigned short words[12];
+	unsigned short words[27];
 	memset(words, 0, sizeof(words));
-	if (msg.size() < 50) {
+	if (msg.size() < 57) {
 		std::cout << "Length 12" << std::endl;
 		return false;
 	}
@@ -435,6 +429,23 @@ bool ImuSolver::Solve(std::vector<unsigned char> & msg) {
 	ConvertUtil::ConvertToWord(msg[22], msg[23], words[11]);
 	//ConvertToWord(msg[12], msg[13], words[5]);
 	//std::cout << words[6] << std::endl;
+	//msg[24] 25 26 27 28 29  
+	ConvertUtil::ConvertToWord(msg[24], msg[25], words[12]);
+	ConvertUtil::ConvertToWord(msg[26], msg[27], words[13]);
+	ConvertUtil::ConvertToWord(msg[28], msg[29], words[14]);
+
+	ConvertUtil::ConvertToWord(msg[30], msg[31], words[15]);
+	ConvertUtil::ConvertToWord(msg[32], msg[33], words[16]);
+	ConvertUtil::ConvertToWord(msg[34], msg[35], words[17]);
+	ConvertUtil::ConvertToWord(msg[36], msg[37], words[18]);
+	ConvertUtil::ConvertToWord(msg[38], msg[39], words[19]);
+	ConvertUtil::ConvertToWord(msg[40], msg[41], words[20]);
+	ConvertUtil::ConvertToWord(msg[42], msg[43], words[21]);
+	ConvertUtil::ConvertToWord(msg[44], msg[45], words[22]);
+	ConvertUtil::ConvertToWord(msg[46], msg[47], words[23]);
+	ConvertUtil::ConvertToWord(msg[48], msg[49], words[24]);
+	ConvertUtil::ConvertToWord(msg[50], msg[51], words[25]);
+	ConvertUtil::ConvertToWord(msg[52], msg[53], words[26]);
 
 	_GyroSolver(words[0], words[1], m_imuPackage.m_gyroX);
 	_GyroSolver(words[2], words[3], m_imuPackage.m_gyroY);
@@ -442,6 +453,15 @@ bool ImuSolver::Solve(std::vector<unsigned char> & msg) {
 	_AcclSolver(words[6], words[7], m_imuPackage.m_acclX);
 	_AcclSolver(words[8], words[9], m_imuPackage.m_acclY);
 	_AcclSolver(words[10], words[11], m_imuPackage.m_acclZ);
+	_MaginSolver(words[12], m_imuPackage.m_maginX);
+	_MaginSolver(words[13], m_imuPackage.m_maginY);
+	_MaginSolver(words[14], m_imuPackage.m_maginZ);
+	_AngleSolver(words[15], words[16], m_imuPackage.m_deltaAngleX);
+	_AngleSolver(words[17], words[18], m_imuPackage.m_deltaAngleY);
+	_AngleSolver(words[19], words[20], m_imuPackage.m_deltaAngleZ);
+	_VelSolver(words[21], words[22], m_imuPackage.m_deltaVelX);
+	_VelSolver(words[23], words[24], m_imuPackage.m_deltaVelY);
+	_VelSolver(words[25], words[26], m_imuPackage.m_deltaVelZ);
 
 	return true;
 }
@@ -487,6 +507,28 @@ bool ImuSolver::_AngleSolver(short lowHex, short highHex, double & value) {
 		}
 		lowHex <<= 1;
 	}
+	return true;
+}
+
+bool ImuSolver::_VelSolver(short lowHex, short highHex, double & value)
+{
+	unsigned short uHigh = static_cast<unsigned short>(highHex);
+	unsigned short uLow = static_cast<unsigned short>(lowHex);
+	value = double(uHigh) * 65536 + uLow;
+	if (value < 2147483648) //2^31
+	{
+		value = value / 65536.0f;
+	}
+	else
+	{
+		value = (value - 4294967296) / 65536.0f;
+	}
+	value = value * 200.0f / 32768.0f;
+	return true;
+}
+bool ImuSolver::_MaginSolver(short highHex, double & value)
+{
+	value = highHex * 0.1;
 	return true;
 }
 

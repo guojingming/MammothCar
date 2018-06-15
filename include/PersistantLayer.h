@@ -20,13 +20,14 @@ namespace mammoth {
 		public:
 			~DataGatherLayer();
 			static DataGatherLayer * get_instance();
-			void start_grab(const std::string& gps_folder_path, const std::string& pcd_folder_path, const std::string& imu_folder_path);
+			void start_grab(const std::string& gps_folder_path, const std::string& pcd_folder_path, const std::string& imu_folder_path, const std::string& ori_imu_folder_path);
 		private:
 			static DataGatherLayer * layer;
 			DataGatherLayer();
 			static std::string gps_folder_path;
 			static std::string pcd_folder_path;
 			static std::string imu_folder_path;
+			static std::string ori_imu_folder_path;
 			static int gps_count;
 			static int pcd_count;
 			static int imu_count;

@@ -14,11 +14,7 @@ int PcdUtil::read_pcd_file(const std::string pcd_file_path, pcl::PointCloud<Poin
 
 int PcdUtil::read_pcd_file(const std::string pcd_file_path, PCDFILE* pcd_file) {
 	FILE * p;
-#ifdef WIN32
 	fopen_s(&p, pcd_file_path.c_str(), "rb");
-#else
-	p = fopen(pcd_file_path.c_str(), "rb");
-#endif
 	PcdUtil::pcdLoad(p, pcd_file);
 	fclose(p);
 	return 0;
@@ -27,7 +23,7 @@ int PcdUtil::read_pcd_file(const std::string pcd_file_path, PCDFILE* pcd_file) {
 //0 binary 1 ascii
 void PcdUtil::save_pcd_file(const std::string pcd_file_path, const pcl::PointCloud<PointType>::Ptr & cloud, short mode) {
 	if (cloud->size() == 0) {
-		printf("ÒªÐ´ï¿½ï¿½ %s ï¿½ï¿½PCDï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¡Îª0ï¿½ï¿½Ð´ï¿½ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½\n", pcd_file_path.c_str());
+		printf("ÒªÐ´Èë %s µÄPCDµãÔÆÊý×é´óÐ¡Îª0£¬Ð´Èë²Ù×÷È¡Ïû\n", pcd_file_path.c_str());
 		return;
 	}
 	if (mode == 0) {
@@ -39,8 +35,8 @@ void PcdUtil::save_pcd_file(const std::string pcd_file_path, const pcl::PointClo
 
 template<typename CustomType>
 static void save_pcd_file(const std::string pcd_file_path, const PCDFILE * pcd_file, CustomType type, short mode) {
-	if (pcd_file->header.Points == 0) {
-		printf("ÒªÐ´ï¿½ï¿½ %s ï¿½ï¿½PCDï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¡Îª0ï¿½ï¿½Ð´ï¿½ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½\n", pcd_file_path.c_str());
+	if (pcd_file.header.Points == 0) {
+		printf("ÒªÐ´Èë %s µÄPCDµãÔÆÊý×é´óÐ¡Îª0£¬Ð´Èë²Ù×÷È¡Ïû\n", pcd_file_path.c_str());
 		return;
 	}
 	if (mode == 0) {
@@ -52,7 +48,7 @@ static void save_pcd_file(const std::string pcd_file_path, const PCDFILE * pcd_f
 
 void PcdUtil::save_pcd_file(const std::string pcd_file_path, const PCDFILE * pcd_file, short mode) {
 	if (pcd_file->header.Points == 0) {
-		printf("ÒªÐ´ï¿½ï¿½ %s ï¿½ï¿½PCDï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¡Îª0ï¿½ï¿½Ð´ï¿½ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½\n", pcd_file_path.c_str());
+		printf("ÒªÐ´Èë %s µÄPCDµãÔÆÊý×é´óÐ¡Îª0£¬Ð´Èë²Ù×÷È¡Ïû\n", pcd_file_path.c_str());
 		return;
 	}
 	if (mode == 0) {
@@ -113,7 +109,7 @@ void PointViewer::set_point_cloud(PCDFILE scene) {
 template<typename CustomType>
 void PointViewer::set_point_cloud(PCDFILE scene, CustomType point_type) {
 #ifdef USE_GLVIEWER
-	p_glviewer->SetPointCloud((CustomType *)scene.pData, scene.header.Points);
+	p_glviewer->SetPointCloud((point_type *)scene.pData, scene.header.Points);
 #endif
 }
 
@@ -233,7 +229,7 @@ const char* PcdUtil::parse_int(const char* str, UT* val) {
 }
 
 const char* PcdUtil::parse_strid(const char* str, char* buf) {
-	while ((*str >= 'a' && *str <= 'z') || (*str >= 'A' && *str <= 'Z') || *str == '_') {
+	while (*str >= 'a' && *str <= 'z' || *str >= 'A' && *str <= 'Z' || *str == '_') {
 		*buf++ = *str++;
 	}
 	*buf = 0;
@@ -477,11 +473,7 @@ FiledDesc* PcdUtil::pcdContains(PCDHEADER* pHeader, const char* field) {
 
 HPCD PcdUtil::pcdOpen(const char* filename) {
 	HPCD p = new tagPCD;
-#ifdef WIN32
 	fopen_s(&p->fp, filename, "wb");
-#else
-	p->fp = fopen(filename, "wb");
-#endif
 	p->DataWrited = false;
 	p->TotalPoints = 0;
 	return p;
@@ -507,11 +499,7 @@ void PcdUtil::pcdWrite(HPCD hpcd, glviewer::DataFormatDesc dsc, void* Arr, size_
 
 void PcdUtil::pcdClose(HPCD hp) {
 	char W[24];
-#ifdef WIN32
 	sprintf_s(W, "%llu", hp->TotalPoints);
-#else
-    sprintf(W, "%llu", hp->TotalPoints);
-#endif
 	fseek(hp->fp, hp->POffset, SEEK_SET);
 	fwrite(W, strlen(W), 1, hp->fp);
 	fseek(hp->fp, hp->WOffset, SEEK_SET);

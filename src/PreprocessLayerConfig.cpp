@@ -2,7 +2,6 @@
 
 using namespace mammoth::config;
 
-
 double * PreprocessLayerConfig::hdl32_vertical_angles = new double[32]{
 	-30.67,
 	-9.33,
@@ -142,4 +141,20 @@ uint8_t * PreprocessLayerConfig::vlp16_vertical_ids = new uint8_t[32]{
 	11,
 	13,
 	15
+};
+
+
+double * PreprocessLayerConfig::pandar40P_horizontal_angles = new double[40]{
+	0, 0, 0, 0, -2.5, -2.5, 2.5, -5,
+	-2.5, 2.5, -5, -2.5, 2.5, -5, 0, 2.5,
+	-5, 0, 5, -2.5, 0, 5, -2.5, 0,
+	5, -2.5, 2.5, 5, -2.5, 2.5, 2.5, 2.5,
+	0, 0, 0, 0, -2.5, -2.5, -2.5, -2.5
+};
+
+double * PreprocessLayerConfig::pandar40P_vertical_angles = new double[40]{
+	7,6,5,4,3,2,1.67,1.33,1,0.67,
+	0.33,0,-0.33,-0.67,-1,-1.33,-1.67,-2,-2.33,-2.67,
+	-3,-3.33,-3.67,-4,-4.33,-4.67,-5,-5.33,-5.67,-6,
+	-7,-8,-9,-10,-11,-12,-13,-14,-15,-16
 };

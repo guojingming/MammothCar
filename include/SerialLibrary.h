@@ -1,7 +1,7 @@
 #pragma once
 
 #include <thread>
-#include <string.h>
+#include <string>
 #include <stdio.h>
 #include <stdlib.h>
 #ifdef WIN32

@@ -46,14 +46,29 @@ namespace mammoth {
 			GnssEthernetInput m_gpsMain;
 		};
 
+		class PcdTransformLayer{
+		public:
+			static PcdTransformLayer * get_instance();
+			void rotation(pcl::PointCloud<PointType>::Ptr & cloud, float x, float y, float z);
+			void translation(pcl::PointCloud<PointType>::Ptr & cloud, float x, float y, float z);
+			~PcdTransformLayer();
+			void combine(pcl::PointCloud<PointType>::Ptr & cloud1, pcl::PointCloud<PointType>::Ptr & cloud2, pcl::PointCloud<PointType>::Ptr & combine_cloud);
+		private:
+			static PcdTransformLayer * layer;
+			PcdTransformLayer();
+		};
+
 		class PcapTransformLayer {
 		public:
 			static PcapTransformLayer * get_instance();
+			pcap_t * get_pcap_dev_handle(int ethernet_number);
+			pcap_t * get_pcap_file_data(std::string pcap_path);
+			pcap_t * get_pcap_dev_handle();
 			void trans_pcap_to_pcd(std::string pcap_path, std::vector<pcl::PointCloud<PointType>::Ptr> & vec, int seg_count = 0);
 			void play_pcap_file(std::string pcap_path, int start_packet_number = 0);
 			void get_current_frame(pcl::PointCloud<PointType>::Ptr & cloud);
 			void get_current_frame(const char * path, HPCD & file);
-
+			void get_current_frame(pcap_t * cur_device, pcl::PointCloud<PointType>::Ptr & scene, int config);
 			void get_current_frame_pandar(const char * path, HPCD & file);
 
 			void parameter_init(float angle_piece, std::string path_prefix);
@@ -65,8 +80,6 @@ namespace mammoth {
 			float angle_piece;
 			std::string path_prefix;
 			std::string root_path;
-			pcap_t * get_pcap_file_data(std::string pcap_path);
-			pcap_t * get_pcap_dev_handle();
 			static PcapTransformLayer * layer;
 		};
 

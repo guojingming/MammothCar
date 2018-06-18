@@ -27,5 +27,7 @@ namespace mammoth {
 			static double * pandar40P_vertical_angles;
 			static double * pandar40P_horizontal_angles;
 		};
+
+		//enum PRESET_CONFIGS {VLP16, HDL32E, PANDAR40P};
 	}
 }

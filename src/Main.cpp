@@ -33,18 +33,21 @@ void cz_test() {
 
 
 void gjm_test() {
-	//ÐÂµÄpcd¶ÁÈ¡º¯Êý
+
+	MultipleLidarViewer::showVelodyne16and32Points(0,1);
+
+	//ï¿½Âµï¿½pcdï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½
 	//PointViewer::get_instance()->init_point_viewer();
 	/*PCDFILE f;
 	PcdUtil::read_pcd_file("C:\\DataSpace\\map\\0406-1.pcd", &f);
 	PointViewer::get_instance()->set_point_cloud(f);
 	system("pause");*/
 
-	//¼ÇÂ¼Êý¾Ý
+	//ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½
 	//PointViewer::get_instance()->init_point_viewer();
-	DataGatherLayer::get_instance()->start_grab("E:\\DataSpace\\LidarDataSpace\\test_lidar_20180529\\gps_data", "E:\\DataSpace\\LidarDataSpace\\test_lidar_20180529\\pcd_data", "E:\\DataSpace\\LidarDataSpace\\test_lidar_20180529\\imu_data", "E:\\DataSpace\\LidarDataSpace\\test_lidar_20180529\\ori_imu_data");
+	//DataGatherLayer::get_instance()->start_grab("E:\\DataSpace\\LidarDataSpace\\test_lidar_20180529\\gps_data", "E:\\DataSpace\\LidarDataSpace\\test_lidar_20180529\\pcd_data", "E:\\DataSpace\\LidarDataSpace\\test_lidar_20180529\\imu_data", "E:\\DataSpace\\LidarDataSpace\\test_lidar_20180529\\ori_imu_data");
 	
-	//¾ÛÀàËã·¨
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ã·¨
 	/*PointViewer::get_instance()->init_point_viewer();
 	pcl::PointCloud<PointType>::Ptr cloud(new pcl::PointCloud<PointType>());
 	PcdUtil::read_pcd_file("D:\\TTT.pcd", cloud);

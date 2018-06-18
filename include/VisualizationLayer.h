@@ -11,5 +11,11 @@ namespace mammoth {
 			// static void rotate(size_t obj_id, float yaw, float pitch, float roll);
 			// static void translate(size_t obj_id, float x, float y, float z);
 		};
+
+		class MultipleLidarViewer{
+		public:
+			static void showVelodyne16and32Points(int ethernet_num1, int ethernet_num2);
+		};
 	}
+
 }

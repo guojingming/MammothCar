@@ -150,14 +150,42 @@ PcdTransformLayer * PcdTransformLayer::get_instance(){
 }
 
 void PcdTransformLayer::rotation(pcl::PointCloud<PointType>::Ptr & cloud, float x, float y, float z){
+	float t_x = x * 3.1415926 / 180;
+	float t_y = y * 3.1415926 / 180;
+	float t_z = z * 3.1415926 / 180;
+	for (int i = 0; i < cloud->size(); i++) {
+		float o_x = (*cloud)[i].x;
+		float o_y = (*cloud)[i].y;
+		float o_z = (*cloud)[i].z;
+		
+		(*cloud)[i].y = o_y * cos(t_x) - o_z * sin(t_x);
+		(*cloud)[i].z = o_y * sin(t_x) + o_z * cos(t_x);
+		o_y = (*cloud)[i].y;
+		o_z = (*cloud)[i].z;
 
+
+		(*cloud)[i].x = o_x * cos(t_y) - o_z * sin(t_y);
+		(*cloud)[i].z = o_x * sin(t_y) + o_z * cos(t_y);
+		o_x = (*cloud)[i].x;
+		o_z = (*cloud)[i].z;
+
+		(*cloud)[i].x = o_x * cos(t_z) - o_y * sin(t_z);
+		(*cloud)[i].y = o_x * sin(t_z) + o_y * cos(t_z);
+		o_x = (*cloud)[i].x;
+		o_y = (*cloud)[i].y;
+	}
 }
 
 void PcdTransformLayer::translation(pcl::PointCloud<PointType>::Ptr & cloud, float x, float y, float z){
-
+	for (int i = 0; i<cloud->size(); i++) {
+		(*cloud)[i].x += x;
+		(*cloud)[i].y += y;
+		(*cloud)[i].z += z;
+	}
 }
 
 void PcdTransformLayer::combine(pcl::PointCloud<PointType>::Ptr & cloud1, pcl::PointCloud<PointType>::Ptr & cloud2, pcl::PointCloud<PointType>::Ptr & combine_cloud){
+	combine_cloud->clear();
 	for(int i = 0;i<cloud1->size();i++){
 		combine_cloud->push_back((*cloud1)[i]);
 	}
@@ -548,15 +576,15 @@ void PcapTransformLayer::parameter_init(float angle_piece, std::string path_pref
 
 
 void PcapTransformLayer::get_current_frame(pcap_t * cur_device, pcl::PointCloud<PointType>::Ptr & scene, int config) {
+	scene->clear();
 	pcap_pkthdr *pkthdr = 0;
 	const u_char *pktdata = 0;
 	int count = 0;
 	int maxFlectivity = 0;
 	int res = 0;
-	scene->clear();
-	float * angles = new float[block_count];
-	int * distance_mm = new int[channel_count * block_count];
-	int * flectivity = new int[channel_count * block_count];
+	int current_frame_count = 0;
+	int index_frame_count = 0;
+	int pack_id = 0;
 	int block_count = 12;
 	int channel_count = 32;
 	int flag_size = 2;
@@ -569,7 +597,12 @@ void PcapTransformLayer::get_current_frame(pcap_t * cur_device, pcl::PointCloud<
 	int unit1_reflectivity_address = unit1_distance_address + unit_distance_size;
 	int unit_reflectivity_size = 1;
 	int channel_size = unit_distance_size + unit_reflectivity_size;
-
+	float * angles = new float[block_count];
+	int * distance_mm = new int[channel_count * block_count];
+	int * flectivity = new int[channel_count * block_count];
+	float angle_tags[240];
+	memset(angle_tags, 0, 240);
+	int angle_count = 0;
 	while ((res = pcap_next_ex(cur_device, &pkthdr, &pktdata)) >= 0) {
 		if (pkthdr->caplen == 1248) {
 			///////////////////////
@@ -577,52 +610,84 @@ void PcapTransformLayer::get_current_frame(pcap_t * cur_device, pcl::PointCloud<
 			memset(distance_mm, 0, sizeof(int) * channel_count * block_count);
 			memset(flectivity, 0, sizeof(int) * channel_count * block_count);
 			for (int i = 0; i < block_count; i++) {
+				//get azimuth
 				for (int k = angle_size - 1; k >= 0; k--) {
 					int index = head_size + i * block_size + angle_address + k;
 					float data = pktdata[head_size + i * block_size + angle_address + k];
 					angles[i] = angles[i] * 256 + data;
 				}
 				angles[i] = angles[i] / 100;
+				//printf("angle: %f\n", angles[i]);
+				int tag = angles[i] / 1.5;
+				if (tag >= 240) {
+					tag = 239;
+				}
+				if (angle_tags[tag] != 1) {
+					angle_count++;
+					angle_tags[tag] = 1;
+				}
+
+				//printf("%d %f\n", i, angles[i]);
 				for (int j = 0; j < channel_count; j++) {
 					for (int k = unit_distance_size - 1; k >= 0; k--) {
 						distance_mm[i * channel_count + j] = distance_mm[i * channel_count + j] * 256 + pktdata[head_size + flag_size + i * block_size + angle_size + j * channel_size + k];
 					}
+					//printf("Block %d Channel %d  %d\n", i, j, distance_mm[i * channel_count + j]);
 					for (int k = unit_reflectivity_size - 1; k >= 0; k--) {
 						flectivity[i * channel_count + j] = flectivity[i * channel_count + j] * 256 + pktdata[head_size + flag_size + i * block_size + angle_size + j * channel_size + unit_distance_size + k];
 						if (maxFlectivity < flectivity[i * channel_count + j]) {
 							maxFlectivity = flectivity[i * channel_count + j];
 						}
-					}
-				}
-			}
 
-			for (int i = 0; i < block_count; i++) {
-				for (int j = 0; j < channel_count; j++) {
+					}
 					MyPoint3D point;
 					float distance = distance_mm[i * channel_count + j] / 1000.0;
 					int flectivity_value = flectivity[i * channel_count + j];
 					float horizontal_angle = angles[i] * PI / 180;
-					float vertical_angle = PreprocessLayerConfig::hdl32_vertical_angles[j % 32] * PI / 180;
+					
+
+					float vertical_angle = 0;
+					if (config == 0) {
+						vertical_angle = PreprocessLayerConfig::hdl32_vertical_angles[j % 32] * PI / 180;
+					} else if (config == 1) {
+						vertical_angle = PreprocessLayerConfig::vlp16_vertical_angles[j % 32] * PI / 180;
+					}
+
 					point.z = distance * sin(vertical_angle);
-					point.y = distance * cos(vertical_angle) * sin(-1 * horizontal_angle);
-					point.x = distance * cos(vertical_angle) * cos(-1 * horizontal_angle);
+					point.y = distance * cos(vertical_angle) * sin(-horizontal_angle);
+					point.x = distance * cos(vertical_angle) * cos(-horizontal_angle);
 					PointType pclPoint;
-					pclPoint.x = 2 * (point.y);
-					pclPoint.y = 2 * (point.x);
+					pclPoint.x = 2 * point.x;
+					pclPoint.y = 2 * point.y;
 					pclPoint.z = 2 * point.z;
-					pclPoint.r = PreprocessLayerConfig::hdl32_vertical_ids[j % 32];
-					pclPoint.b = flectivity_value;
-					pclPoint.g = 200;
+					if (config == 0) {
+						pclPoint.r = flectivity_value;
+						pclPoint.b = 200;
+						pclPoint.g = 15;
+					} else if (config == 1) {
+						pclPoint.r = 0;
+						pclPoint.b = 15;
+						pclPoint.g = 200;
+					}
+					
+					/*if (config == 0) {
+						pclPoint.g = PreprocessLayerConfig::hdl32_vertical_ids[j % 32];
+					} else if (config == 1) {
+						pclPoint.g = PreprocessLayerConfig::vlp16_vertical_ids[j % 32];
+					}*/
 					scene->push_back(pclPoint);
 				}
 			}
-			count++;
-			if (count >= 235) {
+			if (count >= 100 && angle_count >= 238) { //235
 				delete angles;
 				delete distance_mm;
 				delete flectivity;
+				memset(angle_tags, 0, 240);
+				angle_count = 0;
+				count = 0;
 				break;
 			}
+			count++;
 		}
 	}
 }

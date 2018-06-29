@@ -158,3 +158,11 @@ double * PreprocessLayerConfig::pandar40P_vertical_angles = new double[40]{
 	-3,-3.33,-3.67,-4,-4.33,-4.67,-5,-5.33,-5.67,-6,
 	-7,-8,-9,-10,-11,-12,-13,-14,-15,-16
 };
+
+double * rslidar16_horizontal_angles = new double[32]{
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+}
+
+double * rslidar16_vertical_angles = new double[32]{
+	-15,-13,-11,-9,-7,-5,-3,-1,15,13,11,9,7,5,3,1,-15,-13,-11,-9,-7,-5,-3,-1,15,13,11,9,7,5,3,1
+}

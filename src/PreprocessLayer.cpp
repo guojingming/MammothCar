@@ -611,10 +611,18 @@ void PcapTransformLayer::get_current_frame(pcap_t * cur_device, pcl::PointCloud<
 			memset(flectivity, 0, sizeof(int) * channel_count * block_count);
 			for (int i = 0; i < block_count; i++) {
 				//get azimuth
-				for (int k = angle_size - 1; k >= 0; k--) {
-					int index = head_size + i * block_size + angle_address + k;
-					float data = pktdata[head_size + i * block_size + angle_address + k];
-					angles[i] = angles[i] * 256 + data;
+				if(config != 2){
+					for (int k = angle_size - 1; k >= 0; k--) {
+						int index = head_size + i * block_size + angle_address + k;
+						float data = pktdata[head_size + i * block_size + angle_address + k];
+						angles[i] = angles[i] * 256 + data;
+					}
+				}else{
+					for (int k = 0; k < angle_size; k++) {
+						int index = head_size + i * block_size + angle_address + k;
+						float data = pktdata[head_size + i * block_size + angle_address + k];
+						angles[i] = angles[i] * 256 + data;
+					}
 				}
 				angles[i] = angles[i] / 100;
 				//printf("angle: %f\n", angles[i]);
@@ -629,45 +637,68 @@ void PcapTransformLayer::get_current_frame(pcap_t * cur_device, pcl::PointCloud<
 
 				//printf("%d %f\n", i, angles[i]);
 				for (int j = 0; j < channel_count; j++) {
-					for (int k = unit_distance_size - 1; k >= 0; k--) {
-						distance_mm[i * channel_count + j] = distance_mm[i * channel_count + j] * 256 + pktdata[head_size + flag_size + i * block_size + angle_size + j * channel_size + k];
-					}
-					//printf("Block %d Channel %d  %d\n", i, j, distance_mm[i * channel_count + j]);
-					for (int k = unit_reflectivity_size - 1; k >= 0; k--) {
-						flectivity[i * channel_count + j] = flectivity[i * channel_count + j] * 256 + pktdata[head_size + flag_size + i * block_size + angle_size + j * channel_size + unit_distance_size + k];
-						if (maxFlectivity < flectivity[i * channel_count + j]) {
-							maxFlectivity = flectivity[i * channel_count + j];
-						}
+					float distance = 0;
 
+					if(config != 2){
+						for (int k = unit_distance_size - 1; k >= 0; k--) {
+							distance_mm[i * channel_count + j] = distance_mm[i * channel_count + j] * 256 + pktdata[head_size + flag_size + i * block_size + angle_size + j * channel_size + k];
+						}
+						for (int k = unit_reflectivity_size - 1; k >= 0; k--) {
+							flectivity[i * channel_count + j] = flectivity[i * channel_count + j] * 256 + pktdata[head_size + flag_size + i * block_size + angle_size + j * channel_size + unit_distance_size + k];
+							if (maxFlectivity < flectivity[i * channel_count + j]) {
+								maxFlectivity = flectivity[i * channel_count + j];
+							}
+						}
+						distance = distance_mm[i * channel_count + j] / 1000.0;
+					}else{
+						for (int k = 0; k < unit_distance_size; k++) {
+							distance_mm[i * channel_count + j] = distance_mm[i * channel_count + j] * 256 + pktdata[head_size + flag_size + i * block_size + angle_size + j * channel_size + k];
+						}
+						for (int k = 0; k < unit_reflectivity_size; k++) {
+							flectivity[i * channel_count + j] = flectivity[i * channel_count + j] * 256 + pktdata[head_size + flag_size + i * block_size + angle_size + j * channel_size + unit_distance_size + k];
+							if (maxFlectivity < flectivity[i * channel_count + j]) {
+								maxFlectivity = flectivity[i * channel_count + j];
+							}
+						}
+						distance = distance_mm[i * channel_count + j] / 100.0;
 					}
-					MyPoint3D point;
-					float distance = distance_mm[i * channel_count + j] / 1000.0;
 					int flectivity_value = flectivity[i * channel_count + j];
 					float horizontal_angle = angles[i] * PI / 180;
 					
-
+					MyPoint3D point;
 					float vertical_angle = 0;
 					if (config == 0) {
 						vertical_angle = PreprocessLayerConfig::hdl32_vertical_angles[j % 32] * PI / 180;
 					} else if (config == 1) {
 						vertical_angle = PreprocessLayerConfig::vlp16_vertical_angles[j % 32] * PI / 180;
+					} else if (config == 2) {
+						vertical_angle = PreprocessLayerConfig::rslidar16_vertical_angles[j % 32] * PI / 180;
 					}
 
 					point.z = distance * sin(vertical_angle);
 					point.y = distance * cos(vertical_angle) * sin(-horizontal_angle);
 					point.x = distance * cos(vertical_angle) * cos(-horizontal_angle);
 					PointType pclPoint;
-					pclPoint.x = 2 * point.x;
-					pclPoint.y = 2 * point.y;
-					pclPoint.z = 2 * point.z;
+
+					if(config != 2){
+						pclPoint.x = 2 * point.x;
+						pclPoint.y = 2 * point.y;
+						pclPoint.z = 2 * point.z;
+					}
+					
+
 					if (config == 0) {
 						pclPoint.r = flectivity_value;
 						pclPoint.b = 200;
 						pclPoint.g = 15;
 					} else if (config == 1) {
-						pclPoint.r = 0;
+						pclPoint.r = flectivity_value;
 						pclPoint.b = 15;
 						pclPoint.g = 200;
+					} else if (config == 1) {
+						pclPoint.r = 200;
+						pclPoint.b = flectivity_value;
+						pclPoint.g = 15;
 					}
 					
 					/*if (config == 0) {

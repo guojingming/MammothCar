@@ -15,6 +15,15 @@ namespace mammoth {
 		class MultipleLidarViewer{
 		public:
 			static void showVelodyne16and32Points(int ethernet_num1, int ethernet_num2);
+			static int * finish_signals;
+			static int * grabbing_signals;
+			static int lidar_count;
+			//static std::vector<pcl::PointCloud<PointType>::Ptr> point_clouds;
+			static pcl::PointCloud<PointType>::Ptr vlp16_cloud_ptr;
+			static pcl::PointCloud<PointType>::Ptr hdl32_cloud_ptr;
+		private:
+			//int lidar_vlp16();
+			//int lidar_hdl32();
 		};
 	}
 

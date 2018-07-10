@@ -1,4 +1,205 @@
-//¾É°æ±¾µÄµãÔÆµş¼Ó
+ï»¿
+//void PcapTransformLayer::get_current_frame(pcl::PointCloud<PointType>::Ptr & scene) {
+//	if (device == nullptr) {
+//		device = get_pcap_dev_handle();
+//	}
+//	pcap_pkthdr *pkthdr = 0;
+//	const u_char *pktdata = 0;
+//	bool start_flag = false;
+//	int count = 0;
+//	int start_count = 0;
+//	int maxFlectivity = 0;
+//	int res = 0;
+//	float angle_min = 0;
+//	float angle_max = 0;
+//	bool start_counting = true;
+//	float angle_map[240];//0 1.5 3 4.5
+//	scene->clear();
+//	memset(angle_map, 0, sizeof(float) * 240);
+//	while ((res = pcap_next_ex(device, &pkthdr, &pktdata)) >= 0) {
+//		if (pkthdr->caplen == 1248) {
+//			///////////////////////
+//			int block_count = 12;
+//			int channel_count = 32;
+//			int flag_size = 2;
+//			int head_size = 42;
+//			int block_size = 100;
+//			int angle_address = 2;
+//			int angle_size = 2;
+//			int unit1_distance_address = 4;
+//			int unit_distance_size = 2;
+//			int unit1_reflectivity_address = unit1_distance_address + unit_distance_size;
+//			int unit_reflectivity_size = 1;
+//			int channel_size = unit_distance_size + unit_reflectivity_size;
+//			float * angles = new float[block_count];
+//			int * distance_mm = new int[channel_count * block_count];
+//			int * flectivity = new int[channel_count * block_count];
+//			memset(angles, 0, sizeof(float) * block_count);
+//			memset(distance_mm, 0, sizeof(int) * channel_count * block_count);
+//			memset(flectivity, 0, sizeof(int) * channel_count * block_count);
+//			for (int i = 0; i < block_count; i++) {
+//				for (int k = angle_size - 1; k >= 0; k--) {
+//					int index = head_size + i * block_size + angle_address + k;
+//					float data = pktdata[head_size + i * block_size + angle_address + k];
+//					angles[i] = angles[i] * 256 + data;
+//				}
+//				angles[i] = angles[i] / 100;
+//				for (int j = 0; j < channel_count; j++) {
+//					for (int k = unit_distance_size - 1; k >= 0; k--) {
+//						distance_mm[i * channel_count + j] = distance_mm[i * channel_count + j] * 256 + pktdata[head_size + flag_size + i * block_size + angle_size + j * channel_size + k];
+//					}
+//					for (int k = unit_reflectivity_size - 1; k >= 0; k--) {
+//						flectivity[i * channel_count + j] = flectivity[i * channel_count + j] * 256 + pktdata[head_size + flag_size + i * block_size + angle_size + j * channel_size + unit_distance_size + k];
+//						if (maxFlectivity < flectivity[i * channel_count + j]) {
+//							maxFlectivity = flectivity[i * channel_count + j];
+//						}
+//					}
+//				}
+//			}
+//			float angle_average = 0;
+//			for (int i = 0; i < block_count; i++) {
+//				angle_average += angles[i];
+//			}
+//			angle_average /= block_count;
+//			int angle_index = (int)(angle_average / 1.5);
+//			if (angle_map[angle_index] == 0) {
+//				//ï¿½ï¿½Óµï¿½ï¿½ï¿½
+//				for (int i = 0; i < block_count; i++) {
+//					for (int j = 0; j < channel_count; j++) {
+//						MyPoint3D point;
+//						float distance = distance_mm[i * channel_count + j] / 1000.0;
+//						int flectivity_value = flectivity[i * channel_count + j];
+//						float horizontal_angle = angles[i] * PI / 180;
+//						float vertical_angle = PreprocessLayerConfig::hdl32_vertical_angles[j % 32] * PI / 180;
+//						point.z = distance * sin(vertical_angle);
+//						point.y = distance * cos(vertical_angle) * sin(horizontal_angle);
+//						point.x = distance * cos(vertical_angle) * cos(horizontal_angle);
+//						PointType pclPoint;
+//						pclPoint.x = 2 * (point.y);
+//						pclPoint.y = -2 * (point.x);
+//						pclPoint.z = 2 * point.z;
+//						pclPoint.r = 0;
+//						pclPoint.b = flectivity_value;
+//						pclPoint.g = 0;
+//						scene->push_back(pclPoint);
+//					}
+//				}
+//				angle_map[angle_index] = 1;
+//			}
+//			//ï¿½ï¿½ï¿½ï¿½Ç·ï¿½Õ¹ï¿½ï¿½ï¿½Ò»È¦
+//			int angle_count = 0;
+//			for (int i = 0; i < 240; i++) {
+//				if (angle_map[i] == 1) {
+//					angle_count++;
+//				}
+//			}
+//			if (angle_count >= 235) {
+//				//ï¿½ï¿½ï¿½ï¿½  ï¿½ï¿½Ê¾
+//				float seg = maxFlectivity * 1.0 / 256;
+//				int pointSize = scene->points.size();
+//				for (int i = 0; i < scene->points.size(); i++) {
+//					int flex = scene->points[i].b;
+//					scene->points[i].r = (int)(flex / seg);
+//					scene->points[i].b = 255 - (int)(flex / seg) * 5;
+//					scene->points[i].g = (int)(flex / seg) * 5;
+//				}
+//				memset(angle_map, 0, sizeof(float) * 240);
+//				break;
+//			}
+//			delete angles;
+//			delete distance_mm;
+//			delete flectivity;
+//		}
+//	}
+//}
+//
+//void PcapTransformLayer::get_current_frame(const char * path, HPCD & file) {
+//	if (device == nullptr) {
+//		device = get_pcap_dev_handle();
+//	}
+//	pcap_pkthdr *pkthdr = 0;
+//	const u_char *pktdata = 0;
+//	bool start_flag = false;
+//	int count = 0;
+//	int res = 0;
+//	int block_count = 12;
+//	int channel_count = 32;
+//	int flag_size = 2;
+//	int head_size = 42;
+//	int block_size = 100;
+//	int angle_address = 2;
+//	int angle_size = 2;
+//	int unit1_distance_address = 4;
+//	int unit_distance_size = 2;
+//	int unit1_reflectivity_address = unit1_distance_address + unit_distance_size;
+//	int unit_reflectivity_size = 1;
+//	int channel_size = unit_distance_size + unit_reflectivity_size;
+//	float * angles = new float[block_count];
+//	int * distance_mm = new int[channel_count * block_count];
+//	int * flectivity = new int[channel_count * block_count];
+//	std::vector<XYZRGBA> points;
+//	while ((res = pcap_next_ex(device, &pkthdr, &pktdata)) >= 0) {
+//		if (pkthdr->caplen == 1248) {
+//			///////////////////////
+//			memset(angles, 0, sizeof(float) * block_count);
+//			memset(distance_mm, 0, sizeof(int) * channel_count * block_count);
+//			memset(flectivity, 0, sizeof(int) * channel_count * block_count);
+//			for (int i = 0; i < block_count; i++) {
+//				for (int k = angle_size - 1; k >= 0; k--) {
+//					int index = head_size + i * block_size + angle_address + k;
+//					float data = pktdata[head_size + i * block_size + angle_address + k];
+//					angles[i] = angles[i] * 256 + data;
+//				}
+//				angles[i] = angles[i] / 100;
+//				for (int j = 0; j < channel_count; j++) {
+//					for (int k = unit_distance_size - 1; k >= 0; k--) {
+//						distance_mm[i * channel_count + j] = distance_mm[i * channel_count + j] * 256 + pktdata[head_size + flag_size + i * block_size + angle_size + j * channel_size + k];
+//					}
+//					for (int k = unit_reflectivity_size - 1; k >= 0; k--) {
+//						flectivity[i * channel_count + j] = flectivity[i * channel_count + j] * 256 + pktdata[head_size + flag_size + i * block_size + angle_size + j * channel_size + unit_distance_size + k];
+//					}
+//				}
+//			}
+//			//ï¿½ï¿½Óµï¿½ï¿½ï¿½
+//			for (int i = 0; i < block_count; i++) {
+//				for (int j = 0; j < channel_count; j++) {
+//					MyPoint3D point;
+//					float distance = distance_mm[i * channel_count + j] / 1000.0;
+//					int flectivity_value = flectivity[i * channel_count + j];
+//					float horizontal_angle = angles[i] * PI / 180;
+//					float vertical_angle = PreprocessLayerConfig::vlp16_vertical_angles[j % 32] * PI / 180;
+//					point.z = distance * sin(vertical_angle);
+//					point.y = distance * cos(vertical_angle) * sin(-horizontal_angle);
+//					point.x = distance * cos(vertical_angle) * cos(-horizontal_angle);
+//					XYZRGBA pclPoint;
+//					pclPoint.x = 2 * (point.y);
+//					pclPoint.y = 2 * (point.x);
+//					pclPoint.z = 2 * point.z;
+//					pclPoint.r = flectivity_value;
+//					pclPoint.b = 255 - flectivity_value;
+//					pclPoint.g = flectivity_value * 5;
+//					pclPoint.a = 0;
+//					if (!(pclPoint.x <= 0.02 && pclPoint.y <= 0.02 && pclPoint.z <= 0.02)) {
+//						points.push_back(pclPoint);
+//					}
+//				}
+//			}
+//			if (count >= 240) {
+//				count = 0;
+//				//ï¿½ï¿½ï¿½ï¿½  ï¿½ï¿½Ê¾
+//				file = PcdUtil::pcdOpen(path);
+//				PcdUtil::pcdWrite(file, points.data(), points.size());
+//				PcdUtil::pcdClose(file);
+//				points.clear();
+//				break;
+//			}
+//			count++;
+//		}
+//	}
+//}
+
+
+//æ—§ç‰ˆæœ¬çš„ç‚¹äº‘å åŠ 
 //void JluSlamLayer::start_slam(const std::string& gps_folder_path, const std::string& pcd_folder_path, int start_number) {
 //	PointViewer::get_instance()->init_point_viewer();
 //	std::vector<std::string> file_names;
@@ -17,7 +218,7 @@
 //	for (int i = 0; i < file_names.size(); i++) {
 //		std::string number_str = file_names[i].substr(0, file_names[i].find_first_of('_'));
 //		std::string file_path = file_names[i];
-//		//¶ÁÎÄ¼ş
+//		//è¯»æ–‡ä»¶
 //		std::string read_pcd_path = pcd_folder_path + "\\" + file_path;
 //		printf("%s\n", file_path.c_str());
 //		char temp[100];
@@ -30,7 +231,7 @@
 //		pcl::PointCloud<PointType>::Ptr point_cloud_piece(new pcl::PointCloud<PointType>());
 //		pcl::io::loadPCDFile(read_pcd_path.c_str(), *point_cloud_piece);
 //
-//		//¹ıÂËÒ»´Î
+//		//è¿‡æ»¤ä¸€æ¬¡
 //		/*pcl::PassThrough<PointType> passThrough;
 //		passThrough.setInputCloud(point_cloud_piece);
 //		passThrough.setFilterLimitsNegative(false);
@@ -43,9 +244,9 @@
 //
 //		FileUtil gps_file(read_gps_path.c_str(), 0);
 //		//
-//		//¾É°æ±¾
+//		//æ—§ç‰ˆæœ¬
 //		//std::string record = gps_file.read_line();
-//		//ĞÂ°æ±¾
+//		//æ–°ç‰ˆæœ¬
 //		std::string record;
 //		std::string next;
 //		do {
@@ -69,14 +270,14 @@
 //
 //
 //
-//		/*//¾É°æ±¾ ¶ÁÔ­Ê¼±¨ÎÄ
+//		/*//æ—§ç‰ˆæœ¬ è¯»åŸå§‹æŠ¥æ–‡
 //		std::string gga_record = gps_file.read_line();
 //		std::string hdt_record = gps_file.read_line();
 //		GPGGA_Data gga_data = GnssTransformLayer::get_instance()->decodeGPGGA(gga_record);
 //		PTNLAVR_Data ptnlavr_data = GnssTransformLayer::get_instance()->decodePTNLAVR(hdt_record);
 //		//*/
 //
-//		//¼ÆËãÎ»ÖÃÏòÁ¿
+//		//è®¡ç®—ä½ç½®å‘é‡
 //		double lat0 = 4349.13958348;
 //		double lon0 = 12516.60912408;
 //		Vec2d location_vec = GnssTransformLayer::get_instance()->get_distance1(gga_data.lat, gga_data.lon, lat0, lon0);
@@ -88,13 +289,13 @@
 //
 //		trans_vec.x = -1 * location_vec.x;
 //		trans_vec.y = -1 * location_vec.y;
-//		//¼ÆËã³µµÄ·½Ïò
-//		//»ñÈ¡µ½µÄ·½Ïò½ÇÊÇÕı±±ÄæÊ±Õë½Ç  ÓÉÓÚGPSÔÚ³µÎ² ·½ÏòÊÇ³µÍ··½ÏòµÄ×ó²à ËùÒÔ°ÑGPS½Ç¶È-90¶ÈÎª³µµÄÕı±±ÄæÊ±Õë·½Ïò½Ç
+//		//è®¡ç®—è½¦çš„æ–¹å‘
+//		//è·å–åˆ°çš„æ–¹å‘è§’æ˜¯æ­£åŒ—é€†æ—¶é’ˆè§’  ç”±äºGPSåœ¨è½¦å°¾ æ–¹å‘æ˜¯è½¦å¤´æ–¹å‘çš„å·¦ä¾§ æ‰€ä»¥æŠŠGPSè§’åº¦-90åº¦ä¸ºè½¦çš„æ­£åŒ—é€†æ—¶é’ˆæ–¹å‘è§’
 //		float car_angle = (360 - ptnlavr_data.yaw) + 180;
-//		//ÒÔÕı±±ÎªÕı·½Ïò ËùÓĞµãÔÆË³Ê±ÕëĞı×ª -³µµÄÕı±±ÄæÊ±Õë·½Ïò½Ç
-//		//Ë³Ê±ÕëĞı×ª¹«Ê½
-//		//x1 = x0 * cos(-¦Á) + y0 * sin(-¦Á)
-//		//y1 = -x0 * sin(-¦Á) + y0 * cos(-¦Á
+//		//ä»¥æ­£åŒ—ä¸ºæ­£æ–¹å‘ æ‰€æœ‰ç‚¹äº‘é¡ºæ—¶é’ˆæ—‹è½¬ -è½¦çš„æ­£åŒ—é€†æ—¶é’ˆæ–¹å‘è§’
+//		//é¡ºæ—¶é’ˆæ—‹è½¬å…¬å¼
+//		//x1 = x0 * cos(-Î±) + y0 * sin(-Î±)
+//		//y1 = -x0 * sin(-Î±) + y0 * cos(-Î±
 //		//float xoy_rotation_angle = -1 * (360 - car_angle) * PI / 180;
 //		float xoy_fix_rotation_angle = 90 * PI / 180;
 //		float xoy_rotation_angle = car_angle * PI / 180;
@@ -102,7 +303,7 @@
 //		//printf("%f\n", car_angle);
 //
 //		float xoz_rotation_angle = -73 * PI / 180;
-//		//¸üĞÂpre_scene,pre_pre_scene
+//		//æ›´æ–°pre_scene,pre_pre_scene
 //		pre_pre_scene->clear();
 //		for (int j = 0; j < pre_scene->size(); j++) {
 //			pre_pre_scene->push_back((*pre_scene)[j]);
@@ -119,38 +320,38 @@
 //			float x0;
 //			float y0;
 //			float z0;
-//			//XOZĞı×ª
+//			//XOZæ—‹è½¬
 //			x0 = (*point_cloud_piece)[j].x;
 //			z0 = (*point_cloud_piece)[j].z;
 //			(*point_cloud_piece)[j].x = x0 * cos(xoz_rotation_angle) + z0 * sin(xoz_rotation_angle);
 //			(*point_cloud_piece)[j].z = -1 * x0 * sin(xoz_rotation_angle) + z0 * cos(xoz_rotation_angle);
 //
 //
-//			//ĞŞÕıÎó²îĞı×ª
+//			//ä¿®æ­£è¯¯å·®æ—‹è½¬
 //			/*x0 = (*point_cloud_piece)[j].x;
 //			y0 = (*point_cloud_piece)[j].y;
 //			(*point_cloud_piece)[j].x = x0 * cos(xoy_fix_rotation_angle) + y0 * sin(xoy_fix_rotation_angle);
 //			(*point_cloud_piece)[j].y = -1 * x0 * sin(xoy_fix_rotation_angle) + y0 * cos(xoy_fix_rotation_angle);*/
 //
 //
-//			//XOYĞı×ª 
+//			//XOYæ—‹è½¬ 
 //			x0 = (*point_cloud_piece)[j].x;
 //			y0 = (*point_cloud_piece)[j].y;
 //			(*point_cloud_piece)[j].x = x0 * cos(xoy_rotation_angle) + y0 * sin(xoy_rotation_angle);
 //			(*point_cloud_piece)[j].y = -1 * x0 * sin(xoy_rotation_angle) + y0 * cos(xoy_rotation_angle);
 //
-//			//·­ÕÛ
+//			//ç¿»æŠ˜
 //			(*point_cloud_piece)[j].y = -1 * (*point_cloud_piece)[j].y;
 //
 //
-//			//Æ½ÒÆ
+//			//å¹³ç§»
 //			(*point_cloud_piece)[j].x += trans_vec.y;
 //			(*point_cloud_piece)[j].y += -1 * trans_vec.x;
 //
-//			//·­ÕÛ
+//			//ç¿»æŠ˜
 //			(*point_cloud_piece)[j].y = -1 * (*point_cloud_piece)[j].y;
 //
-//			//×ø±ê±ä»»
+//			//åæ ‡å˜æ¢
 //			//(*point_cloud_piece)[j].y = -1 * (*point_cloud_piece)[j].y;
 //
 //			/*if ((*point_cloud_piece)[j].z < -2.40) {
@@ -158,11 +359,11 @@
 //			(*point_cloud_piece)[j].b = 0;
 //			}*/
 //			//printf("%f %f %f\n", (*point_cloud_piece)[j].x, (*point_cloud_piece)[j].y, (*point_cloud_piece)[j].z);
-//			//µş¼Ó
+//			//å åŠ 
 //			scene->push_back((*point_cloud_piece)[j]);
 //		}
 //
-//		//³µµÄ¹ì¼£µã
+//		//è½¦çš„è½¨è¿¹ç‚¹
 //		point = (*point_cloud_piece)[point_cloud_piece->size() - 1];
 //		char trace_data[100];
 //		memset(trace_data, 0, 100);
@@ -179,7 +380,7 @@
 //		//if (i % 40 == 0) {
 //		//PointViewer::get_instance()->set_point_cloud(scene);
 //		//system("pause");
-//		//printf("ĞòºÅ:%d ·½Ïò:%f Î»ÖÃ: x%f y:%f\n", i, hdt_data.yaw, -1 * trans_vec.x, -1 * trans_vec.y);
+//		//printf("åºå·:%d æ–¹å‘:%f ä½ç½®: x%f y:%f\n", i, hdt_data.yaw, -1 * trans_vec.x, -1 * trans_vec.y);
 //		//}
 //		/*if (i == 3000) {
 //		break;
@@ -189,9 +390,9 @@
 //	system("pause");
 //}
 
-//×ª»¯Êı¾İ
+//è½¬åŒ–æ•°æ®
 //int last_gps = 0;
-////ÏÈ¶ÁPCDÎÄ¼şĞòºÅ
+////å…ˆè¯»PCDæ–‡ä»¶åºå·
 //for (int i = 0; i < 4989; i++) {
 //	char temp[100];
 //	sprintf(temp, "C:/DataSpace/LidarDataSpace/lidar_20180226-1/pcd_data/%d_*.pcd", i);
@@ -202,7 +403,7 @@
 //	file_name = file_name.substr(file_name.find_first_of("_") + 1);
 //	file_name = file_name.substr(0, file_name.find_first_of("_"));
 //	int current_gps = atoi(file_name.c_str());
-//	//ºÏ²¢gpsÊı¾İ
+//	//åˆå¹¶gpsæ•°æ®
 //	//1#1231.1231231,1231231,12312312
 //	//2#1233.2323532,1231231,43534345
 //	memset(temp, 0, 100);
@@ -215,7 +416,7 @@
 //	sprintf(temp, "C:/DataSpace/LidarDataSpace/new_lidar_20180226-1/ori_imu_data/%d_imu.txt", i);
 //	std::ofstream combined_ori_imu_file(temp, std::ios::binary | std::ios::out);
 //	for (int j = last_gps; j <= current_gps; j++) {
-//		//ºÏ²¢gpsÊı¾İ
+//		//åˆå¹¶gpsæ•°æ®
 //		memset(temp, 0, 100);
 //		sprintf(temp, "C:/DataSpace/LidarDataSpace/lidar_20180226-1/gps_data/%d_gps.txt", j);
 //		folder_path = temp;
@@ -228,7 +429,7 @@
 //		sprintf(temp, "%d#", j);
 //		content = temp + content;
 //		combined_gps_file.write_line(content);
-//		//ºÏ²¢imuÊı¾İ
+//		//åˆå¹¶imuæ•°æ®
 //		memset(temp, 0, 100);
 //		sprintf(temp, "C:/DataSpace/LidarDataSpace/lidar_20180226-1/imu_data/*_%d_imu.txt", j);
 //		std::string imu_file_name = temp;
@@ -245,7 +446,7 @@
 //			content = temp + imu_file.read_line();
 //			combined_imu_file.write_line(content);
 //		}
-//		//ºÏ²¢Ô­Ê¼imuÊı¾İ
+//		//åˆå¹¶åŸå§‹imuæ•°æ®
 //		memset(temp, 0, 100);
 //		sprintf(temp, "C:/DataSpace/LidarDataSpace/lidar_20180226-1/ori_imu_data/*_%d_imu.txt", j);
 //		std::string ori_imu_file_name = temp;
@@ -435,9 +636,9 @@
 //	|
 //	z----------x
 //
-//	1. pitch   ºÍGPSÒ»Ñù  imu.pitch
-//	2. roll    ·½ÏòÏà·´   -  imu.roll
-//	3. yaw     ·½ÏòÏà·´   180  -  imu.yaw
+//	1. pitch   å’ŒGPSä¸€æ ·  imu.pitch
+//	2. roll    æ–¹å‘ç›¸å   -  imu.roll
+//	3. yaw     æ–¹å‘ç›¸å   180  -  imu.yaw
 //
 //	*/
 //	system("pause");

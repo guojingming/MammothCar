@@ -575,26 +575,37 @@ void PcapTransformLayer::parameter_init(float angle_piece, std::string path_pref
 }
 
 
+void PcapTransformLayer::get_current_frame_CE30D(pcap_t * cur_device, pcl::PointCloud<PointType>::Ptr & scene, int config) {
+	scene->clear();
+	pcap_pkthdr *pkthdr = 0;
+	const u_char *pktdata = 0;
+	int count = 0;
+	while (pcap_next_ex(cur_device, &pkthdr, &pktdata) >= 0) {
+		if (pkthdr->caplen == 1248) {
+
+			count++;
+			if (count == 27) {
+				break;
+			}
+		}
+	}
+}	
+
+
 void PcapTransformLayer::get_current_frame(pcap_t * cur_device, pcl::PointCloud<PointType>::Ptr & scene, int config) {
 	scene->clear();
 	pcap_pkthdr *pkthdr = 0;
 	const u_char *pktdata = 0;
 	int count = 0;
 	int maxFlectivity = 0;
-	int res = 0;
-	int current_frame_count = 0;
-	int index_frame_count = 0;
-	int pack_id = 0;
 	int block_count = 12;
 	int channel_count = 32;
-	int flag_size = 2;
+	int flag_size = 2; //0xFFEE
 	int head_size = 42;
 	int block_size = 100;
 	int angle_address = 2;
 	int angle_size = 2;
-	int unit1_distance_address = 4;
 	int unit_distance_size = 2;
-	int unit1_reflectivity_address = unit1_distance_address + unit_distance_size;
 	int unit_reflectivity_size = 1;
 	int channel_size = unit_distance_size + unit_reflectivity_size;
 	float * angles = new float[block_count];
@@ -603,7 +614,7 @@ void PcapTransformLayer::get_current_frame(pcap_t * cur_device, pcl::PointCloud<
 	float angle_tags[240];
 	memset(angle_tags, 0, 240);
 	int angle_count = 0;
-	while ((res = pcap_next_ex(cur_device, &pkthdr, &pktdata)) >= 0) {
+	while (pcap_next_ex(cur_device, &pkthdr, &pktdata) >= 0) {
 		if (pkthdr->caplen == 1248) {
 			///////////////////////
 			memset(angles, 0, sizeof(float) * block_count);
@@ -723,205 +734,6 @@ void PcapTransformLayer::get_current_frame(pcap_t * cur_device, pcl::PointCloud<
 	}
 }
 
-
-void PcapTransformLayer::get_current_frame(pcl::PointCloud<PointType>::Ptr & scene) {
-	if (device == nullptr) {
-		device = get_pcap_dev_handle();
-	}
-	pcap_pkthdr *pkthdr = 0;
-	const u_char *pktdata = 0;
-	bool start_flag = false;
-	int count = 0;
-	int start_count = 0;
-	int maxFlectivity = 0;
-	int res = 0;
-	float angle_min = 0;
-	float angle_max = 0;
-	bool start_counting = true;
-	float angle_map[240];//0 1.5 3 4.5
-	scene->clear();
-	memset(angle_map, 0, sizeof(float) * 240);
-	while ((res = pcap_next_ex(device, &pkthdr, &pktdata)) >= 0) {
-		if (pkthdr->caplen == 1248) {
-			///////////////////////
-			int block_count = 12;
-			int channel_count = 32;
-			int flag_size = 2;
-			int head_size = 42;
-			int block_size = 100;
-			int angle_address = 2;
-			int angle_size = 2;
-			int unit1_distance_address = 4;
-			int unit_distance_size = 2;
-			int unit1_reflectivity_address = unit1_distance_address + unit_distance_size;
-			int unit_reflectivity_size = 1;
-			int channel_size = unit_distance_size + unit_reflectivity_size;
-			float * angles = new float[block_count];
-			int * distance_mm = new int[channel_count * block_count];
-			int * flectivity = new int[channel_count * block_count];
-			memset(angles, 0, sizeof(float) * block_count);
-			memset(distance_mm, 0, sizeof(int) * channel_count * block_count);
-			memset(flectivity, 0, sizeof(int) * channel_count * block_count);
-			for (int i = 0; i < block_count; i++) {
-				for (int k = angle_size - 1; k >= 0; k--) {
-					int index = head_size + i * block_size + angle_address + k;
-					float data = pktdata[head_size + i * block_size + angle_address + k];
-					angles[i] = angles[i] * 256 + data;
-				}
-				angles[i] = angles[i] / 100;
-				for (int j = 0; j < channel_count; j++) {
-					for (int k = unit_distance_size - 1; k >= 0; k--) {
-						distance_mm[i * channel_count + j] = distance_mm[i * channel_count + j] * 256 + pktdata[head_size + flag_size + i * block_size + angle_size + j * channel_size + k];
-					}
-					for (int k = unit_reflectivity_size - 1; k >= 0; k--) {
-						flectivity[i * channel_count + j] = flectivity[i * channel_count + j] * 256 + pktdata[head_size + flag_size + i * block_size + angle_size + j * channel_size + unit_distance_size + k];
-						if (maxFlectivity < flectivity[i * channel_count + j]) {
-							maxFlectivity = flectivity[i * channel_count + j];
-						}
-					}
-				}
-			}
-			float angle_average = 0;
-			for (int i = 0; i < block_count; i++) {
-				angle_average += angles[i];
-			}
-			angle_average /= block_count;
-			int angle_index = (int)(angle_average / 1.5);
-			if (angle_map[angle_index] == 0) {
-				//��ӵ���
-				for (int i = 0; i < block_count; i++) {
-					for (int j = 0; j < channel_count; j++) {
-						MyPoint3D point;
-						float distance = distance_mm[i * channel_count + j] / 1000.0;
-						int flectivity_value = flectivity[i * channel_count + j];
-						float horizontal_angle = angles[i] * PI / 180;
-						float vertical_angle = PreprocessLayerConfig::hdl32_vertical_angles[j % 32] * PI / 180;
-						point.z = distance * sin(vertical_angle);
-						point.y = distance * cos(vertical_angle) * sin(horizontal_angle);
-						point.x = distance * cos(vertical_angle) * cos(horizontal_angle);
-						PointType pclPoint;
-						pclPoint.x = 2 * (point.y);
-						pclPoint.y = -2 * (point.x);
-						pclPoint.z = 2 * point.z;
-						pclPoint.r = 0;
-						pclPoint.b = flectivity_value;
-						pclPoint.g = 0;
-						scene->push_back(pclPoint);
-					}
-				}
-				angle_map[angle_index] = 1;
-			}
-			//����Ƿ�չ���һȦ
-			int angle_count = 0;
-			for (int i = 0; i < 240; i++) {
-				if (angle_map[i] == 1) {
-					angle_count++;
-				}
-			}
-			if (angle_count >= 235) {
-				//����  ��ʾ
-				float seg = maxFlectivity * 1.0 / 256;
-				int pointSize = scene->points.size();
-				for (int i = 0; i < scene->points.size(); i++) {
-					int flex = scene->points[i].b;
-					scene->points[i].r = (int)(flex / seg);
-					scene->points[i].b = 255 - (int)(flex / seg) * 5;
-					scene->points[i].g = (int)(flex / seg) * 5;
-				}
-				memset(angle_map, 0, sizeof(float) * 240);
-				break;
-			}
-			delete angles;
-			delete distance_mm;
-			delete flectivity;
-		}
-	}
-}
-
-void PcapTransformLayer::get_current_frame(const char * path, HPCD & file) {
-	if (device == nullptr) {
-		device = get_pcap_dev_handle();
-	}
-	pcap_pkthdr *pkthdr = 0;
-	const u_char *pktdata = 0;
-	bool start_flag = false;
-	int count = 0;
-	int res = 0;
-	int block_count = 12;
-	int channel_count = 32;
-	int flag_size = 2;
-	int head_size = 42;
-	int block_size = 100;
-	int angle_address = 2;
-	int angle_size = 2;
-	int unit1_distance_address = 4;
-	int unit_distance_size = 2;
-	int unit1_reflectivity_address = unit1_distance_address + unit_distance_size;
-	int unit_reflectivity_size = 1;
-	int channel_size = unit_distance_size + unit_reflectivity_size;
-	float * angles = new float[block_count];
-	int * distance_mm = new int[channel_count * block_count];
-	int * flectivity = new int[channel_count * block_count];
-	std::vector<XYZRGBA> points;
-	while ((res = pcap_next_ex(device, &pkthdr, &pktdata)) >= 0) {
-		if (pkthdr->caplen == 1248) {
-			///////////////////////
-			memset(angles, 0, sizeof(float) * block_count);
-			memset(distance_mm, 0, sizeof(int) * channel_count * block_count);
-			memset(flectivity, 0, sizeof(int) * channel_count * block_count);
-			for (int i = 0; i < block_count; i++) {
-				for (int k = angle_size - 1; k >= 0; k--) {
-					int index = head_size + i * block_size + angle_address + k;
-					float data = pktdata[head_size + i * block_size + angle_address + k];
-					angles[i] = angles[i] * 256 + data;
-				}
-				angles[i] = angles[i] / 100;
-  				for (int j = 0; j < channel_count; j++) {
-					for (int k = unit_distance_size - 1; k >= 0; k--) {
-						distance_mm[i * channel_count + j] = distance_mm[i * channel_count + j] * 256 + pktdata[head_size + flag_size + i * block_size + angle_size + j * channel_size + k];
-					}
-					for (int k = unit_reflectivity_size - 1; k >= 0; k--) {
-						flectivity[i * channel_count + j] = flectivity[i * channel_count + j] * 256 + pktdata[head_size + flag_size + i * block_size + angle_size + j * channel_size + unit_distance_size + k];
-					}
-				}
-			}
-			//��ӵ���
-			for (int i = 0; i < block_count; i++) {
-				for (int j = 0; j < channel_count; j++) {
-					MyPoint3D point;
-					float distance = distance_mm[i * channel_count + j] / 1000.0;
-					int flectivity_value = flectivity[i * channel_count + j];
-					float horizontal_angle = angles[i] * PI / 180;
-					float vertical_angle = PreprocessLayerConfig::vlp16_vertical_angles[j % 32] * PI / 180;
-					point.z = distance * sin(vertical_angle);
-					point.y = distance * cos(vertical_angle) * sin(-horizontal_angle);
-					point.x = distance * cos(vertical_angle) * cos(-horizontal_angle);
-					XYZRGBA pclPoint;
-					pclPoint.x = 2 * (point.y);
-					pclPoint.y = 2 * (point.x);
-					pclPoint.z = 2 * point.z;
-					pclPoint.r = flectivity_value;
-					pclPoint.b = 255 - flectivity_value;
-					pclPoint.g = flectivity_value * 5;
-					pclPoint.a = 0;
-					if (!(pclPoint.x <= 0.02 && pclPoint.y <= 0.02 && pclPoint.z <= 0.02)) {
-						points.push_back(pclPoint);
-					}
-				}
-			}
-			if (count >= 240) {
-				count = 0;
-				//����  ��ʾ
-				file = PcdUtil::pcdOpen(path);
-				PcdUtil::pcdWrite(file, points.data(), points.size());
-				PcdUtil::pcdClose(file);
-				points.clear();
-				break;
-			}
-			count++;
-		}
-	}
-}
 
 void PcapTransformLayer::get_current_frame_pandar(const char * path, HPCD & file) {
 	if (device == nullptr) {

@@ -34,7 +34,7 @@ void cz_test() {
 
 void gjm_test() {
 
-	MultipleLidarViewer::showVelodyne16and32Points(0,1);
+	//MultipleLidarViewer::showVelodyne16and32Points(0,1);
 
 	//�µ�pcd��ȡ����
 	//PointViewer::get_instance()->init_point_viewer();
@@ -48,14 +48,26 @@ void gjm_test() {
 	//DataGatherLayer::get_instance()->start_grab("E:\\DataSpace\\LidarDataSpace\\test_lidar_20180529\\gps_data", "E:\\DataSpace\\LidarDataSpace\\test_lidar_20180529\\pcd_data", "E:\\DataSpace\\LidarDataSpace\\test_lidar_20180529\\imu_data", "E:\\DataSpace\\LidarDataSpace\\test_lidar_20180529\\ori_imu_data");
 	
 	//�����㷨
-	/*PointViewer::get_instance()->init_point_viewer();
+	PointViewer::get_instance()->init_point_viewer();
 	pcl::PointCloud<PointType>::Ptr cloud(new pcl::PointCloud<PointType>());
-	PcdUtil::read_pcd_file("D:\\TTT.pcd", cloud);
-	DimensionReductionCluster::start_clusting(cloud);
-	printf("%d\n", cloud->size());
-	PointViewer::get_instance()->set_point_cloud(cloud);
-	system("pause");*/
 	
+	//PcdUtil::read_pcd_file("D:\\t3.pcd", cloud);
+	PcdUtil::read_pcd_file("D:\\2.pcd", cloud);
+	for (int i = 0; i < cloud->size(); i++) {
+		
+			(*cloud)[i].g = 255;
+			(*cloud)[i].r = 255;
+			(*cloud)[i].b = 255;
+
+	}
+
+
+	//DimensionReductionCluster::start_clusting(cloud);
+	//printf("%d\n", cloud->size());
+	PointViewer::get_instance()->set_point_cloud(cloud);
+	system("pause");
+	/*
+	pcl::fromPCLPointCloud2();*/
 	//PCDתXYZ
 	//PcdUtil::trans_pcd_to_xyz("D:/map.pcd","D:/map.xyz");
 	

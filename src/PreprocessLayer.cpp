@@ -672,7 +672,7 @@ void PcapTransformLayer::get_current_frame(pcap_t * cur_device, pcl::PointCloud<
 					} else if (config == 1) {
 						vertical_angle = PreprocessLayerConfig::vlp16_vertical_angles[j % 32] * PI / 180;
 					} else if (config == 2) {
-						vertical_angle = PreprocessLayerConfig::rslidar16_vertical_angles[j % 32] * PI / 180;
+						//vertical_angle = PreprocessLayerConfig::rslidar16_vertical_angles[j % 32] * PI / 180;
 					}
 
 					point.z = distance * sin(vertical_angle);

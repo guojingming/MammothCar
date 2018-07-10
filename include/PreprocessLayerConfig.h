@@ -26,8 +26,8 @@ namespace mammoth {
 			static uint8_t * vlp16_vertical_ids;
 			static double * pandar40P_vertical_angles;
 			static double * pandar40P_horizontal_angles;
-			static double * rslidar16_vertical_angles;
-			static double * rslidar16_horizontal_angles;
+			// static double * rslidar16_vertical_angles;
+			// static double * rslidar16_horizontal_angles;
 		};
 
 		//enum PRESET_CONFIGS {VLP16, HDL32E, PANDAR40P};

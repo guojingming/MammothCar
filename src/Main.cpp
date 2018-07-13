@@ -1,14 +1,18 @@
 #include "Mammoth.h"
+#include <crtdbg.h>
+#include <WinSock2.h>
+#pragma comment(lib,"ws2_32.lib")
 
 using namespace mammoth::layer;
 using Eigen::MatrixXd;
+
 
 void ryh_test();
 void gjm_test();
 
 
 int main(int argc, char ** argv) {
-	
+	//_CrtSetBreakAlloc(8851);
 	ryh_test();
 	//gjm_test();
 
@@ -57,11 +61,42 @@ void gjm_test() {
 	//JluSlamLayer::get_instance()->start_slam("E:\\DataSpace\\LidarDataSpace\\new_lidar_20180226-1\\gps_data","E:\\DataSpace\\LidarDataSpace\\new_lidar_20180226-1\\pcd_data");
 } 
 
+
 void ryh_test() {
+
 	PointViewer::get_instance()->init_point_viewer();
 	pcl::PointCloud<PointType>::Ptr cloud(new pcl::PointCloud<PointType>());
-	pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_dev_handle(2);
-	PcapTransformLayer::get_instance()->get_current_frame_CE30D(device, cloud, 0);
-	PointViewer::get_instance()->set_point_cloud(cloud);
-	system("pause");
+	pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_dev_handle(5);
+
+	WSADATA wsaData;
+	WSAStartup(WINSOCK_VERSION, &wsaData);
+	SOCKET sock;
+	sock = socket(AF_INET, SOCK_DGRAM, 0);
+
+	char buffer[50] = "version";
+	char dest_ip[] = "192.168.1.80";
+	unsigned short dest_port = 2368;
+
+	sockaddr_in RemoteAddr;
+	RemoteAddr.sin_family = AF_INET;
+	RemoteAddr.sin_port = htons(dest_port);
+	RemoteAddr.sin_addr.S_un.S_addr = inet_addr(dest_ip);
+	sendto(sock, buffer, 50, 0, (sockaddr*)&RemoteAddr, sizeof(RemoteAddr));
+
+	strcpy_s(buffer, "getDistanceAndAmplitudeSorted");
+	sendto(sock, buffer, 50, 0, (sockaddr*)&RemoteAddr, sizeof(RemoteAddr));
+
+	cv::namedWindow("grid");
+	cv::Mat img = cv::Mat(21, 118, CV_8UC3, cv::Scalar(0, 0, 0));
+
+
+	while (1)
+	{
+		PcapTransformLayer::get_instance()->get_current_frame_CE30D(img, device, cloud, 0);
+		PointViewer::get_instance()->set_point_cloud(cloud);
+	}
+
+	closesocket(sock);
+	
+//	system("pause");
 }

@@ -68,7 +68,7 @@ namespace mammoth {
 			void play_pcap_file(std::string pcap_path, int start_packet_number = 0);
 			void get_current_frame(pcap_t * cur_device, pcl::PointCloud<PointType>::Ptr & scene, int config);
 			void get_current_frame_pandar(const char * path, HPCD & file);
-			void get_current_frame_CE30D(pcap_t * cur_device, pcl::PointCloud<PointType>::Ptr & scene, int config);
+			void get_current_frame_CE30D(cv::Mat & img, pcap_t * cur_device, pcl::PointCloud<PointType>::Ptr & scene, int config);
 			void parameter_init(float angle_piece, std::string path_prefix);
 			~PcapTransformLayer();
 		private:

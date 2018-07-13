@@ -1,4 +1,8 @@
 #include "PreprocessLayer.h"
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv/cv.h>
+#include <opencv2/core/core.hpp>
+#include <algorithm>
 
 using namespace mammoth::layer;
 using namespace mammoth::config;
@@ -575,16 +579,257 @@ void PcapTransformLayer::parameter_init(float angle_piece, std::string path_pref
 }
 
 
-void PcapTransformLayer::get_current_frame_CE30D(pcap_t * cur_device, pcl::PointCloud<PointType>::Ptr & scene, int config) {
+void PcapTransformLayer::get_current_frame_CE30D(cv::Mat & img, pcap_t * cur_device, pcl::PointCloud<PointType>::Ptr & scene, int config) {
 	scene->clear();
 	pcap_pkthdr *pkthdr = 0;
 	const u_char *pktdata = 0;
 	int count = 0;
+	float maxDistance = 0.0;
+	int maxFlectivity = 0;
+	int block_count = 12;
+	int block_size = 64;
+	int head_size = 84;
+	int channel_count = 20;
+	int idcode_size = 2;
+	int angle_size = 2;
+	int unit_distance_size = 2;
+	int unit_reflectivity_size = 1;
+	int channel_size = unit_distance_size + unit_reflectivity_size;
+
+	float *angles = new float[block_count];
+	int *distance_mm = new int[channel_count*block_count];
+	int *flectivity = new int[channel_count*block_count];
+
+	struct Grid_data
+	{
+		int num;
+		float distance[20];
+		float min_distance;
+		float max_distance;
+		float total_distance;
+	};
+
+	int zero_count = 0;
+	//float *obstacle_distance=new float[5000];
+	//memset(obstacle_distance, 0.0, sizeof(float) * 5000);
+	
+	int obstacle_num = 0;
+	const int grid_row = 21;
+	const int grid_col = 118;
+	int grid_left = -297.5, grid_right = 292.5;//cm
+	int grid_bottom = -21, grid_top = 21;//cm
+
+	//栅格显示分辨率(倍数相同)
+	int display_hori = 118;  //590的倍数
+	int display_vert = 21;    //42的倍数
+
+	Grid_data grid[grid_row][grid_col] = {0};
+
+	//cv::Mat img = cv::Mat(display_vert, display_hori, CV_8UC3, cv::Scalar(0, 0, 0));
 	while (pcap_next_ex(cur_device, &pkthdr, &pktdata) >= 0) {
-		if (pkthdr->caplen == 1248) {
+		if (pkthdr->caplen == 858) {
+
+			memset(angles, 0, sizeof(float)*block_count);
+			memset(distance_mm, 0, sizeof(int)*channel_count*block_count);
+			memset(flectivity, 0, sizeof(int)*channel_count*block_count);
+
+			for (int i = 0; i < block_count; ++i) {
+
+				for (int k = angle_size - 1; k >= 0; --k) {
+					int index = head_size + i*block_size + idcode_size + k;
+					float data = pktdata[index];
+					angles[i] = angles[i] * 256 + data;
+				}
+				angles[i] = angles[i] / 100 - 30;
+				
+				for (int j = 0; j < channel_count; ++j) {
+
+					float distance = 0;
+
+					for (int k = unit_distance_size-1; k >=0; --k) {
+						int index = head_size + i*block_size + idcode_size + angle_size + j*channel_size + k;
+						float data = pktdata[index];
+						distance_mm[channel_count*i + j] = distance_mm[channel_count*i + j] * 256 + data;
+					}
+
+					flectivity[channel_count*i + j] = pktdata[head_size + i*block_size + idcode_size + angle_size + j*channel_size + unit_distance_size];
+					if (maxFlectivity < flectivity[channel_count*i + j]) {
+						maxFlectivity = flectivity[channel_count*i + j];
+					}
+
+					distance = distance_mm[i*channel_count + j] * 2.0 / 1000;
+					if (distance > maxDistance)
+						maxDistance = distance;
+					int flectivity_value = flectivity[i*channel_count + j];
+					float horizontal_angle = angles[i] * PI / 180;
+					float vertical_angle = PreprocessLayerConfig::banewakeCE30D_vertical_angles[j%channel_count] * PI / 180;
+					double temp = 255 / (maxFlectivity+1);
+					PointType pclPoint;
+					pclPoint.z = distance * sin(vertical_angle);
+					pclPoint.y = distance * cos(vertical_angle) * sin(-horizontal_angle);
+					pclPoint.x = distance * cos(vertical_angle) * cos(horizontal_angle);
+					pclPoint.r = 0;
+					pclPoint.b = 255;
+					pclPoint.g = 0;
+
+					if(distance!=0)
+						scene->push_back(pclPoint);
+
+					if (distance == 0)
+						zero_count++;
+
+					if (pclPoint.x <= 5.0&&distance>0.0) {
+
+						float distance_expend = 5.0 / cos(horizontal_angle) / cos(vertical_angle);
+						pclPoint.z = distance_expend*sin(vertical_angle);
+						pclPoint.y = distance_expend*cos(vertical_angle)*sin(-horizontal_angle);
+						pclPoint.x = 5.0;
+						pclPoint.r = 0;
+						pclPoint.b = 0;
+						pclPoint.g = 255;
+
+						int grid_cur_row = (pclPoint.z * 100 - grid_bottom) / 2;
+						int grid_cur_col = (pclPoint.y * 100 - grid_left) / 5;
+
+						grid[grid_cur_row][grid_cur_col].distance[grid[grid_cur_row][grid_cur_col].num] = distance;
+						if (grid[grid_cur_row][grid_cur_col].num == 0) {
+							grid[grid_cur_row][grid_cur_col].min_distance = distance;
+							grid[grid_cur_row][grid_cur_col].max_distance = distance;
+						}
+						else {
+							if (grid[grid_cur_row][grid_cur_col].max_distance < distance)
+								grid[grid_cur_row][grid_cur_col].max_distance = distance;
+							if (grid[grid_cur_row][grid_cur_col].min_distance > distance)
+								grid[grid_cur_row][grid_cur_col].min_distance = distance;
+						}
+						grid[grid_cur_row][grid_cur_col].total_distance += distance;
+						grid[grid_cur_row][grid_cur_col].num += 1;
+
+
+						scene->push_back(pclPoint);
+					}
+
+				}
+			}
 
 			count++;
 			if (count == 27) {
+
+				/*PointType pclPoint;
+				for (int i = 0; i < grid_row; ++i)
+					for (int j = 0; j < grid_col; ++j)
+						if (grid[i][j].num > 0) {
+							float ii = (i * 2 + grid_bottom) /100.0;
+							float jj = (j * 5 + grid_left) /100.0;
+							pclPoint.z = ii + 0.01;
+							pclPoint.y = jj + 0.025;
+							pclPoint.x = 5;
+							pclPoint.r = 255;
+							pclPoint.b = 0;
+							pclPoint.g = 0;
+
+							scene->push_back(pclPoint);
+						}*/
+				//printf("%d", zero_count);
+;
+
+				cv::Point root_points[1][4];
+				root_points[0][0] = cv::Point(0, 0);
+				root_points[0][1] = cv::Point(0, display_vert);
+				root_points[0][2] = cv::Point(display_hori, display_vert);
+				root_points[0][3] = cv::Point(display_hori, 0); 
+				                                                                                                                                                                                
+				const cv::Point* ppt[1] = { root_points[0]};
+				int npt[] = {4};
+				fillPoly(img, ppt, npt, 1, cv::Scalar(0, 0, 0));
+				//cv::rectangle(img, cvPoint(0, 0), cvPoint(display_hori-1, display_vert-1), cvScalar(0, 255, 0), 1);
+				for (int i = 0; i <= grid_row; ++i)
+					cv::line(img, cv::Point(0,i*display_vert / grid_row), cv::Point(display_hori - 1,i*display_vert / grid_row), cv::Scalar(0, 255, 0), 1);
+				for (int j = 0; j <= grid_col; ++j)
+					cv::line(img, cv::Point(j*display_hori / grid_col, 0), cv::Point(j*display_hori / grid_col,display_vert - 1), cv::Scalar(0, 255, 0), 1);
+
+
+// 				for (int i = 0; i < grid_row; ++i) {
+// 					for (int j = 0; j < grid_col; ++j) {
+// 						if (grid[i][j].num >= 1) {
+// 							/*cv::Point root_points[1][4];
+// 							root_points[0][0] = cv::Point(j * display_hori / grid_col + 1, i * display_vert / grid_row + 1);
+// 							root_points[0][1] = cv::Point(j * display_hori / grid_col + 1, i * display_vert / grid_row + display_vert / grid_row - 1);
+// 							root_points[0][2] = cv::Point(j * display_hori / grid_col + display_hori / grid_col - 1, i * display_vert / grid_row + display_vert / grid_row - 1);
+// 							root_points[0][3] = cv::Point(j * display_hori / grid_col + display_hori / grid_col - 1, i * display_vert / grid_row + 1);
+// 
+// 							const cv::Point* ppt[1] = { root_points[0] };
+// 							int npt[] = { 4 };*/
+// 							auto p = &img.at<cv::Vec3b>(i, j)[0];
+// 							float color_scale = grid[i][j].min_distance / maxDistance;
+// 							int b = 255 * color_scale;
+// 							int r = 255 - b;
+// 
+// 							*p = b;
+// 							*(p+1) = 0;
+// 							*(p + 2) = r;
+// 							//cv::fillPoly(img, ppt, npt, 1, cv::Scalar(b, 0, r));
+// 	
+// 							/*for(int pixel_i=i*20+110;pixel_i<=i*20+130;++pixel_i)
+// 								for (int pixel_j = j * 10 + 25; pixel_j < j * 10 + 35; ++pixel_j) {
+// 									img.at<cv::Vec3b>(pixel_i, pixel_j)[0] = b;
+// 									img.at<cv::Vec3b>(pixel_i, pixel_j)[1] = 0;
+// 									img.at<cv::Vec3b>(pixel_i, pixel_j)[2] = r;
+// 								}*/
+// 
+// 						}
+// 					}
+//				}
+
+				
+ 				cv::imshow("grid", img);
+ 				cv::waitKey(1);
+
+				//for (int i = 0; i < grid_row - 1; ++i) {
+				//	for (int j = 0; j < grid_col - 1; ++j) {
+				//		if (grid[i][j].num >= 1 && grid[i + 1][j].num >= 1 && grid[i][j + 1].num >= 1 && grid[i + 1][j + 1].num >= 1) {
+				//			int n = grid[i][j].num + grid[i + 1][j].num + grid[i][j + 1].num + grid[i + 1][j + 1].num;
+				//			float *distance = new float[n];
+				//			memset(distance, 0.0,sizeof(float)*n);
+				//			int k = 0;
+
+				//			//将4个栅格的distance数组合并成一个数组
+				//			for (; k < grid[i][j].num; ++k)
+				//				distance[k] = grid[i][j].distance[k];
+				//			for (int m = 0; k < grid[i][j].num + grid[i + 1][j].num; ++k) {
+				//				distance[k] = grid[i + 1][j].distance[m];
+				//				++m;
+				//			}
+				//			for (int m = 0; k < grid[i][j].num + grid[i + 1][j].num + grid[i][j + 1].num; ++k) {
+				//				distance[k] = grid[i][j + 1].distance[m];
+				//				++m;
+				//			}
+				//			for (int m = 0; k < n; ++k) {
+				//				distance[k] = grid[i + 1][j + 1].distance[m];
+				//				++m;
+				//			}
+				//			//快排
+				//			quickSort(distance, 0, n - 1);
+
+				//			//查找是否存在4个差值在阈值之内的distance值
+				//			for (k = 0; k < n - 3; ++k) {
+				//				if (distance[k + 3] - distance[k] <= 0.1) {
+				//					obstacle_distance[obstacle_num] = distance[k];
+				//					obstacle_num++;
+				//					k += 3;
+				//				}						
+				//			}
+				//			delete distance;
+				//		}
+				//	}
+				//}
+
+				/*for (int i = 0; i < obstacle_num; ++i)
+					printf("%.8f\n", obstacle_distance[i]);*/
+				//delete[] obstacle_distance;
+				delete[] angles;
+				delete[] distance_mm;
+				delete[] flectivity;
 				break;
 			}
 		}

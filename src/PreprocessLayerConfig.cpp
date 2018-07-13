@@ -166,3 +166,26 @@ double * PreprocessLayerConfig::pandar40P_vertical_angles = new double[40]{
 // double * rslidar16_vertical_angles = new double[32]{
 // 	-15,-13,-11,-9,-7,-5,-3,-1,15,13,11,9,7,5,3,1,-15,-13,-11,-9,-7,-5,-3,-1,15,13,11,9,7,5,3,1
 // };
+
+double *PreprocessLayerConfig::banewakeCE30D_vertical_angles = new double[20]{
+	1.9,
+	1.7,
+	1.5,
+	1.3,
+	1.1,
+	0.9,
+	0.7,
+	0.5,
+	0.3,
+	0.1,
+	-0.1,
+	-0.3,
+	-0.5,
+	-0.7,
+	-0.9,
+	-1.1,
+	-1.3,
+	-1.5,
+	-1.7,
+	-1.9
+};

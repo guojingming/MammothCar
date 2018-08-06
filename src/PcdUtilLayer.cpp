@@ -84,7 +84,6 @@ PointViewer* PointViewer::p_viewer = nullptr;
 void PointViewer::init_point_viewer() {
 #ifdef USE_GLVIEWER
 	p_glviewer->SetParam(glviewer::DeviceParams::Wave_ZPlane, -1.8f);
-	
 	//p_glviewer->AddWavePlane(2, 0, 50);
 	p_glviewer->SetOnPickingCallback(selectResultHandle);
 	p_glviewer->RegisterCallback(' ', key_pressed);

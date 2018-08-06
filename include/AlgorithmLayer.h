@@ -15,6 +15,17 @@ namespace mammoth {
 			JluSlamLayer();
 		};
 
+		class ClimbingLayer {
+		public:
+			~ClimbingLayer();
+			static ClimbingLayer * get_instance();
+			float get_height_threshold(float min_x, float max_x);
+			void climbing_check(pcl::PointCloud<PointType>::Ptr & cloud);
+		private:
+			static ClimbingLayer * layer;
+			ClimbingLayer();
+		};
+
 		class DimensionReductionCluster {
 		public:
 			static void start_clusting(pcl::PointCloud<PointType>::Ptr & cloud);

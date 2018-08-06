@@ -268,7 +268,7 @@ void PcapTransformLayer::trans_pcap_to_pcd(std::string pcap_path, std::vector<pc
 					angles[i] = angles[i] * 256 + data;
 				}
 				angles[i] = angles[i] / 100;
-				printf("%d %f\n", i, angles[i]);
+				//printf("%d %f\n", i, angles[i]);
 				for (int j = 0; j < channel_count; j++) {
 					for (int k = unit_distance_size - 1; k >= 0; k--) {
 						distance_mm[i * channel_count + j] = distance_mm[i * channel_count + j] * 256 + pktdata[head_size + flag_size + i * block_size + angle_size + j * channel_size + k];
@@ -296,7 +296,7 @@ void PcapTransformLayer::trans_pcap_to_pcd(std::string pcap_path, std::vector<pc
 					pclPoint.y = 2 * (point.x);
 					pclPoint.z = 2 * point.z;
 					if (pclPoint.z == 0) {
-						printf("%f %f %f\n", pclPoint.x, pclPoint.y, pclPoint.z);
+						//printf("%f %f %f\n", pclPoint.x, pclPoint.y, pclPoint.z);
 					}
 
 					pclPoint.r = 0;
@@ -311,7 +311,7 @@ void PcapTransformLayer::trans_pcap_to_pcd(std::string pcap_path, std::vector<pc
 					//	test_data[j % 32].push_back(temp_double);
 					//	/////////////////////////
 
-					//	vec[index_frame_count]->push_back(pclPoint);
+					vec[index_frame_count]->push_back(pclPoint);
 					//}
 				}
 			}
@@ -732,56 +732,56 @@ void PcapTransformLayer::get_current_frame_CE30D(cv::Mat & img, pcap_t * cur_dev
 						}*/
 				//printf("%d", zero_count);
 ;
-
-				cv::Point root_points[1][4];
-				root_points[0][0] = cv::Point(0, 0);
-				root_points[0][1] = cv::Point(0, display_vert);
-				root_points[0][2] = cv::Point(display_hori, display_vert);
-				root_points[0][3] = cv::Point(display_hori, 0); 
-				                                                                                                                                                                                
-				const cv::Point* ppt[1] = { root_points[0]};
-				int npt[] = {4};
-				fillPoly(img, ppt, npt, 1, cv::Scalar(0, 0, 0));
-				//cv::rectangle(img, cvPoint(0, 0), cvPoint(display_hori-1, display_vert-1), cvScalar(0, 255, 0), 1);
-				for (int i = 0; i <= grid_row; ++i)
-					cv::line(img, cv::Point(0,i*display_vert / grid_row), cv::Point(display_hori - 1,i*display_vert / grid_row), cv::Scalar(0, 255, 0), 1);
-				for (int j = 0; j <= grid_col; ++j)
-					cv::line(img, cv::Point(j*display_hori / grid_col, 0), cv::Point(j*display_hori / grid_col,display_vert - 1), cv::Scalar(0, 255, 0), 1);
-
-
-// 				for (int i = 0; i < grid_row; ++i) {
-// 					for (int j = 0; j < grid_col; ++j) {
-// 						if (grid[i][j].num >= 1) {
-// 							/*cv::Point root_points[1][4];
-// 							root_points[0][0] = cv::Point(j * display_hori / grid_col + 1, i * display_vert / grid_row + 1);
-// 							root_points[0][1] = cv::Point(j * display_hori / grid_col + 1, i * display_vert / grid_row + display_vert / grid_row - 1);
-// 							root_points[0][2] = cv::Point(j * display_hori / grid_col + display_hori / grid_col - 1, i * display_vert / grid_row + display_vert / grid_row - 1);
-// 							root_points[0][3] = cv::Point(j * display_hori / grid_col + display_hori / grid_col - 1, i * display_vert / grid_row + 1);
-// 
-// 							const cv::Point* ppt[1] = { root_points[0] };
-// 							int npt[] = { 4 };*/
-// 							auto p = &img.at<cv::Vec3b>(i, j)[0];
-// 							float color_scale = grid[i][j].min_distance / maxDistance;
-// 							int b = 255 * color_scale;
-// 							int r = 255 - b;
-// 
-// 							*p = b;
-// 							*(p+1) = 0;
-// 							*(p + 2) = r;
-// 							//cv::fillPoly(img, ppt, npt, 1, cv::Scalar(b, 0, r));
-// 	
-// 							/*for(int pixel_i=i*20+110;pixel_i<=i*20+130;++pixel_i)
-// 								for (int pixel_j = j * 10 + 25; pixel_j < j * 10 + 35; ++pixel_j) {
-// 									img.at<cv::Vec3b>(pixel_i, pixel_j)[0] = b;
-// 									img.at<cv::Vec3b>(pixel_i, pixel_j)[1] = 0;
-// 									img.at<cv::Vec3b>(pixel_i, pixel_j)[2] = r;
-// 								}*/
-// 
-// 						}
-// 					}
-//				}
-
-				
+//
+//				cv::Point root_points[1][4];
+//				root_points[0][0] = cv::Point(0, 0);
+//				root_points[0][1] = cv::Point(0, display_vert);
+//				root_points[0][2] = cv::Point(display_hori, display_vert);
+//				root_points[0][3] = cv::Point(display_hori, 0); 
+//				                                                                                                                                                                                
+//				const cv::Point* ppt[1] = { root_points[0]};
+//				int npt[] = {4};
+//				fillPoly(img, ppt, npt, 1, cv::Scalar(0, 0, 0));
+//				//cv::rectangle(img, cvPoint(0, 0), cvPoint(display_hori-1, display_vert-1), cvScalar(0, 255, 0), 1);
+//				for (int i = 0; i <= grid_row; ++i)
+//					cv::line(img, cv::Point(0,i*display_vert / grid_row), cv::Point(display_hori - 1,i*display_vert / grid_row), cv::Scalar(0, 255, 0), 1);
+//				for (int j = 0; j <= grid_col; ++j)
+//					cv::line(img, cv::Point(j*display_hori / grid_col, 0), cv::Point(j*display_hori / grid_col,display_vert - 1), cv::Scalar(0, 255, 0), 1);
+//
+//
+//// 				for (int i = 0; i < grid_row; ++i) {
+//// 					for (int j = 0; j < grid_col; ++j) {
+//// 						if (grid[i][j].num >= 1) {
+//// 							/*cv::Point root_points[1][4];
+//// 							root_points[0][0] = cv::Point(j * display_hori / grid_col + 1, i * display_vert / grid_row + 1);
+//// 							root_points[0][1] = cv::Point(j * display_hori / grid_col + 1, i * display_vert / grid_row + display_vert / grid_row - 1);
+//// 							root_points[0][2] = cv::Point(j * display_hori / grid_col + display_hori / grid_col - 1, i * display_vert / grid_row + display_vert / grid_row - 1);
+//// 							root_points[0][3] = cv::Point(j * display_hori / grid_col + display_hori / grid_col - 1, i * display_vert / grid_row + 1);
+//// 
+//// 							const cv::Point* ppt[1] = { root_points[0] };
+//// 							int npt[] = { 4 };*/
+//// 							auto p = &img.at<cv::Vec3b>(i, j)[0];
+//// 							float color_scale = grid[i][j].min_distance / maxDistance;
+//// 							int b = 255 * color_scale;
+//// 							int r = 255 - b;
+//// 
+//// 							*p = b;
+//// 							*(p+1) = 0;
+//// 							*(p + 2) = r;
+//// 							//cv::fillPoly(img, ppt, npt, 1, cv::Scalar(b, 0, r));
+//// 	
+//// 							/*for(int pixel_i=i*20+110;pixel_i<=i*20+130;++pixel_i)
+//// 								for (int pixel_j = j * 10 + 25; pixel_j < j * 10 + 35; ++pixel_j) {
+//// 									img.at<cv::Vec3b>(pixel_i, pixel_j)[0] = b;
+//// 									img.at<cv::Vec3b>(pixel_i, pixel_j)[1] = 0;
+//// 									img.at<cv::Vec3b>(pixel_i, pixel_j)[2] = r;
+//// 								}*/
+//// 
+//// 						}
+//// 					}
+////				}
+//
+//				
  				cv::imshow("grid", img);
  				cv::waitKey(1);
 
@@ -965,7 +965,7 @@ void PcapTransformLayer::get_current_frame(pcap_t * cur_device, pcl::PointCloud<
 					scene->push_back(pclPoint);
 				}
 			}
-			if (count >= 100 && angle_count >= 238) { //235
+			if (count >= 100 && angle_count >= 240) { //235
 				delete angles;
 				delete distance_mm;
 				delete flectivity;

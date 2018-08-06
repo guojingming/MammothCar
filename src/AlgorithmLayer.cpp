@@ -5,6 +5,126 @@ using namespace mammoth::layer;
 using Eigen::MatrixXd;
 
 JluSlamLayer * JluSlamLayer::layer = nullptr;
+ClimbingLayer * ClimbingLayer::layer = nullptr;
+
+ClimbingLayer::ClimbingLayer() {
+
+}
+
+ClimbingLayer * ClimbingLayer::get_instance() {
+	if (layer == nullptr) {
+		layer = new ClimbingLayer();
+	}
+	return layer;
+}
+
+ClimbingLayer::~ClimbingLayer() {
+	if (layer != nullptr) {
+		delete layer;
+	}
+}
+
+float ClimbingLayer::get_height_threshold(float min_x, float max_x) {
+	float x_value = fabs(min_x) >= fabs(max_x) ? fabs(min_x) : fabs(max_x);
+	float board_min = 0.3;
+	float board_max = 0.6;
+	float board_height = 0.14;
+	float shaft_height = 0.10;
+	/*if (x_value <= board_min) {
+		return board_height;
+	} else if (x_value > board_min && x_value <= board_max) {
+		return board_height - (x_value - board_min) / (board_max - board_min) * (board_height - shaft_height);
+	} else {
+		return shaft_height;
+	}*/
+	return board_height;
+}
+
+void ClimbingLayer::climbing_check(pcl::PointCloud<PointType>::Ptr & cloud) {
+	//ground altitude
+	float ground_average_altitude = -2.34;
+	float threshold1 = ground_average_altitude - 0.1;
+	float threshold2 = ground_average_altitude + 0.03;
+
+	//filtering
+	pcl::PassThrough<PointType> passThrough;
+	passThrough.setInputCloud(cloud);
+	passThrough.setFilterLimitsNegative(false);
+	passThrough.setFilterFieldName("x");
+	passThrough.setFilterLimits(-1, 1); //100
+	//passThrough.setFilterLimits(-50, 50); //100
+	passThrough.filter(*cloud);
+	passThrough.setFilterFieldName("y");
+	//passThrough.setFilterLimits(-50, 50);
+	passThrough.setFilterLimits(4, 10); //100
+	passThrough.filter(*cloud);
+
+	//transforming
+	float angle = 0; // -2
+	angle = angle * 3.141592657 / 180;
+	for (int i = 0; i < cloud->size(); i++) {
+		(*cloud)[i].x = -1 * (*cloud)[i].x;
+		float temp = (*cloud)[i].y;
+		(*cloud)[i].y = temp * cos(angle) - (*cloud)[i].z * sin(angle);
+		(*cloud)[i].z = (*cloud)[i].z * cos(angle) + (*cloud)[i].y * sin(angle);
+	}
+
+	float max_x = -10000;
+	float max_y = -10000;
+	float max_z = -10000;
+	float min_x = 10000;
+	float min_y = 10000;
+	float min_z = 10000;
+	float flag = max_x - min_x;
+	for (int i = 0; i < cloud->size(); i++) {
+		PointType point = (*cloud)[i];
+		if (point.z >= threshold2) {
+			if (max_x < point.x) {
+				max_x = point.x;
+			}
+			if (min_x > point.x) {
+				min_x = point.x;
+			}
+			if (max_y < point.y) {
+				max_y = point.y;
+			}
+			if (min_y > point.y) {
+				min_y = point.y;
+			}
+		}
+	}
+	for (int i = 0; i < cloud->size(); i++) {
+		PointType point = (*cloud)[i];
+		if (point.z >= threshold1) {
+			if (max_z < point.z) {
+				max_z = point.z;
+			}
+			float tolerance_value = 0.1;
+			if (point.x >= min_x - tolerance_value && point.x <= max_x + tolerance_value && point.y >= min_y - tolerance_value && point.y <= max_y + tolerance_value) {
+				if (min_z > point.z) {
+					min_z = point.z;
+				}
+			}
+		}
+	}
+
+
+	float threshold = get_height_threshold(min_x, max_x);
+	float height = max_z - min_z;
+	if (max_x - min_x != flag) {
+		if (height < threshold) {
+			printf("YES ");
+		} else {
+			printf("NO ");
+		}
+		printf("long:%f width:%f height:%f", max_x - min_x, max_y - min_y, height);
+	} else {
+		printf("YES ");
+	}
+	printf("\n");
+	//system("pause");
+}
+
 
 JluSlamLayer::JluSlamLayer() {
 
@@ -127,25 +247,26 @@ void JluSlamLayer::DoTransform(float theta1, float theta2, float trans_x, float 
 }
 
 
-
 std::vector<uint32_t> DimensionReductionCluster::cube_handles;
 
 void DimensionReductionCluster::start_clusting(pcl::PointCloud<PointType>::Ptr & cloud) {
+	//filtering
 	pcl::PassThrough<PointType> passThrough;
 	passThrough.setInputCloud(cloud);
 	passThrough.setFilterLimitsNegative(false);
 	passThrough.setFilterFieldName("x");
-	passThrough.setFilterLimits(-5, 5); //100
+	passThrough.setFilterLimits(-1, 1); //100
 	passThrough.filter(*cloud);
 	passThrough.setFilterFieldName("y");
-	passThrough.setFilterLimits(-5, 5); //100
+	passThrough.setFilterLimits(6, 14); //100
 	passThrough.filter(*cloud);
 	passThrough.setFilterFieldName("z");
-	passThrough.setFilterLimits(-2.4, 30);
+	passThrough.setFilterLimits(-2.64, 30);
 	passThrough.filter(*cloud);
+	
+
 	PointViewer::get_instance()->remove_cubes(cube_handles);
 	cloud = birdview_picture_grid(cloud);
-	
 }
 
 pcl::PointCloud<PointType>::Ptr DimensionReductionCluster::birdview_picture_grid(pcl::PointCloud<PointType>::Ptr& cloud) {
@@ -170,7 +291,6 @@ pcl::PointCloud<PointType>::Ptr DimensionReductionCluster::birdview_picture_grid
 			black_picture.at<uchar>(y, x) = 125;
 			map2Dto3D[_Key(x, y)].push_back(point);
 		}
-
 	}
 	std::vector<std::vector<cv::Point>> filtered_contours;
 	cz_region(black_picture, filtered_contours, 0, true, 1000, 1000);
@@ -182,17 +302,23 @@ pcl::PointCloud<PointType>::Ptr DimensionReductionCluster::birdview_picture_grid
 	pcl::PointCloud<PointType>::Ptr contours_cloud(new pcl::PointCloud<PointType>);
 	(*contours_cloud).reserve(cloud->size());
 	//#pragma omp parallel for
+
 	for (int i = 0; i < filtered_contours.size(); i++) {
 		std::vector<cv::Point> single_cluster = filtered_contours[i];
 		if (single_cluster.size() == 0) {
 			combined_count++;
 			continue;
 		}
+
 		int r = (rand() % (255 - 0 + 1));
 		int g = (rand() % (255 - 0 + 1));
 		int b = (rand() % (255 - 0 + 1));
 		float zMin = 10000;
 		float zMax = -10000;
+		float xMin = 10000;
+		float xMax = -10000;
+		float yMin = 10000;
+		float yMax = -10000;
 		for (int j = 0; j < single_cluster.size(); j++) {
 			cv::Point point = single_cluster[j];
 			int x = point.x;
@@ -209,6 +335,18 @@ pcl::PointCloud<PointType>::Ptr DimensionReductionCluster::birdview_picture_grid
 				}
 				if (zMax < point.z) {
 					zMax = point.z;
+				}
+				if (yMin > point.y) {
+					yMin = point.y;
+				}
+				if (yMax < point.y) {
+					yMax = point.y;
+				}
+				if (xMin > point.x) {
+					xMin = point.x;
+				}
+				if (xMax < point.x) {
+					xMax = point.x;
 				}
 				(*contours_cloud).push_back(point);
 			}
@@ -235,7 +373,7 @@ pcl::PointCloud<PointType>::Ptr DimensionReductionCluster::birdview_picture_grid
 		uint32_t handle = PointViewer::get_instance()->add_cube(cube_points);
 		cube_handles.push_back(handle);
 	}
-	printf("contours %d\n", contours_cloud->size());
+	//printf("contours %d\n", contours_cloud->size());
 	return contours_cloud;
 }
 
@@ -246,7 +384,7 @@ int DimensionReductionCluster::cz_region(cv::Mat src, std::vector<std::vector<cv
 	std::vector<std::vector<cv::Point>> contours;
 	cv::findContours(tmp, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
 	cv::Scalar filledcolor = cv::Scalar(255);
-	for (size_t i = 0; i < contours.size(); i++) {
+ 	for (size_t i = 0; i < contours.size(); i++) {
 		std::vector<cv::Point> points1;
 		points1.reserve(contours[i].size());
 		points.push_back(points1);
@@ -257,9 +395,9 @@ int DimensionReductionCluster::cz_region(cv::Mat src, std::vector<std::vector<cv
 	cv::Mat drawing(tmp.size(), CV_8UC1, cv::Scalar(0));
 	cv::Mat tplate3(tmp.size(), CV_8UC1, cv::Scalar(0)); //����һ�Ŵ洢ԭʼ���ͼ
 	for (size_t i = 0; i < contours.size(); i++) {
-		if (contours[i].size() < 50 || contours[i].size() > 150) {
+		/*if (contours[i].size() < 50 || contours[i].size() > 150) {
 			continue;
-		}
+		}*/
 		cv::RotatedRect rRect = cv::minAreaRect(contours[i]);
 		cv::Rect brect = rRect.boundingRect();
 		cv::drawContours(drawing, contours, i, filledcolor, CV_FILLED, 8);
@@ -278,8 +416,8 @@ int DimensionReductionCluster::cz_region(cv::Mat src, std::vector<std::vector<cv
 			}
 		}
 	}
-	cvNamedWindow("window");
-	cv::imshow("window", drawing);
+	//cvNamedWindow("window");
+	//cv::imshow("window", drawing);
 	return 0;
 }
 

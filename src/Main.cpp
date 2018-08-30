@@ -4,6 +4,7 @@
 #include <WinSock2.h>
 #pragma comment(lib,"ws2_32.lib")
 
+using namespace std;
 using namespace mammoth::layer;
 using Eigen::MatrixXd;
 
@@ -57,6 +58,8 @@ void LineFitLeastSquares2(std::vector<std::vector<Point2D>>& points, CrossResult
 void calculate_longitudinal_angle(Point3D* points_3d, int point_count, Parameters & param, LongitudinalResult& result);
 void calculate_cross_angle(Point3D* points_3d, int point_count, Parameters & param, CrossResult& result);
 
+float GetProb2(const float* long_slope_c);
+
 void temp_test();
 void temp_test1();
 void ryh_test();
@@ -65,25 +68,29 @@ void gjm_test();
 void serial_test();
 
 int main(int argc, char ** argv) {
-
-	/*std::vector<pcl::PointCloud<PointType>::Ptr> vec;
-	for (int i = 0; i < 200; i++) {
-		pcl::PointCloud<PointType>::Ptr cloud(new pcl::PointCloud<PointType>());
-
-		vec.push_back(cloud);
-	}
-	PcapTransformLayer::get_instance()->trans_pcap_to_pcd("D:/0180717/3.pcap", vec, 1);
-	char temp[100];
-	for (int i = 0; i < vec.size(); i++) {
-		memset(temp, 0, 100); 
-		sprintf(temp, "D:/test/%d.pcd", i);
-		PcdUtil::save_pcd_file(temp, vec[i], 0);
-	}*/
-
 	temp_test1();
 	//temp_test();
 	//serial_test();
+
+	//temp_test2();
 	return 0;
+}
+
+VOID _Ck(const char* dir, vector<string>& cv) {
+	WIN32_FIND_DATAA WF;
+	CHAR FindDir[260];
+	strcpy_s(FindDir, dir);
+	strcat_s(FindDir, "\\*");
+	HANDLE hFind = FindFirstFileA(FindDir, &WF);
+	do {
+		if (hFind == INVALID_HANDLE_VALUE)
+			break;
+		if (!(WF.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
+			const char* ptr = WF.cFileName + strlen(WF.cFileName);
+			cv.push_back(WF.cFileName);
+		}
+	} while (FindNextFileA(hFind, &WF));
+	FindClose(hFind);
 }
 
 void temp_test1() {
@@ -95,7 +102,7 @@ void temp_test1() {
 	while (1) {
 		PcapTransformLayer::get_instance()->get_current_frame(device, cloud, 0);
 		ClimbingLayer::get_instance()->climbing_check(cloud);
-		if (cloud->size() != 0) {
+		if (cloud->size() != 0) {                  
 			PointViewer::get_instance()->set_point_cloud(cloud);
 		}
 	}
@@ -107,15 +114,15 @@ void temp_test() {
 	//纵坡
 	param.line_x = 0;
 	param.lidar_altitude = 2.64;
-	param.distance_threshold1 = 0.5;
-	param.start_y = 4;
+	param.distance_threshold1 = 0.5;//0.5   0.5
+	param.start_y = 5;
 	param.segment_y_step = 4;
 	param.segment_count = 16;
 	//横坡
 	param.line_x1 = -1.5;
 	param.line_x2 = 0;
 	param.line_x3 = 1.5;
-	param.distance_threshold2 = 0.5;
+	param.distance_threshold2 = 2;//0.5    2
 	//创建结果对象
 	LongitudinalResult longitudinal_result;
 	longitudinal_result.kbr_results[0] = new float[param.segment_count];
@@ -136,6 +143,7 @@ void temp_test() {
 			longitudinal_result.altitudes[i] = -1000;
 		}
 
+		//PcdUtil::read_pcd_file("D:/test_frame.pcd", cloud);
 		PcapTransformLayer::get_instance()->get_current_frame(device, cloud, 0);
 
 		pcl::PassThrough<PointType> passThrough;
@@ -145,52 +153,70 @@ void temp_test() {
 		passThrough.setFilterLimits(-10, 5); //100
 		passThrough.filter(*cloud);
 
-
-		//PcdUtil::read_pcd_file("D:/test/83.pcd", data_cloud);
 		if (frame_count % 2 != 1) {
 			frame_count++;
 			//continue;
 		}
 		Point3D * points_3d = new Point3D[cloud->size()];
 		for (int i = 0; i < cloud->size(); i++) {
-			/*points_3d[i].x = -1 * (*cloud)[i].y;
-			points_3d[i].y = (*cloud)[i].x;
-			points_3d[i].z = (*cloud)[i].z;*/
-			//(*cloud)[i].y *= -1;
-
 			points_3d[i].y = (*cloud)[i].y;
 			points_3d[i].x = (*cloud)[i].x;
 			points_3d[i].z = (*cloud)[i].z; 
- 
+			(*cloud)[i].r = 0;
+			(*cloud)[i].g = 25;
+			(*cloud)[i].b = 0;
+
 			points_3d[i].ptr = &((*cloud)[i]);
 
 			(*cloud)[i].y *= -1;
-			/*points_3d[i].x = (*cloud)[i].x * cos(3.141592657 / 2) - (*cloud)[i].y * sin(3.141592657 / 2);
-			points_3d[i].y = (*cloud)[i].y * cos(3.141592657 / 2) + (*cloud)[i].x * sin(3.141592657 / 2);
-			points_3d[i].z = (*cloud)[i].z;
-			printf("x:%f y:%f z:%f\n", points_3d[i].x, points_3d[i].y, points_3d[i].z);*/
 		}
 		//计算
 		calculate_longitudinal_angle(points_3d, cloud->size(), param, longitudinal_result);
 		PointViewer::get_instance()->set_point_cloud(cloud);
 
 		//calculate_cross_angle(points_3d, cloud->size(), param, cross_result);
+		//PointViewer::get_instance()->set_point_cloud(cloud);
 		//显示结果
+		char temp[100];
+		char flag_i = 0;
 		for (int i = 0; i < param.segment_count; i++) {
-			if (longitudinal_result.kbr_results[0][i] > 30) {
+			if (longitudinal_result.kbr_results[0][i] > 15) {
 				if (longitudinal_result.altitudes[i] != -1000) {
+					memset(temp, 0, 100);
+					sprintf(temp, "SEG%d ANG %2.3f ALT %2.3f", i, longitudinal_result.kbr_results[3][i] + 5, longitudinal_result.altitudes[i]);
+					PointViewer::get_instance()->set_text(i, temp, 0, 35 + i * 15, 0.15f, {1.0f, 1.0f, 1.0f, 5.0f});
 					printf("第%d段 点数:%f  角度:%f  高度:%f  相关系数:%f\n", i, longitudinal_result.kbr_results[0][i], longitudinal_result.kbr_results[3][i] + 5, longitudinal_result.altitudes[i], longitudinal_result.kbr_results[2][i]);
+					flag_i = i + 1;
 				}
+			} else {
+				longitudinal_result.kbr_results[3][i] = NAN;
 			}
-		}		printf("\n");
-		/*printf("\n横坡：\n");
+		}
+		
+		
+		float p = GetProb2(longitudinal_result.kbr_results[3]);
+		memset(temp, 0, 100);
+		p = 0.8;
+		sprintf(temp, "PASSINGRATE %2.6f", p*p);
+		if (p*p >= 0.9) {
+			PointViewer::get_instance()->set_text(16, temp, 0, 20, 0.15f, { 0.0f, 1.0f, 0.0f, 5.0f });
+		} else if (p*p < 0.9 && p*p >= 0.6) {
+			PointViewer::get_instance()->set_text(16, temp, 0, 20, 0.15f, { 1.0f, 0.6f, 0.4f, 5.0f });
+		} else if (p*p < 0.6) {
+			PointViewer::get_instance()->set_text(16, temp, 0, 20, 0.15f, { 1.0f, 0.0f, 0.0f, 5.0f });
+		}
+		
+		//printf("通过几率:%f\n\n", p*p);
+		/*
+		printf("\n横坡：\n");
 		printf("角度:%f 高度:%f\n", cross_result.kbr_results[0][3], cross_result.altitudes[0]);
 		printf("角度:%f 高度:%f\n", cross_result.kbr_results[1][3], cross_result.altitudes[1]);
 		printf("角度:%f 高度:%f\n", cross_result.kbr_results[2][3], cross_result.altitudes[2]);*/
-		//printf("\r %f %f %f %f %f %f", longitudinal_result.kbr_results[3][0], longitudinal_result.kbr_results[3][1], longitudinal_result.kbr_results[3][2], longitudinal_result.kbr_results[3][3], longitudinal_result.kbr_results[3][4], longitudinal_result.kbr_results[3][5]);
 		delete points_3d;
 		cloud->clear();
 		frame_count++;
+
+		//system("pause");
 	}
 }
 
@@ -231,12 +257,13 @@ void calculate_longitudinal_angle(Point3D* points_3d, int point_count, Parameter
 			}
 			points_vec[segment_index].push_back(p);
 			switch (segment_index) {
-			case 0:temp_point.ptr->r = 255; temp_point.ptr->g = 0; temp_point.ptr->b = 0; break;
-			case 1:temp_point.ptr->r = 0; temp_point.ptr->g = 255; temp_point.ptr->b = 0; break;
-			case 2:temp_point.ptr->r = 0; temp_point.ptr->g = 128; temp_point.ptr->b = 192; break;
-			case 3:temp_point.ptr->r = 192; temp_point.ptr->g = 128; temp_point.ptr->b = 0; break;
-			case 4:temp_point.ptr->r = 192; temp_point.ptr->g = 0; temp_point.ptr->b = 192; break;
-			case 5:temp_point.ptr->r = 255; temp_point.ptr->g = 255; temp_point.ptr->b = 255; break;
+			//case 0:temp_point.ptr->r = 255; temp_point.ptr->g = 0; temp_point.ptr->b = 0; break;
+			//case 1:temp_point.ptr->r = 0; temp_point.ptr->g = 255; temp_point.ptr->b = 0; break;
+			//case 2:temp_point.ptr->r = 0; temp_point.ptr->g = 128; temp_point.ptr->b = 192; break;
+			//case 3:temp_point.ptr->r = 192; temp_point.ptr->g = 128; temp_point.ptr->b = 0; break;
+			//case 4:temp_point.ptr->r = 192; temp_point.ptr->g = 0; temp_point.ptr->b = 192; break;
+			//case 5:temp_point.ptr->r = 255; temp_point.ptr->g = 255; temp_point.ptr->b = 255; break;
+			default: temp_point.ptr->r = 255; temp_point.ptr->g = 0; temp_point.ptr->b = 0; break;
 			}
 			
 
@@ -276,27 +303,43 @@ void calculate_cross_angle(Point3D* points_3d, int point_count, Parameters & par
 
 		//找到相应数组中
 		Point2D p;
-		p.x = temp_point.x;
-		p.y = temp_point.z + param.lidar_altitude;
+		p.x = temp_point.y;
+		p.y = temp_point.z;// +param.lidar_altitude;
 
-		if (fabs(temp_point.x - param.line_x1) <= param.distance_threshold1 && fabs(temp_point.y - param.start_y) <= param.distance_threshold2) {
+
+		if (fabs(temp_point.y - param.line_x1) <= param.distance_threshold1
+			&& fabs(temp_point.x - param.start_y) <= param.distance_threshold2
+			) {
 			//计算高度
 			if (result.altitudes[0] < p.y) {
 				result.altitudes[0] = p.y;
 			}
 			points_vec[0].push_back(p);
-		} else if (fabs(temp_point.x - param.line_x2) <= param.distance_threshold1 && fabs(temp_point.y - param.start_y) <= param.distance_threshold2) {
+			(*temp_point.ptr).r = 255;
+			(*temp_point.ptr).g = 0;
+			(*temp_point.ptr).b = 0;
+		} else if (fabs(temp_point.y - param.line_x2) <= param.distance_threshold1
+			&& fabs(temp_point.x - param.start_y) <= param.distance_threshold2
+			) {
 			//计算高度
 			if (result.altitudes[1] < p.y) {
 				result.altitudes[1] = p.y;
 			}
 			points_vec[1].push_back(p);
-		} else if (fabs(temp_point.x - param.line_x3) <= param.distance_threshold1 && fabs(temp_point.y - param.start_y) <= param.distance_threshold2) {
+			(*temp_point.ptr).r = 0;
+			(*temp_point.ptr).g = 255;
+			(*temp_point.ptr).b = 0;
+		} else if (fabs(temp_point.y - param.line_x3) <= param.distance_threshold1
+			&& fabs(temp_point.x - param.start_y) <= param.distance_threshold2
+			) {
 			//计算高度
 			if (result.altitudes[2] < p.y) {
 				result.altitudes[2] = p.y;
 			}
 			points_vec[2].push_back(p);
+			(*temp_point.ptr).r = 0;
+			(*temp_point.ptr).g = 0;
+			(*temp_point.ptr).b = 255;
 		}
 	}
 
@@ -363,24 +406,40 @@ void LineFitLeastSquares1(std::vector<std::vector<Point2D>> points_vec, Longitud
 }
 
 void LineFitLeastSquares2(std::vector<std::vector<Point2D>>& points_vec, CrossResult& result) {
-	float A = 0.0;
-	float B = 0.0;
-	float C = 0.0;
-	float D = 0.0;
-	float E = 0.0;
-	float F = 0.0;
+	
 
 	for (int i = 0; i < points_vec.size(); i++) {
 		result.kbr_results[i][0] = NAN;
 		result.kbr_results[i][1] = NAN;
 		result.kbr_results[i][2] = NAN;
 		result.kbr_results[i][3] = NAN;
-
+		float A = 0.0;
+		float B = 0.0;
+		float C = 0.0;
+		float D = 0.0;
+		float E = 0.0;
+		float F = 0.0;
 
 		std::vector<Point2D> points = points_vec[i];
 		int count = points.size();
 		for (int j = 0; j<count; j++) {
-			float x = points[j].x;
+
+
+			//-0.37618   3.8631
+			//- 0.30825   3.8878
+			//- 0.24023   3.9126
+			//- 0.17212   3.9374
+			//- 0.10393   3.9622
+			//- 0.035638  3.987
+			//0.032743   4.0119
+			//0.10121    4.0368
+			//0.16977    4.0618
+			//0.23842    4.0868
+			//0.30715    4.1118
+			//0.37598    4.1368
+			//0.44489    4.1619 
+
+			float x = -points[j].x;
 			float y = points[j].y;
 			A += x * x;
 			B += x;
@@ -528,6 +587,120 @@ void serial_test() {
 		printf("\n");
 		Sleep(30);
 	}
+}
+
+
+float phi(float x) {
+	// constants
+	float a1 = 0.254829592f;
+	float a2 = -0.284496736f;
+	float a3 = 1.421413741f;
+	float a4 = -1.453152027f;
+	float a5 = 1.061405429f;
+	float p = 0.3275911f;
+
+	// Save the sign of x
+	int sign = 1;
+	if (x < 0)
+		sign = -1;
+	x = fabsf(x) / sqrtf(2.0f);
+
+	// A&S formula 7.1.26
+	float t = 1.0f / (1.0f + p * x);
+	float y = 1.0f - (((((a5*t + a4)*t) + a3)*t + a2)*t + a1)*t*expf(-x * x);
+
+	return 0.5*(1.0 + sign * y);
+}
+
+template<typename _Cb>
+float GetMean(const float* values, int n, _Cb cb = [](float x) {return x; }) {
+	float sum = 0.0f;
+	for (int i = 0; i < n; i++) {
+		sum += cb(values[i]);
+	}
+	return sum / n;
+}
+
+template<typename _Cb>
+float GetSqStd(const float* values, float mean, int n, _Cb cb = [](float x) {return x; }) {
+	float sum = 0.0f;
+	for (int i = 0; i < n; i++) {
+		float C = cb(values[i]);
+		sum += (C - mean) * (C - mean);
+	}
+	return sum / n;
+}
+
+float GetProb2(const float* long_slope_c) {
+	const float long_friction = 0.6f;
+	//Commons
+	const float i0 = 2.65f;
+	const float ig1 = 4.596f;
+	const float n = 0.9f;
+	const float Temax = 619.7f;
+	const float m = 1820.0f + 100.0f + 100.0f;
+	const float g = 9.8f;
+	const float r = 0.353f;
+	const float zero_threshold = 1.0f;
+	const float b = 1.675f;
+	const float hg = 0.59f;
+	int outmode = 0;
+	float theta_vali = 0.0f;
+	float theta1[15];
+	int nt = 0;
+	for (int i = 0; i < 15; i++) {
+		if (!isnan(long_slope_c[i])) {
+			outmode |= 0x01;
+			if (fabsf(long_slope_c[i]) > zero_threshold) {
+				outmode |= 0x02;
+				theta1[nt++] = long_slope_c[i] / 180.0f*3.141592f;
+			}
+		}
+
+	}
+	switch (outmode) {
+	case 0:
+	case 2:
+		//All NaN
+		return NAN;
+	case 1:
+		return 1.0f;
+	}
+
+	float SMEAN = GetMean(theta1, nt, sinf);
+	float SSTDSQ = GetSqStd(theta1, SMEAN, nt, sinf);
+	float CMEAN = GetMean(theta1, nt, cosf);
+	float CSTDSQ = GetSqStd(theta1, CMEAN, nt, cosf);
+
+	float P1, P2, P3;
+	//Condition1
+	{
+		float E = SMEAN * g;
+		float D = SSTDSQ * g * g;
+		float Fmax = Temax * ig1*i0*n / r;
+		float X = (Fmax / m - E) / sqrtf(D);
+		P1 = phi(X);
+	}
+
+	//Condition2
+	{
+		float c1 = long_friction * CMEAN - SMEAN;
+		float c2 = (long_friction * long_friction) * CSTDSQ + SSTDSQ;
+		float x = c1 / sqrtf(c2);
+		// printf("%.2f //// ", c2);
+		P2 = phi(x);
+	}
+
+	//condition3
+	{
+		float E = b * CMEAN - hg * SMEAN;
+		float D = (b * b)*CSTDSQ + (hg * hg)*SSTDSQ;
+		float X = E / sqrt(D);
+
+		P3 = phi(X);
+	}
+	//printf("%.2f,%.2f,%.2f ///// ", P1, P2, P3);
+	return P1 * P2 * P3;
 }
 
 

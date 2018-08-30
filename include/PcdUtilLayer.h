@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PcdUtilLayerConfig.h"
+#include <vector>
 
 #define USE_GLVIEWER
 
@@ -107,9 +108,13 @@ namespace mammoth {
 			template<typename CustomType>
 			void set_point_cloud(PCDFILE scene, CustomType point_type);
 			uint32_t add_cube(PointType * cube_points);
-			void PointViewer::remove_cubes(std::vector<uint32_t>& cube_handles);
+			void remove_cubes(std::vector<uint32_t>& cube_handles);
 			static PointViewer* get_instance();
+			size_t add_text(const char * str, int start_x, int start_y, float scale_rate, glviewer::Color4F color);
+			void set_text(size_t id, const char * str, int start_x, int start_y, float scale_rate, glviewer::Color4F color);
 		private:
+			static glviewer::TextNode* p_node;
+			static std::vector<size_t> text_ids;
 			static PointViewer* p_viewer;
 			static glviewer::GLDevice * p_glviewer;
 			static void key_pressed(char key, bool state, void* ctx);

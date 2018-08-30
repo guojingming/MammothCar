@@ -67,8 +67,25 @@ namespace glviewer
 
 		HUD_TextRect, //float[4] Left , Top , Right,Bottom
 		HUD_TextColor,//float[3] R,G,B
+
+		POINT_SIZE,//float[1]
 	};
 
+	struct Color4F
+	{
+		float r, g, b, a;
+	};
+
+	struct TextNode
+	{
+		virtual size_t AddText(const char* text, int x, int y,float scale = 1.0f, Color4F c = { 0.0f,0.0f,0.0f,1.0f }) = 0;
+		virtual void  UpdateText(size_t id, const char* text) = 0;
+		virtual void UpdateColor(size_t id, Color4F c) = 0;
+		virtual void UpdatePosition(size_t id, int x, int y) = 0;
+		virtual void RemoveText(size_t id) = 0;
+		virtual void GetTextSize(const char* text, float scale, size_t * width, size_t * height) = 0;
+		virtual void Release() = 0;
+	};
 
 	class GLDevice
 	{
@@ -145,6 +162,9 @@ namespace glviewer
 
 		virtual void SetParam(DeviceParams params, float _Value[], size_t C) = 0;
 
+		virtual size_t AddCoordinate(const float m[16]) = 0;
+
+		virtual TextNode* CreateTextNode() = 0;
 	};
 
 }

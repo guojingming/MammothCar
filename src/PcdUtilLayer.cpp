@@ -5,6 +5,7 @@ using namespace mammoth::config;
 using namespace glviewer;
 
 int PcdUtil::read_pcd_file(const std::string pcd_file_path, pcl::PointCloud<PointType>::Ptr & cloud) {
+	cloud->clear();
 	if (pcl::io::loadPCDFile<PointType>(pcd_file_path, *cloud) == -1) {
 		PCL_ERROR("can't read the pcd file\n");
 		return (-1);
@@ -77,7 +78,6 @@ void PcdUtil::trans_pcd_to_xyz(const std::string pcd_file_path, const std::strin
 	}
 }
 
-
 glviewer::GLDevice * PointViewer::p_glviewer = nullptr;
 PointViewer* PointViewer::p_viewer = nullptr;
 
@@ -87,6 +87,41 @@ void PointViewer::init_point_viewer() {
 	//p_glviewer->AddWavePlane(2, 0, 50);
 	p_glviewer->SetOnPickingCallback(selectResultHandle);
 	p_glviewer->RegisterCallback(' ', key_pressed);
+
+	//init text
+	for (int i = 0; i < 16; i++) {
+		text_ids.push_back(add_text("0", 0, 0, 0.25f, {0.0f, 0.0f, 0.0f, 0.0f}));
+	}
+
+#endif
+}
+
+glviewer::TextNode* PointViewer::p_node;
+std::vector<size_t> PointViewer::text_ids;
+
+size_t PointViewer::add_text(const char * str, int start_x, int start_y, float scale_rate, glviewer::Color4F color) {
+#ifdef USE_GLVIEWER
+	if (p_node == nullptr) {
+		p_node = p_glviewer->CreateTextNode();
+	}
+	size_t id = p_node->AddText(str, start_x, start_y, scale_rate, color);
+	return id;
+#else
+	return 0;
+#endif
+}
+
+void PointViewer::set_text(size_t id, const char * str, int start_x, int start_y, float scale_rate, glviewer::Color4F color) {
+#ifdef USE_GLVIEWER
+	if (p_node == nullptr) {
+		p_node = p_glviewer->CreateTextNode();
+	}
+	if (id >= text_ids.size()) {
+		id = text_ids.size() - 1;
+	}
+	p_node->UpdateText(text_ids[id], str);
+	p_node->UpdateColor(text_ids[id], color);
+	p_node->UpdatePosition(text_ids[id], start_x, start_y);
 #endif
 }
 
@@ -137,22 +172,23 @@ void PointViewer::selectResultHandle(glviewer::SelectResult<void*>* _Rx) {
 			average_z += it->z;
 		}
 
-		/*if (count < 10 && count >= 1) {
+		if (count < 10 && count >= 1) {
 			std::cout << "[" << count << "]   " << "x:" << it->x << " y:" << it->y << " z:" << it->z << std::endl;
 		} else if (count >= 10 && count < 100) {
 			std::cout << "[" << count << "]  " << "x:" << it->x << " y:" << it->y << " z:" << it->z << std::endl;
 		} else if (count >= 100) {
 			std::cout << "[" << count << "] " << "x:" << it->x << " y:" << it->y << " z:" << it->z << std::endl;
-		}*/
+		}
 		count++;
 	}
-	average_z /= (count - 1);
+	/*average_z /= (count - 1);
 	std::cout << "minZ: " << min_z << std::endl;
 	std::cout << "maxZ: " << max_z << std::endl;
 	std::cout << "averageZ: " << average_z << std::endl;
-	std::cout << "----------------------------------------------" << std::endl;
+	std::cout << "----------------------------------------------" << std::endl;*/
 	//std::cout << _R->size() << std::endl;
 }
+
 
 void PointViewer::key_pressed(char key, bool state, void* ctx) {
 	if (state == true) {

@@ -44,7 +44,7 @@ void ClimbingLayer::climbing_check(pcl::PointCloud<PointType>::Ptr & cloud) {
 	//ground altitude
 	float ground_average_altitude = -2.34;
 	float threshold1 = ground_average_altitude - 0.1;
-	float threshold2 = ground_average_altitude + 0.03;
+	float threshold2 = ground_average_altitude + 0.06;//0.03
 
 	//filtering
 	pcl::PassThrough<PointType> passThrough;
@@ -107,22 +107,37 @@ void ClimbingLayer::climbing_check(pcl::PointCloud<PointType>::Ptr & cloud) {
 			}
 		}
 	}
-
-
 	float threshold = get_height_threshold(min_x, max_x);
 	float height = max_z - min_z;
+	float long_edge = max_x - min_x;
+	float width_edge = max_y - min_y;
+
+	char temp[100];
+	
+
 	if (max_x - min_x != flag) {
 		if (height < threshold) {
 			printf("YES ");
+			PointViewer::get_instance()->set_text(0, "YES", 0, 20, 0.15f, { 0.0f, 1.0f, 0.0f, 5.0f });
 		} else {
 			printf("NO ");
+			PointViewer::get_instance()->set_text(0, "NO", 0, 20, 0.15f, { 1.0f, 0.0f, 0.0f, 5.0f });
 		}
-		printf("long:%f width:%f height:%f", max_x - min_x, max_y - min_y, height);
+		printf("long:%f width:%f height:%f", long_edge, width_edge, height);
+		memset(temp, 0, 100);
+		sprintf(temp, "LONG %3.4f", long_edge);
+		PointViewer::get_instance()->set_text(1, temp, 0, 35, 0.15f, { 1.0f, 1.0f, 1.0f, 5.0f });
+		memset(temp, 0, 100);
+		sprintf(temp, "WIDTH %3.4f", width_edge);
+		PointViewer::get_instance()->set_text(2, temp, 0, 50, 0.15f, { 1.0f, 1.0f, 1.0f, 5.0f });
+		memset(temp, 0, 100);
+		sprintf(temp, "HEIGHT %3.4f", height);
+		PointViewer::get_instance()->set_text(3, temp, 0, 65, 0.15f, { 1.0f, 1.0f, 1.0f, 5.0f });
 	} else {
 		printf("YES ");
+		PointViewer::get_instance()->set_text(0, "NO", 0, 20, 0.15f, { 1.0f, 0.0f, 0.0f, 5.0f });
 	}
 	printf("\n");
-	//system("pause");
 }
 
 

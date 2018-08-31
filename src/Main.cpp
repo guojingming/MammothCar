@@ -58,7 +58,7 @@ void LineFitLeastSquares2(std::vector<std::vector<Point2D>>& points, CrossResult
 void calculate_longitudinal_angle(Point3D* points_3d, int point_count, Parameters & param, LongitudinalResult& result);
 void calculate_cross_angle(Point3D* points_3d, int point_count, Parameters & param, CrossResult& result);
 
-float GetProb2(const float* long_slope_c);
+float GetProb2(const float* long_slope_c, const float * sizes, int count);
 
 void temp_test();
 void temp_test1();
@@ -68,8 +68,8 @@ void gjm_test();
 void serial_test();
 
 int main(int argc, char ** argv) {
-	temp_test1();
-	//temp_test();
+	//temp_test1();
+	temp_test();
 	//serial_test();
 
 	//temp_test2();
@@ -96,12 +96,13 @@ VOID _Ck(const char* dir, vector<string>& cv) {
 void temp_test1() {
 	PointViewer::get_instance()->init_point_viewer();
 	pcl::PointCloud<PointType>::Ptr cloud(new pcl::PointCloud<PointType>());
-	pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_file_data("D:\\0180717\\5555.pcap");
-	//pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_dev_handle(5);
+	//pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_file_data("D:\\0180717\\5555.pcap");
+	pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_dev_handle(1);
 	long long frame_count = 0;
 	while (1) {
 		PcapTransformLayer::get_instance()->get_current_frame(device, cloud, 0);
 		ClimbingLayer::get_instance()->climbing_check(cloud);
+		//PointViewer::get_instance()->print_camera_data();
 		if (cloud->size() != 0) {                  
 			PointViewer::get_instance()->set_point_cloud(cloud);
 		}
@@ -114,10 +115,10 @@ void temp_test() {
 	//纵坡
 	param.line_x = 0;
 	param.lidar_altitude = 2.64;
-	param.distance_threshold1 = 0.5;//0.5   0.5
-	param.start_y = 5;
-	param.segment_y_step = 4;
-	param.segment_count = 16;
+	param.distance_threshold1 = 1.0;//0.5   0.5
+	param.start_y = 3;
+	param.segment_y_step = 1.5;
+	param.segment_count = 10;
 	//横坡
 	param.line_x1 = -1.5;
 	param.line_x2 = 0;
@@ -134,8 +135,8 @@ void temp_test() {
 	pcl::PointCloud<PointType>::Ptr cloud(new pcl::PointCloud<PointType>());
 	
 	char name[50];
-	pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_file_data("D:\\0180717\\111.pcap");
-	//pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_dev_handle(5);
+	//pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_file_data("D:\\sp2.pcap");
+	pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_dev_handle(1);
 	PointViewer::get_instance()->init_point_viewer();
 	long long frame_count = 0;
 	while (1) {
@@ -150,7 +151,7 @@ void temp_test() {
 		passThrough.setInputCloud(cloud);
 		passThrough.setFilterLimitsNegative(false);
 		passThrough.setFilterFieldName("z");
-		passThrough.setFilterLimits(-10, 5); //100
+		passThrough.setFilterLimits(-10, 1.5); //100
 		passThrough.filter(*cloud);
 
 		if (frame_count % 2 != 1) {
@@ -182,31 +183,34 @@ void temp_test() {
 		for (int i = 0; i < param.segment_count; i++) {
 			if (longitudinal_result.kbr_results[0][i] > 15) {
 				if (longitudinal_result.altitudes[i] != -1000) {
+					longitudinal_result.kbr_results[3][i];
 					memset(temp, 0, 100);
-					sprintf(temp, "SEG%d ANG %2.3f ALT %2.3f", i, longitudinal_result.kbr_results[3][i] + 5, longitudinal_result.altitudes[i]);
-					PointViewer::get_instance()->set_text(i, temp, 0, 35 + i * 15, 0.15f, {1.0f, 1.0f, 1.0f, 5.0f});
-					printf("第%d段 点数:%f  角度:%f  高度:%f  相关系数:%f\n", i, longitudinal_result.kbr_results[0][i], longitudinal_result.kbr_results[3][i] + 5, longitudinal_result.altitudes[i], longitudinal_result.kbr_results[2][i]);
-					flag_i = i + 1;
+					sprintf(temp, "SEG%d ANG %2.3f ALT %2.3f", i, longitudinal_result.kbr_results[3][i], longitudinal_result.altitudes[i]);
+					PointViewer::get_instance()->set_text(i, temp, 0, 40 + ( i + 2) * 25, 0.3f, {1.0f, 1.0f, 1.0f, 5.0f});
+					printf("第%d段 点数:%f  角度:%f  高度:%f  相关系数:%f\n", i, longitudinal_result.kbr_results[0][i], longitudinal_result.kbr_results[3][i], longitudinal_result.altitudes[i], longitudinal_result.kbr_results[2][i]);
 				}
 			} else {
 				longitudinal_result.kbr_results[3][i] = NAN;
+				memset(temp, 0, 100);
+				PointViewer::get_instance()->set_text(i, temp, 0, 40 + (i + 2) * 25, 0.3f, { 1.0f, 1.0f, 1.0f, 5.0f });
 			}
 		}
+		 
 		
-		
-		float p = GetProb2(longitudinal_result.kbr_results[3]);
+		float p = GetProb2(longitudinal_result.kbr_results[3], longitudinal_result.kbr_results[0], param.segment_count);
+		printf("rate : %f\n", p);
+		float rate = p;
 		memset(temp, 0, 100);
-		p = 0.8;
-		sprintf(temp, "PASSINGRATE %2.6f", p*p);
-		if (p*p >= 0.9) {
-			PointViewer::get_instance()->set_text(16, temp, 0, 20, 0.15f, { 0.0f, 1.0f, 0.0f, 5.0f });
-		} else if (p*p < 0.9 && p*p >= 0.6) {
-			PointViewer::get_instance()->set_text(16, temp, 0, 20, 0.15f, { 1.0f, 0.6f, 0.4f, 5.0f });
-		} else if (p*p < 0.6) {
-			PointViewer::get_instance()->set_text(16, temp, 0, 20, 0.15f, { 1.0f, 0.0f, 0.0f, 5.0f });
+		sprintf(temp, "PASSINGRATE %2.6f", rate);
+		if (rate >= 0.9) {
+			PointViewer::get_instance()->set_text(16, temp, 0, 40, 0.3f, { 0.0f, 1.0f, 0.0f, 5.0f });
+		} else if (rate < 0.9 && rate >= 0.6) {
+			PointViewer::get_instance()->set_text(16, temp, 0, 40, 0.3f, { 1.0f, 0.6f, 0.4f, 5.0f });
+		} else if (rate < 0.6) {
+			PointViewer::get_instance()->set_text(16, temp, 0, 40, 0.3f, { 1.0f, 0.0f, 0.0f, 5.0f });
 		}
 		
-		//printf("通过几率:%f\n\n", p*p);
+		//printf("通过几率:%f\n\n", rate);
 		/*
 		printf("\n横坡：\n");
 		printf("角度:%f 高度:%f\n", cross_result.kbr_results[0][3], cross_result.altitudes[0]);
@@ -257,28 +261,28 @@ void calculate_longitudinal_angle(Point3D* points_3d, int point_count, Parameter
 			}
 			points_vec[segment_index].push_back(p);
 			switch (segment_index) {
-			//case 0:temp_point.ptr->r = 255; temp_point.ptr->g = 0; temp_point.ptr->b = 0; break;
-			//case 1:temp_point.ptr->r = 0; temp_point.ptr->g = 255; temp_point.ptr->b = 0; break;
-			//case 2:temp_point.ptr->r = 0; temp_point.ptr->g = 128; temp_point.ptr->b = 192; break;
-			//case 3:temp_point.ptr->r = 192; temp_point.ptr->g = 128; temp_point.ptr->b = 0; break;
-			//case 4:temp_point.ptr->r = 192; temp_point.ptr->g = 0; temp_point.ptr->b = 192; break;
-			//case 5:temp_point.ptr->r = 255; temp_point.ptr->g = 255; temp_point.ptr->b = 255; break;
+			case 0:temp_point.ptr->r = 255; temp_point.ptr->g = 0; temp_point.ptr->b = 0; break;
+			case 1:temp_point.ptr->r = 0; temp_point.ptr->g = 255; temp_point.ptr->b = 192; break;
+			case 2:temp_point.ptr->r = 0; temp_point.ptr->g = 128; temp_point.ptr->b = 192; break;
+			case 3:temp_point.ptr->r = 192; temp_point.ptr->g = 128; temp_point.ptr->b = 0; break;
+			case 4:temp_point.ptr->r = 192; temp_point.ptr->g = 0; temp_point.ptr->b = 192; break;
+			case 5:temp_point.ptr->r = 255; temp_point.ptr->g = 255; temp_point.ptr->b = 255; break;
 			default: temp_point.ptr->r = 255; temp_point.ptr->g = 0; temp_point.ptr->b = 0; break;
 			}
 			
 
-			if (segment_index != 0) {
-				points_vec[segment_index - 1].push_back(p);
-				/*if (result.altitudes[segment_index - 1] < p.y) {
-					result.altitudes[segment_index - 1] = p.y;
-				}*/
-			}
-			if (segment_index < param.segment_count - 1) {
-				points_vec[segment_index + 1].push_back(p);
-				/*if (result.altitudes[segment_index + 1] < p.y) {
-					result.altitudes[segment_index + 1] = p.y;
-				}*/
-			}
+			//if (segment_index != 0) {
+			//	points_vec[segment_index - 1].push_back(p);
+			//	/*if (result.altitudes[segment_index - 1] < p.y) {
+			//		result.altitudes[segment_index - 1] = p.y;
+			//	}*/
+			//}
+			//if (segment_index < param.segment_count - 1) {
+			//	points_vec[segment_index + 1].push_back(p);
+			//	/*if (result.altitudes[segment_index + 1] < p.y) {
+			//		result.altitudes[segment_index + 1] = p.y;
+			//	}*/
+			//}
 		}
 	}
 
@@ -631,76 +635,129 @@ float GetSqStd(const float* values, float mean, int n, _Cb cb = [](float x) {ret
 	return sum / n;
 }
 
-float GetProb2(const float* long_slope_c) {
-	const float long_friction = 0.6f;
-	//Commons
-	const float i0 = 2.65f;
-	const float ig1 = 4.596f;
-	const float n = 0.9f;
-	const float Temax = 619.7f;
-	const float m = 1820.0f + 100.0f + 100.0f;
-	const float g = 9.8f;
-	const float r = 0.353f;
-	const float zero_threshold = 1.0f;
-	const float b = 1.675f;
-	const float hg = 0.59f;
-	int outmode = 0;
-	float theta_vali = 0.0f;
-	float theta1[15];
-	int nt = 0;
-	for (int i = 0; i < 15; i++) {
-		if (!isnan(long_slope_c[i])) {
-			outmode |= 0x01;
-			if (fabsf(long_slope_c[i]) > zero_threshold) {
-				outmode |= 0x02;
-				theta1[nt++] = long_slope_c[i] / 180.0f*3.141592f;
+float GetProb2(const float* long_slope_c, const float * sizes, int count) {
+	//const float long_friction = 0.6f;
+	////Commons
+	//const float i0 = 2.65f;
+	//const float ig1 = 4.596f;
+	//const float n = 0.9f;
+	//const float Temax = 619.7f;
+	//const float m = 1820.0f + 100.0f + 100.0f;
+	//const float g = 9.8f;
+	//const float r = 0.353f;
+	//const float zero_threshold = 1.0f;
+	//const float b = 1.675f;
+	//const float hg = 0.59f;
+	//int outmode = 0;
+	//float theta_vali = 0.0f;
+	//float theta1[15];
+	//int nt = 0;
+	//printf("\n\n");
+	//for (int i = 0; i < 15; i++) {
+	//	if (sizes[i] < 15) {
+	//		continue;
+	//	}
+	//	printf("%f\n", long_slope_c[i]);
+	//	if (!isnan(long_slope_c[i])) {
+	//		outmode |= 0x01;
+	//		if (fabsf(long_slope_c[i]) > zero_threshold) {
+	//			outmode |= 0x02;
+	//			theta1[nt++] = long_slope_c[i] / 180.0f*3.141592f;
+	//		}
+	//	}
+
+	//}
+	//switch (outmode) {
+	//case 0:
+	//	break;
+	//case 2:
+	//	//All NaN
+	//	return NAN;
+	//case 1:
+	//	return 1.0f;
+	//}
+
+	//float SMEAN = GetMean(theta1, nt, sinf);
+	//float SSTDSQ = GetSqStd(theta1, SMEAN, nt, sinf);
+	//float CMEAN = GetMean(theta1, nt, cosf);
+	//float CSTDSQ = GetSqStd(theta1, CMEAN, nt, cosf);
+
+	//float P1, P2, P3;
+	////Condition1
+	//{
+	//	float E = SMEAN * g;
+	//	float D = SSTDSQ * g * g;
+	//	float Fmax = Temax * ig1*i0*n / r;
+	//	float X = (Fmax / m - E) / sqrtf(D);
+	//	P1 = phi(X);
+	//}
+
+	////Condition2
+	//{
+	//	float c1 = long_friction * CMEAN - SMEAN;
+	//	float c2 = (long_friction * long_friction) * CSTDSQ + SSTDSQ;
+	//	float x = c1 / sqrtf(c2);
+	//	// printf("%.2f //// ", c2);
+	//	P2 = phi(x);
+	//}
+
+	////condition3
+	//{
+	//	float E = b * CMEAN - hg * SMEAN;
+	//	float D = (b * b)*CSTDSQ + (hg * hg)*SSTDSQ;
+	//	float X = E / sqrt(D);
+
+	//	P3 = phi(X);
+	//}
+	////printf("%.2f,%.2f,%.2f ///// ", P1, P2, P3);
+	//return P1 * P2 * P3;
+	float weight1 = 0;
+	float threshold1 = 5;
+	float weight2 = 1;
+	float threshold2 = 15;
+	float weight3 = 2;
+	float threshold3 = 30;
+	float weight4 = 2.7;
+	int real_count = 0;
+	float sum = 0;
+	float average = 0;
+	float result = 0;
+	for (int i = 0; i < count; i++) {
+
+		float angle = long_slope_c[i];
+		if (angle == NAN) {
+			continue;
+		} else if (sizes[i] < 15) {
+			continue;
+		} else {
+			if (angle <= threshold1 && angle >= 0) {
+				sum += weight1 * angle;
+			} else if (angle >= threshold1 && angle < threshold2) {
+				sum += weight2 * angle;
+			} else if (angle >= threshold2 && angle < threshold3) {
+				sum += weight3 * angle;
+			} else if (angle >= threshold3) {
+				sum += weight4 * angle;
 			}
+			real_count++;
 		}
-
 	}
-	switch (outmode) {
-	case 0:
-	case 2:
-		//All NaN
-		return NAN;
-	case 1:
-		return 1.0f;
+	average = sum / real_count;
+	printf("ave: %f\n", average);
+	if (average >= 0 && average < threshold1) {
+		result = 1;
+	} else if (average >= threshold1 && average < threshold2) {
+		result = 0.8 + (threshold2 - average) / (threshold2 - threshold1) / 5;
+	} else if (average >= threshold2 && average < threshold3) {
+		result = 0.8 - (average - threshold2) / (threshold3 - threshold2) / 2;
+	} else {
+		result = 0.3 - (average - threshold3) / 100;
 	}
-
-	float SMEAN = GetMean(theta1, nt, sinf);
-	float SSTDSQ = GetSqStd(theta1, SMEAN, nt, sinf);
-	float CMEAN = GetMean(theta1, nt, cosf);
-	float CSTDSQ = GetSqStd(theta1, CMEAN, nt, cosf);
-
-	float P1, P2, P3;
-	//Condition1
-	{
-		float E = SMEAN * g;
-		float D = SSTDSQ * g * g;
-		float Fmax = Temax * ig1*i0*n / r;
-		float X = (Fmax / m - E) / sqrtf(D);
-		P1 = phi(X);
+	if (result < 0) {
+		result = 0;
 	}
 
-	//Condition2
-	{
-		float c1 = long_friction * CMEAN - SMEAN;
-		float c2 = (long_friction * long_friction) * CSTDSQ + SSTDSQ;
-		float x = c1 / sqrtf(c2);
-		// printf("%.2f //// ", c2);
-		P2 = phi(x);
-	}
-
-	//condition3
-	{
-		float E = b * CMEAN - hg * SMEAN;
-		float D = (b * b)*CSTDSQ + (hg * hg)*SSTDSQ;
-		float X = E / sqrt(D);
-
-		P3 = phi(X);
-	}
-	//printf("%.2f,%.2f,%.2f ///// ", P1, P2, P3);
-	return P1 * P2 * P3;
+	return result;
 }
 
 

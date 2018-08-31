@@ -112,6 +112,8 @@ namespace mammoth {
 			static PointViewer* get_instance();
 			size_t add_text(const char * str, int start_x, int start_y, float scale_rate, glviewer::Color4F color);
 			void set_text(size_t id, const char * str, int start_x, int start_y, float scale_rate, glviewer::Color4F color);
+			void print_camera_data();
+		
 		private:
 			static glviewer::TextNode* p_node;
 			static std::vector<size_t> text_ids;

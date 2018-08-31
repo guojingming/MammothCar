@@ -28,7 +28,7 @@ float ClimbingLayer::get_height_threshold(float min_x, float max_x) {
 	float x_value = fabs(min_x) >= fabs(max_x) ? fabs(min_x) : fabs(max_x);
 	float board_min = 0.3;
 	float board_max = 0.6;
-	float board_height = 0.14;
+	float board_height = 0.15;
 	float shaft_height = 0.10;
 	/*if (x_value <= board_min) {
 		return board_height;
@@ -42,9 +42,10 @@ float ClimbingLayer::get_height_threshold(float min_x, float max_x) {
 
 void ClimbingLayer::climbing_check(pcl::PointCloud<PointType>::Ptr & cloud) {
 	//ground altitude
-	float ground_average_altitude = -2.34;
+	float ground_average_altitude = -2.45;
 	float threshold1 = ground_average_altitude - 0.1;
-	float threshold2 = ground_average_altitude + 0.06;//0.03
+	float offset = 0.03;
+	float threshold2 = ground_average_altitude + offset;//0.03
 
 	//filtering
 	pcl::PassThrough<PointType> passThrough;
@@ -56,17 +57,20 @@ void ClimbingLayer::climbing_check(pcl::PointCloud<PointType>::Ptr & cloud) {
 	passThrough.filter(*cloud);
 	passThrough.setFilterFieldName("y");
 	//passThrough.setFilterLimits(-50, 50);
-	passThrough.setFilterLimits(4, 10); //100
+	passThrough.setFilterLimits(6, 10); //100
 	passThrough.filter(*cloud);
 
 	//transforming
-	float angle = 0; // -2
+	float angle = -0.8; // -2
 	angle = angle * 3.141592657 / 180;
 	for (int i = 0; i < cloud->size(); i++) {
 		(*cloud)[i].x = -1 * (*cloud)[i].x;
 		float temp = (*cloud)[i].y;
 		(*cloud)[i].y = temp * cos(angle) - (*cloud)[i].z * sin(angle);
 		(*cloud)[i].z = (*cloud)[i].z * cos(angle) + (*cloud)[i].y * sin(angle);
+		(*cloud)[i].r = 0;
+		(*cloud)[i].g = 255;
+		(*cloud)[i].b = 0;
 	}
 
 	float max_x = -10000;
@@ -118,24 +122,33 @@ void ClimbingLayer::climbing_check(pcl::PointCloud<PointType>::Ptr & cloud) {
 	if (max_x - min_x != flag) {
 		if (height < threshold) {
 			printf("YES ");
-			PointViewer::get_instance()->set_text(0, "YES", 0, 20, 0.15f, { 0.0f, 1.0f, 0.0f, 5.0f });
+			PointViewer::get_instance()->set_text(0, "YES", 0, 40, 0.3f, { 0.0f, 1.0f, 0.0f, 5.0f });
 		} else {
 			printf("NO ");
-			PointViewer::get_instance()->set_text(0, "NO", 0, 20, 0.15f, { 1.0f, 0.0f, 0.0f, 5.0f });
+			PointViewer::get_instance()->set_text(0, "NO", 0, 40, 0.3f, { 1.0f, 0.0f, 0.0f, 5.0f });
 		}
 		printf("long:%f width:%f height:%f", long_edge, width_edge, height);
 		memset(temp, 0, 100);
 		sprintf(temp, "LONG %3.4f", long_edge);
-		PointViewer::get_instance()->set_text(1, temp, 0, 35, 0.15f, { 1.0f, 1.0f, 1.0f, 5.0f });
+		PointViewer::get_instance()->set_text(1, temp, 0, 70, 0.3f, { 1.0f, 1.0f, 1.0f, 5.0f });
 		memset(temp, 0, 100);
 		sprintf(temp, "WIDTH %3.4f", width_edge);
-		PointViewer::get_instance()->set_text(2, temp, 0, 50, 0.15f, { 1.0f, 1.0f, 1.0f, 5.0f });
+		PointViewer::get_instance()->set_text(2, temp, 0, 100, 0.3f, { 1.0f, 1.0f, 1.0f, 5.0f });
 		memset(temp, 0, 100);
 		sprintf(temp, "HEIGHT %3.4f", height);
-		PointViewer::get_instance()->set_text(3, temp, 0, 65, 0.15f, { 1.0f, 1.0f, 1.0f, 5.0f });
+		PointViewer::get_instance()->set_text(3, temp, 0, 130, 0.3f, { 1.0f, 1.0f, 1.0f, 5.0f });
 	} else {
 		printf("YES ");
-		PointViewer::get_instance()->set_text(0, "NO", 0, 20, 0.15f, { 1.0f, 0.0f, 0.0f, 5.0f });
+		PointViewer::get_instance()->set_text(0, "YES", 0, 40, 0.3f, { 0.0f, 1.0f, 0.0f, 5.0f });
+		memset(temp, 0, 100);
+		sprintf(temp, "LONG %3.4f", 0);
+		PointViewer::get_instance()->set_text(1, temp, 0, 70, 0.3f, { 1.0f, 1.0f, 1.0f, 5.0f });
+		memset(temp, 0, 100);
+		sprintf(temp, "WIDTH %3.4f", 0);
+		PointViewer::get_instance()->set_text(2, temp, 0, 100, 0.3f, { 1.0f, 1.0f, 1.0f, 5.0f });
+		memset(temp, 0, 100);
+		sprintf(temp, "HEIGHT %3.4f", 0);
+		PointViewer::get_instance()->set_text(3, temp, 0, 130, 0.15f, { 1.0f, 1.0f, 1.0f, 5.0f });
 	}
 	printf("\n");
 }

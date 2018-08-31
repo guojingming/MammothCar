@@ -81,16 +81,31 @@ void PcdUtil::trans_pcd_to_xyz(const std::string pcd_file_path, const std::strin
 glviewer::GLDevice * PointViewer::p_glviewer = nullptr;
 PointViewer* PointViewer::p_viewer = nullptr;
 
+void PointViewer::print_camera_data() {
+	CameraData d;
+	float * data = (float *)d.unknown_data;
+	p_glviewer->GetCameraData(&d);
+	for (auto & i : d.unknown_data) {
+		printf("0x%02X,",(unsigned int)i);
+	}
+}
+
 void PointViewer::init_point_viewer() {
 #ifdef USE_GLVIEWER
 	p_glviewer->SetParam(glviewer::DeviceParams::Wave_ZPlane, -1.8f);
+	p_glviewer->SetParam(glviewer::DeviceParams::POINT_SIZE, 5.0f);
+	//float camera_data[9] = { 0.074241, 0.990729, -0.113753, 0.008500, 0.113435,0.993508, 0.015301,2.194579, -1.845818 };
+
+	unsigned char b[64] = { 0xFF,0x4B,0x9B,0x3B,0x8D,0xF7,0x7C,0x3F,0xC7,0x12,0x1D,0xBE,0x0B,0xDD,0x40,0x3A,0x4F,0x12,0x1D,0x3E,0x39,0xF8,0x7C,0x3F,0xED,0x8A,0x93,0x3D,0x18,0x12,0x9C,0x40,0x81,0x21,0xF0,0xBF,0x00,0x00,0x80,0x40,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC };
+	p_glviewer->SetCameraData((CameraData *)b);
+
 	//p_glviewer->AddWavePlane(2, 0, 50);
 	p_glviewer->SetOnPickingCallback(selectResultHandle);
 	p_glviewer->RegisterCallback(' ', key_pressed);
 
 	//init text
-	for (int i = 0; i < 16; i++) {
-		text_ids.push_back(add_text("0", 0, 0, 0.25f, {0.0f, 0.0f, 0.0f, 0.0f}));
+	for (int i = 0; i < 17; i++) {
+		text_ids.push_back(add_text("0", 0, 0, 0.4f, {0.0f, 0.0f, 0.0f, 0.0f}));
 	}
 
 #endif
@@ -335,6 +350,7 @@ void PcdUtil::calc_offset(PCDHEADER* pHeader) {
 	}
 	pHeader->StructSize = Offset;
 }
+
 bool PcdUtil::check_header(PCDHEADER* pHeader) {
 	if (pHeader->DataFormat == PCDHEADER::UNKNOWN) {
 		return false;

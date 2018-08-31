@@ -87,6 +87,11 @@ namespace glviewer
 		virtual void Release() = 0;
 	};
 
+	struct CameraData
+	{
+		unsigned char unknown_data[64];
+	};
+
 	class GLDevice
 	{
 	public:
@@ -165,6 +170,8 @@ namespace glviewer
 		virtual size_t AddCoordinate(const float m[16]) = 0;
 
 		virtual TextNode* CreateTextNode() = 0;
+		virtual void GetCameraData(CameraData* D) = 0;
+		virtual void SetCameraData(const CameraData*D) = 0;
 	};
 
 }

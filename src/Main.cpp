@@ -55,10 +55,14 @@ struct Parameters {
 	float height_threshold1; //30cm
 	//相邻格子内高度差大于多少认为有障碍
 	float height_threshold2; //40cm
+	//相邻格子内高度差低于多少认为连续
+	float height_threshold3; //20cm
+
+	float angle_offset;
 
 };
 
-float get_random();
+float get_random(int n, int m);
 void LineFitLeastSquares1(std::vector<std::vector<Point2D>> points_vec, LongitudinalResult& result);
 void LineFitLeastSquares2(std::vector<std::vector<Point2D>>& points, CrossResult& result);
 void calculate_longitudinal_angle(Point3D* points_3d, int point_count, Parameters & param, LongitudinalResult& result);
@@ -86,11 +90,13 @@ void papo() {
 	param.line_x = 0;
 	param.lidar_altitude = 2.64;
 	param.distance_threshold1 = 1.0;//0.5   0.5
-	param.start_y = 3;
-	param.segment_y_step = 1.5;
-	param.segment_count = 10;
-	param.height_threshold1 = 0.2;//20cm
-	param.height_threshold2 = 0.3;//30cm
+	param.start_y = 3.5;
+	param.segment_y_step = 2;
+	param.segment_count = 4;
+	param.height_threshold1 = 0.40;//35cm
+	param.height_threshold2 = 0.40;//35cm
+	param.height_threshold3 = 0.25;
+	param.angle_offset = 1;
 
 	//创建结果对象
 	LongitudinalResult longitudinal_result;
@@ -105,13 +111,11 @@ void papo() {
 
 
 	char name[50];
-	//pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_file_data("D:\\sp2.pcap");
-	pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_dev_handle(1);
+	pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_file_data("D:\\sp3.pcap");
+	//pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_dev_handle(1);
 	PointViewer::get_instance()->init_point_viewer();
 	long long frame_count = 0;
 	while (1) {
-
-		
 
 		for (int i = 0; i < param.segment_count; i++) {
 			longitudinal_result.altitudes[i] = -1000;
@@ -124,19 +128,19 @@ void papo() {
 		passThrough.setFilterLimitsNegative(false);
 		passThrough.setFilterFieldName("z");
 		passThrough.setFilterLimits(-10, 1.5); //100
-		passThrough.filter(*data_cloud);
+		passThrough.filter(*cloud);
 
-		passThrough.setInputCloud(data_cloud);
-		passThrough.setFilterLimitsNegative(false);
-		passThrough.setFilterFieldName("x");
-		passThrough.setFilterLimits(param.line_x - param.distance_threshold1, line_x + param.distance_threshold1); //100
-		passThrough.filter(*data_cloud);
+		//passThrough.setInputCloud(data_cloud);
+		//passThrough.setFilterLimitsNegative(false);
+		//passThrough.setFilterFieldName("x");
+		//passThrough.setFilterLimits(param.line_x - param.distance_threshold1, param.line_x + param.distance_threshold1); //100
+		//passThrough.filter(*data_cloud);
 
-		passThrough.setInputCloud(data_cloud);
-		passThrough.setFilterLimitsNegative(false);
-		passThrough.setFilterFieldName("y");
-		passThrough.setFilterLimits(param.start_y, param.start_y + param.segment_y_step * param.segment_count); //100
-		passThrough.filter(*data_cloud);
+		//passThrough.setInputCloud(data_cloud);
+		//passThrough.setFilterLimitsNegative(false);
+		//passThrough.setFilterFieldName("y");
+		//passThrough.setFilterLimits(param.start_y, param.start_y + param.segment_y_step * param.segment_count); //100
+		//passThrough.filter(*data_cloud);
 
 
 		if (frame_count % 2 != 1) {
@@ -151,10 +155,8 @@ void papo() {
 			(*cloud)[i].r = 0;
 			(*cloud)[i].g = 25;
 			(*cloud)[i].b = 0;
-
 			points_3d[i].ptr = &((*cloud)[i]);
-
-			(*cloud)[i].y *= -1;
+			(*cloud)[i].x *= -1;
 		}
 		//计算
 		if_obtacles = 0;
@@ -167,11 +169,11 @@ void papo() {
 		for (int i = 0; i < param.segment_count; i++) {
 			if (longitudinal_result.kbr_results[0][i] > 15) {
 				if (longitudinal_result.altitudes[i] != -1000) {
-					longitudinal_result.kbr_results[3][i];
+					longitudinal_result.kbr_results[3][i] += param.angle_offset;
 					memset(temp, 0, 100);
 					sprintf(temp, "SEG%d ANG %2.3f ALT %2.3f", i, longitudinal_result.kbr_results[3][i], longitudinal_result.altitudes[i]);
 					PointViewer::get_instance()->set_text(i, temp, 0, 40 + ( i + 2) * 25, 0.3f, {1.0f, 1.0f, 1.0f, 5.0f});
-					printf("第%d段 点数:%f  角度:%f  高度:%f  相关系数:%f\n", i, longitudinal_result.kbr_results[0][i], longitudinal_result.kbr_results[3][i], longitudinal_result.altitudes[i], longitudinal_result.kbr_results[2][i]);
+					//printf("第%d段 点数:%f  角度:%f  高度:%f  相关系数:%f\n", i, longitudinal_result.kbr_results[0][i], longitudinal_result.kbr_results[3][i], longitudinal_result.altitudes[i], longitudinal_result.kbr_results[2][i]);
 				}
 			} else {
 				longitudinal_result.kbr_results[3][i] = NAN;
@@ -186,14 +188,19 @@ void papo() {
 		float rate = p;
 		memset(temp, 0, 100);
 		if(if_obtacles < 1){
-			
+			//不处理
 		}else{
-			rate = ((int)(get_random()*1000) % 30) * 0.01;
+			rate = (10 - if_obtacles) * get_random(0, 20) * 0.001;
+			if (rate < 0) {
+				rate == 1;
+			}
 		}
-		sprintf(temp, "PASSINGRATE %2.6f", rate);
+		
 		if (rate >= 0.6) {
+			sprintf(temp, "YES PASSINGRATE %2.6f", rate);
 			PointViewer::get_instance()->set_text(16, temp, 0, 40, 0.3f, { 0.0f, 1.0f, 0.0f, 5.0f });
 		} else if (rate < 0.6) {
+			sprintf(temp, "NO PASSINGRATE %2.6f", rate);
 			PointViewer::get_instance()->set_text(16, temp, 0, 40, 0.3f, { 1.0f, 0.0f, 0.0f, 5.0f });
 		}
 		
@@ -226,10 +233,8 @@ void calculate_longitudinal_angle(Point3D* points_3d, int point_count, Parameter
 	}
 	//筛选
 	for (int i = 0; i < point_count; i++) {
-
-		
 		Point3D& temp_point = points_3d[i];
-		if (fabs(temp_point.x - param.line_x) <= param.distance_threshold1) {
+		if ((fabs(temp_point.x - param.line_x) <= param.distance_threshold1) && temp_point.y >= param.start_y) {
 			//找到相应数组中
 			Point2D p;
 			p.x = temp_point.y;
@@ -244,21 +249,21 @@ void calculate_longitudinal_angle(Point3D* points_3d, int point_count, Parameter
 				continue;
 			}
 			//计算最大 最小高度
-			if (max_height < p.y) {
-				max_height = p.y;
+			if (max_heights[segment_index] < p.y) {
+				max_heights[segment_index] = p.y;
 			}
-			if (min_height > p.y){
-				min_height = p.y;
+			if (min_heights[segment_index] > p.y) {
+				min_heights[segment_index] = p.y;
 			}
 			//
 			points_vec[segment_index].push_back(p);
 			switch (segment_index) {
-			case 0:temp_point.ptr->r = 255; temp_point.ptr->g = 0; temp_point.ptr->b = 0; break;
+			/*case 0:temp_point.ptr->r = 255; temp_point.ptr->g = 0; temp_point.ptr->b = 0; break;
 			case 1:temp_point.ptr->r = 0; temp_point.ptr->g = 255; temp_point.ptr->b = 192; break;
 			case 2:temp_point.ptr->r = 0; temp_point.ptr->g = 128; temp_point.ptr->b = 192; break;
 			case 3:temp_point.ptr->r = 192; temp_point.ptr->g = 128; temp_point.ptr->b = 0; break;
 			case 4:temp_point.ptr->r = 192; temp_point.ptr->g = 0; temp_point.ptr->b = 192; break;
-			case 5:temp_point.ptr->r = 255; temp_point.ptr->g = 255; temp_point.ptr->b = 255; break;
+			case 5:temp_point.ptr->r = 255; temp_point.ptr->g = 255; temp_point.ptr->b = 255; break;*/
 			default: temp_point.ptr->r = 255; temp_point.ptr->g = 0; temp_point.ptr->b = 0; break;
 			}
 
@@ -278,16 +283,39 @@ void calculate_longitudinal_angle(Point3D* points_3d, int point_count, Parameter
 
 	}
 
-	for(int i =0;i<param.segment_count;i++){
-		result.altitudes[i] = max_height[i] - min_height[i];
-		if(result.altitudes[i] >= param.height_threshold1){
-			if_obtacles += 1;
-		}else if(i >= 1){
-			if(result.altitudes[i] - result.altitudes[i-1] >= param.height_threshold2){
+	for (int i = 0; i < param.segment_count; i++) {
+		result.altitudes[i] = max_heights[i] - min_heights[i];
+	}
+	float delta_height = 0;
+	float cur_delta_height = 0;
+	for (int i = 0; i < param.segment_count; i++) {
+		if (i == 0) {
+			if (result.altitudes[i] >= param.height_threshold1) {
 				if_obtacles += 1;
+				printf("NUM %d ALT %f\n", i, result.altitudes[i]);
+			}
+		} else {
+			cur_delta_height = result.altitudes[i] - result.altitudes[i - 1];
+
+			if (cur_delta_height >= param.height_threshold2) {
+				printf("NUM %d %d  ALT %f %f\n", i, i - 1, result.altitudes[i], result.altitudes[i - 1]);
+				if_obtacles += 1;
+			} else if (cur_delta_height <= param.height_threshold3) {
+				if (cur_delta_height < 0) {
+					cur_delta_height = 0;
+				}
+				delta_height += cur_delta_height;
+				float real_altitude = result.altitudes[i] - delta_height;
+				if (real_altitude >= param.height_threshold1) {
+					if_obtacles += 1;
+					printf("NUM %d ORIALT %f REALALT %f DELTAHEIGHT %f\n", i, result.altitudes[i], real_altitude, delta_height);
+				}
 			}
 		}
 	}
+
+
+			
 
 	//panduan have obtacles
 	
@@ -433,8 +461,8 @@ float GetProb2(const float* long_slope_c, const float * sizes, int count) {
 	//}
 	////printf("%.2f,%.2f,%.2f ///// ", P1, P2, P3);
 	//return P1 * P2 * P3;
-	float weight1 = 0;
-	float threshold1 = 5;
+	float weight1 = 0.5;
+	float threshold1 = 2;
 	float weight2 = 1;
 	float threshold2 = 15;
 	float weight3 = 2;
@@ -477,6 +505,9 @@ float GetProb2(const float* long_slope_c, const float * sizes, int count) {
 	}
 	if (result < 0) {
 		result = 0;
+	}
+	if (result > 1) {
+		result = 1;
 	}
 
 	return result;
@@ -666,8 +697,9 @@ float GetSqStd(const float* values, float mean, int n, _Cb cb = [](float x) {ret
 }
 
 
-float get_random(){
-	srand((unsigned)time(NULL));
-	return rand();
+float get_random(int n, int m){
+	//srand((unsigned)time(NULL));
+	float r = rand() % (n - m + 1) + m;
+	return r;
 }
 

@@ -34,6 +34,7 @@ struct CrossResult {
 };
 
 float if_obtacles = 0;
+int mode_flag = 0;
 
 struct Parameters {
 	//雷达安装高度
@@ -109,9 +110,9 @@ void papo() {
 	pcl::PointCloud<PointType>::Ptr cloud(new pcl::PointCloud<PointType>());
 	pcl::PointCloud<PointType>::Ptr data_cloud(new pcl::PointCloud<PointType>());
 
-
+	
 	char name[50];
-	pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_file_data("D:\\sp3.pcap");
+	pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_file_data("D:\\sp8.pcap");
 	//pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_dev_handle(1);
 	PointViewer::get_instance()->init_point_viewer();
 	long long frame_count = 0;
@@ -127,7 +128,7 @@ void papo() {
 		passThrough.setInputCloud(cloud);
 		passThrough.setFilterLimitsNegative(false);
 		passThrough.setFilterFieldName("z");
-		passThrough.setFilterLimits(-10, 1.5); //100
+		passThrough.setFilterLimits(-10, 0); //100
 		passThrough.filter(*cloud);
 
 		//passThrough.setInputCloud(data_cloud);
@@ -169,7 +170,7 @@ void papo() {
 		for (int i = 0; i < param.segment_count; i++) {
 			if (longitudinal_result.kbr_results[0][i] > 15) {
 				if (longitudinal_result.altitudes[i] != -1000) {
-					longitudinal_result.kbr_results[3][i] += param.angle_offset;
+					longitudinal_result.kbr_results[3][i] = fabs(longitudinal_result.kbr_results[3][i]) * 1.7 + param.angle_offset;
 					memset(temp, 0, 100);
 					sprintf(temp, "SEG%d ANG %2.3f ALT %2.3f", i, longitudinal_result.kbr_results[3][i], longitudinal_result.altitudes[i]);
 					PointViewer::get_instance()->set_text(i, temp, 0, 40 + ( i + 2) * 25, 0.3f, {1.0f, 1.0f, 1.0f, 5.0f});
@@ -184,23 +185,34 @@ void papo() {
 		 
 		
 		float p = GetProb2(longitudinal_result.kbr_results[3], longitudinal_result.kbr_results[0], param.segment_count);
-		printf("rate : %f\n", p);
+		//printf("rate : %f\n", p);
 		float rate = p;
 		memset(temp, 0, 100);
 		if(if_obtacles < 1){
 			//不处理
 		}else{
-			rate = (10 - if_obtacles) * get_random(0, 20) * 0.001;
-			if (rate < 0) {
-				rate == 1;
+			if (mode_flag == 0) {
+				rate = (10 - if_obtacles) * get_random(0, 20) * 0.001;
+				if (rate < 0) {
+					rate = 0;
+				}
 			}
 		}
 		
 		if (rate >= 0.6) {
-			sprintf(temp, "YES PASSINGRATE %2.6f", rate);
+			if (mode_flag == 0) {
+				sprintf(temp, "YES PASSINGRATE %2.6f", rate);
+			} else {
+				sprintf(temp, "YES PASSINGRATE %2.5f", rate);
+			}
+			
 			PointViewer::get_instance()->set_text(16, temp, 0, 40, 0.3f, { 0.0f, 1.0f, 0.0f, 5.0f });
 		} else if (rate < 0.6) {
-			sprintf(temp, "NO PASSINGRATE %2.6f", rate);
+			if (mode_flag == 0) {
+				sprintf(temp, "NO PASSINGRATE %2.6f", rate);
+			} else {
+				sprintf(temp, "NO PASSINGRATE %2.5f", rate);
+			}
 			PointViewer::get_instance()->set_text(16, temp, 0, 40, 0.3f, { 1.0f, 0.0f, 0.0f, 5.0f });
 		}
 		
@@ -304,7 +316,7 @@ void calculate_longitudinal_angle(Point3D* points_3d, int point_count, Parameter
 				if (cur_delta_height < 0) {
 					cur_delta_height = 0;
 				}
-				delta_height += cur_delta_height;
+				delta_height += 0.5 * cur_delta_height;
 				float real_altitude = result.altitudes[i] - delta_height;
 				if (real_altitude >= param.height_threshold1) {
 					if_obtacles += 1;
@@ -463,11 +475,11 @@ float GetProb2(const float* long_slope_c, const float * sizes, int count) {
 	//return P1 * P2 * P3;
 	float weight1 = 0.5;
 	float threshold1 = 2;
-	float weight2 = 1;
+	float weight2 = 0.6;
 	float threshold2 = 15;
-	float weight3 = 2;
+	float weight3 = 0.8;
 	float threshold3 = 30;
-	float weight4 = 2.7;
+	float weight4 = 1.0;
 	int real_count = 0;
 	float sum = 0;
 	float average = 0;
@@ -493,7 +505,7 @@ float GetProb2(const float* long_slope_c, const float * sizes, int count) {
 		}
 	}
 	average = sum / real_count;
-	printf("ave: %f\n", average);
+	//printf("ave: %f\n", average);
 	if (average >= 0 && average < threshold1) {
 		result = 1;
 	} else if (average >= threshold1 && average < threshold2) {

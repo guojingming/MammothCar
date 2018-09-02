@@ -169,7 +169,10 @@ void PointViewer::set_point_cloud(const pcl::PointCloud<PointType>::Ptr & cloud)
 #endif
 }
 
+extern int mode_flag;
 void PointViewer::selectResultHandle(glviewer::SelectResult<void*>* _Rx) {
+
+	mode_flag = 1 - mode_flag;
 	auto * _R = (glviewer::SelectResult<PointType>*)_Rx;
 	int count = 0;
 	std::cout << std::endl << "----------------------------------------------" << std::endl;

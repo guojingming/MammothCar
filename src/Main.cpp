@@ -79,8 +79,8 @@ void gjm_test();
 void serial_test();
 
 int main(int argc, char ** argv) {
-	//temp_test1();
-	papo();
+	temp_test1();
+	//papo();
 	return 0;
 }
 
@@ -170,7 +170,7 @@ void papo() {
 		for (int i = 0; i < param.segment_count; i++) {
 			if (longitudinal_result.kbr_results[0][i] > 15) {
 				if (longitudinal_result.altitudes[i] != -1000) {
-					longitudinal_result.kbr_results[3][i] = fabs(longitudinal_result.kbr_results[3][i]) * 1.7 + param.angle_offset;
+					longitudinal_result.kbr_results[3][i] = longitudinal_result.kbr_results[3][i] * 1.7;// + param.angle_offset;
 					memset(temp, 0, 100);
 					sprintf(temp, "SEG%d ANG %2.3f ALT %2.3f", i, longitudinal_result.kbr_results[3][i], longitudinal_result.altitudes[i]);
 					PointViewer::get_instance()->set_text(i, temp, 0, 40 + ( i + 2) * 25, 0.3f, {1.0f, 1.0f, 1.0f, 5.0f});
@@ -528,8 +528,8 @@ float GetProb2(const float* long_slope_c, const float * sizes, int count) {
 void temp_test1() {
 	PointViewer::get_instance()->init_point_viewer();
 	pcl::PointCloud<PointType>::Ptr cloud(new pcl::PointCloud<PointType>());
-	//pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_file_data("D:\\0180717\\5555.pcap");
-	pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_dev_handle(1);
+	pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_file_data("D:\\0180717\\5555.pcap");
+	//pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_dev_handle(1);
 	long long frame_count = 0;
 	while (1) {
 		PcapTransformLayer::get_instance()->get_current_frame(device, cloud, 0);
@@ -552,7 +552,7 @@ VOID _Ck(const char* dir, vector<string>& cv) {
 			break;
 		if (!(WF.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
 			const char* ptr = WF.cFileName + strlen(WF.cFileName);
-			cv.push_back(WF.cFileName);
+			
 		}
 	} while (FindNextFileA(hFind, &WF));
 	FindClose(hFind);

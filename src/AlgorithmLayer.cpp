@@ -40,12 +40,12 @@ float ClimbingLayer::get_height_threshold(float min_x, float max_x) {
 	return board_height;
 }
 
+float ClimbingLayer::get_ground_average_altitude(pcl::PointCloud<PointType>::Ptr & cloud) {
+	
+	return -2.45;
+}
+
 void ClimbingLayer::climbing_check(pcl::PointCloud<PointType>::Ptr & cloud) {
-	//ground altitude
-	float ground_average_altitude = -2.45;
-	float threshold1 = ground_average_altitude - 0.1;
-	float offset = 0.03;
-	float threshold2 = ground_average_altitude + offset;//0.03
 
 	//filtering
 	pcl::PassThrough<PointType> passThrough;
@@ -53,11 +53,9 @@ void ClimbingLayer::climbing_check(pcl::PointCloud<PointType>::Ptr & cloud) {
 	passThrough.setFilterLimitsNegative(false);
 	passThrough.setFilterFieldName("x");
 	passThrough.setFilterLimits(-1, 1); //100
-	//passThrough.setFilterLimits(-50, 50); //100
 	passThrough.filter(*cloud);
 	passThrough.setFilterFieldName("y");
-	//passThrough.setFilterLimits(-50, 50);
-	passThrough.setFilterLimits(6, 10); //100
+	passThrough.setFilterLimits(4, 8); //100
 	passThrough.filter(*cloud);
 
 	//transforming
@@ -73,6 +71,14 @@ void ClimbingLayer::climbing_check(pcl::PointCloud<PointType>::Ptr & cloud) {
 		(*cloud)[i].b = 0;
 	}
 
+
+	
+	//ground altitude
+	float consult_ground_average_altitude = -2.45;
+	//= get_ground_average_altitude(cloud);
+
+	float threshold1 = consult_ground_average_altitude - 0.1;
+
 	float max_x = -10000;
 	float max_y = -10000;
 	float max_z = -10000;
@@ -80,6 +86,21 @@ void ClimbingLayer::climbing_check(pcl::PointCloud<PointType>::Ptr & cloud) {
 	float min_y = 10000;
 	float min_z = 10000;
 	float flag = max_x - min_x;
+	for (int i = 0; i < cloud->size(); i++) {
+		PointType point = (*cloud)[i];
+		if (point.z >= threshold1) {
+			if (max_z < point.z) {
+				max_z = point.z;
+			}
+			if (min_z > point.z) {
+				min_z = point.z;
+			}
+		}
+	}
+	float height = max_z - min_z;
+	float offset = 0.05;
+	float threshold2 = min_z + offset + height * 0.25;//0.03
+
 	for (int i = 0; i < cloud->size(); i++) {
 		PointType point = (*cloud)[i];
 		if (point.z >= threshold2) {
@@ -97,28 +118,11 @@ void ClimbingLayer::climbing_check(pcl::PointCloud<PointType>::Ptr & cloud) {
 			}
 		}
 	}
-	for (int i = 0; i < cloud->size(); i++) {
-		PointType point = (*cloud)[i];
-		if (point.z >= threshold1) {
-			if (max_z < point.z) {
-				max_z = point.z;
-			}
-			float tolerance_value = 0.1;
-			if (point.x >= min_x - tolerance_value && point.x <= max_x + tolerance_value && point.y >= min_y - tolerance_value && point.y <= max_y + tolerance_value) {
-				if (min_z > point.z) {
-					min_z = point.z;
-				}
-			}
-		}
-	}
-	float threshold = get_height_threshold(min_x, max_x);
-	float height = max_z - min_z;
+	
+	float threshold = 0.15;//get_height_threshold(min_x, max_x);
 	float long_edge = max_x - min_x;
 	float width_edge = max_y - min_y;
-
 	char temp[100];
-	
-
 	if (max_x - min_x != flag) {
 		if (height < threshold) {
 			printf("YES ");
@@ -138,6 +142,7 @@ void ClimbingLayer::climbing_check(pcl::PointCloud<PointType>::Ptr & cloud) {
 		sprintf(temp, "HEIGHT %3.4f", height);
 		PointViewer::get_instance()->set_text(3, temp, 0, 130, 0.3f, { 1.0f, 1.0f, 1.0f, 5.0f });
 	} else {
+		//no 
 		printf("YES ");
 		PointViewer::get_instance()->set_text(0, "YES", 0, 40, 0.3f, { 0.0f, 1.0f, 0.0f, 5.0f });
 		memset(temp, 0, 100);

@@ -78,6 +78,13 @@ void gjm_test();
 
 void serial_test();
 
+char * obj_dec_point_path = "E:\\LidarData\\obj_dec\\point\\2\\";
+char * obj_dec_result_path = "E:\\LidarData\\obj_dec\\result\\2\\";
+char * hillside_dec_point_path = "E:\\LidarData\\hillside_dec\\point\\1\\";
+char * hillside_dec_result_path = "E:\\LidarData\\hillside_dec\\result\\1\\";
+
+
+
 int main(int argc, char ** argv) {
 	temp_test1();
 	//papo();
@@ -111,11 +118,14 @@ void papo() {
 	pcl::PointCloud<PointType>::Ptr data_cloud(new pcl::PointCloud<PointType>());
 
 	
-	char name[50];
+	char pointfile_name[50];
+	char resultfile_name[50];
 	pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_file_data("D:\\sp8.pcap");
 	//pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_dev_handle(1);
 	PointViewer::get_instance()->init_point_viewer();
 	long long frame_count = 0;
+
+	
 	while (1) {
 
 		for (int i = 0; i < param.segment_count; i++) {
@@ -131,23 +141,6 @@ void papo() {
 		passThrough.setFilterLimits(-10, 0); //100
 		passThrough.filter(*cloud);
 
-		//passThrough.setInputCloud(data_cloud);
-		//passThrough.setFilterLimitsNegative(false);
-		//passThrough.setFilterFieldName("x");
-		//passThrough.setFilterLimits(param.line_x - param.distance_threshold1, param.line_x + param.distance_threshold1); //100
-		//passThrough.filter(*data_cloud);
-
-		//passThrough.setInputCloud(data_cloud);
-		//passThrough.setFilterLimitsNegative(false);
-		//passThrough.setFilterFieldName("y");
-		//passThrough.setFilterLimits(param.start_y, param.start_y + param.segment_y_step * param.segment_count); //100
-		//passThrough.filter(*data_cloud);
-
-
-		if (frame_count % 2 != 1) {
-			frame_count++;
-			//continue;
-		}
 		Point3D * points_3d = new Point3D[cloud->size()];
 		for (int i = 0; i < cloud->size(); i++) {
 			points_3d[i].y = (*cloud)[i].y;
@@ -164,6 +157,20 @@ void papo() {
 		calculate_longitudinal_angle(points_3d, cloud->size(), param, longitudinal_result);
 		PointViewer::get_instance()->set_point_cloud(cloud);
 
+		//保存结果
+		memset(pointfile_name, 0, 50);
+		sprintf(pointfile_name, "%d.pcd", frame_count);
+		string temp_str = pointfile_name;
+		string pointfile_name_str = hillside_dec_point_path;
+		pointfile_name_str += temp_str;
+		PcdUtil::save_pcd_file(pointfile_name_str, cloud);
+		pointfile_name_str = hillside_dec_result_path;
+		memset(pointfile_name, 0, 50);
+		sprintf(pointfile_name, "%d.txt", frame_count);
+		temp_str = pointfile_name;
+		pointfile_name_str += temp_str;
+		ofstream result_file(pointfile_name_str);
+
 		//显示结果
 		char temp[100];
 		char flag_i = 0;
@@ -173,6 +180,7 @@ void papo() {
 					longitudinal_result.kbr_results[3][i] = longitudinal_result.kbr_results[3][i] * 1.7;// + param.angle_offset;
 					memset(temp, 0, 100);
 					sprintf(temp, "SEG%d ANG %2.3f ALT %2.3f", i, longitudinal_result.kbr_results[3][i], longitudinal_result.altitudes[i]);
+					result_file << temp << endl;
 					PointViewer::get_instance()->set_text(i, temp, 0, 40 + ( i + 2) * 25, 0.3f, {1.0f, 1.0f, 1.0f, 5.0f});
 					//printf("第%d段 点数:%f  角度:%f  高度:%f  相关系数:%f\n", i, longitudinal_result.kbr_results[0][i], longitudinal_result.kbr_results[3][i], longitudinal_result.altitudes[i], longitudinal_result.kbr_results[2][i]);
 				}
@@ -198,8 +206,10 @@ void papo() {
 				}
 			}
 		}
-		
+	
+
 		if (rate >= 0.6) {
+			result_file << "YES " << rate <<endl;
 			if (mode_flag == 0) {
 				sprintf(temp, "YES PASSINGRATE %2.6f", rate);
 			} else {
@@ -208,6 +218,7 @@ void papo() {
 			
 			PointViewer::get_instance()->set_text(16, temp, 0, 40, 0.3f, { 0.0f, 1.0f, 0.0f, 5.0f });
 		} else if (rate < 0.6) {
+			result_file << "NO " << rate << endl;
 			if (mode_flag == 0) {
 				sprintf(temp, "NO PASSINGRATE %2.6f", rate);
 			} else {
@@ -215,6 +226,7 @@ void papo() {
 			}
 			PointViewer::get_instance()->set_text(16, temp, 0, 40, 0.3f, { 1.0f, 0.0f, 0.0f, 5.0f });
 		}
+
 		
 		delete points_3d;
 		cloud->clear();
@@ -533,11 +545,12 @@ void temp_test1() {
 	long long frame_count = 0;
 	while (1) {
 		PcapTransformLayer::get_instance()->get_current_frame(device, cloud, 0);
-		ClimbingLayer::get_instance()->climbing_check(cloud);
+		ClimbingLayer::get_instance()->climbing_check(cloud, obj_dec_point_path, obj_dec_result_path, frame_count);
 		//PointViewer::get_instance()->print_camera_data();
 		if (cloud->size() != 0) {                  
 			PointViewer::get_instance()->set_point_cloud(cloud);
 		}
+		frame_count++;
 	}
 }
 

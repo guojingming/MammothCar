@@ -45,7 +45,7 @@ float ClimbingLayer::get_ground_average_altitude(pcl::PointCloud<PointType>::Ptr
 	return -2.45;
 }
 
-void ClimbingLayer::climbing_check(pcl::PointCloud<PointType>::Ptr & cloud) {
+void ClimbingLayer::climbing_check(pcl::PointCloud<PointType>::Ptr & cloud, char * point_path, char * result_path, int frame_count) {
 
 	//filtering
 	pcl::PassThrough<PointType> passThrough;
@@ -119,6 +119,23 @@ void ClimbingLayer::climbing_check(pcl::PointCloud<PointType>::Ptr & cloud) {
 		}
 	}
 	
+
+	//保存结果
+	char pointfile_name[50];
+	memset(pointfile_name, 0, 50);
+	sprintf(pointfile_name, "%d.pcd", frame_count);
+	std::string temp_str = pointfile_name;
+	std::string pointfile_name_str = point_path;
+	pointfile_name_str += temp_str;
+	PcdUtil::save_pcd_file(pointfile_name_str, cloud);
+	pointfile_name_str = result_path;
+	memset(pointfile_name, 0, 50);
+	sprintf(pointfile_name, "%d.txt", frame_count);
+	temp_str = pointfile_name;
+	pointfile_name_str += temp_str;
+	std::ofstream result_file(pointfile_name_str);
+
+	//////////////////
 	float threshold = 0.15;//get_height_threshold(min_x, max_x);
 	float long_edge = max_x - min_x;
 	float width_edge = max_y - min_y;
@@ -126,12 +143,15 @@ void ClimbingLayer::climbing_check(pcl::PointCloud<PointType>::Ptr & cloud) {
 	if (max_x - min_x != flag) {
 		if (height < threshold) {
 			printf("YES ");
+			result_file << "YES" <<std::endl;
 			PointViewer::get_instance()->set_text(0, "YES", 0, 40, 0.3f, { 0.0f, 1.0f, 0.0f, 5.0f });
 		} else {
 			printf("NO ");
+			result_file << "NO" << std::endl;
 			PointViewer::get_instance()->set_text(0, "NO", 0, 40, 0.3f, { 1.0f, 0.0f, 0.0f, 5.0f });
 		}
 		printf("long:%f width:%f height:%f", long_edge, width_edge, height);
+		result_file << long_edge << " " << width_edge << " " << height << std::endl;
 		memset(temp, 0, 100);
 		sprintf(temp, "LONG %3.4f", long_edge);
 		PointViewer::get_instance()->set_text(1, temp, 0, 70, 0.3f, { 1.0f, 1.0f, 1.0f, 5.0f });
@@ -143,6 +163,8 @@ void ClimbingLayer::climbing_check(pcl::PointCloud<PointType>::Ptr & cloud) {
 		PointViewer::get_instance()->set_text(3, temp, 0, 130, 0.3f, { 1.0f, 1.0f, 1.0f, 5.0f });
 	} else {
 		//no 
+		result_file << "YES" << std::endl;
+		result_file << "0 0 0" << std::endl;
 		printf("YES ");
 		PointViewer::get_instance()->set_text(0, "YES", 0, 40, 0.3f, { 0.0f, 1.0f, 0.0f, 5.0f });
 		memset(temp, 0, 100);

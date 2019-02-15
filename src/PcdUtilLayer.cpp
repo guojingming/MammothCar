@@ -93,7 +93,7 @@ void PointViewer::print_camera_data() {
 void PointViewer::init_point_viewer() {
 #ifdef USE_GLVIEWER
 	p_glviewer->SetParam(glviewer::DeviceParams::Wave_ZPlane, -1.8f);
-	p_glviewer->SetParam(glviewer::DeviceParams::POINT_SIZE, 5.0f);
+	p_glviewer->SetParam(glviewer::DeviceParams::POINT_SIZE, 1.0f);
 	//float camera_data[9] = { 0.074241, 0.990729, -0.113753, 0.008500, 0.113435,0.993508, 0.015301,2.194579, -1.845818 };
 
 	unsigned char b[64] = { 0xFF,0x4B,0x9B,0x3B,0x8D,0xF7,0x7C,0x3F,0xC7,0x12,0x1D,0xBE,0x0B,0xDD,0x40,0x3A,0x4F,0x12,0x1D,0x3E,0x39,0xF8,0x7C,0x3F,0xED,0x8A,0x93,0x3D,0x18,0x12,0x9C,0x40,0x81,0x21,0xF0,0xBF,0x00,0x00,0x80,0x40,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC };
@@ -163,7 +163,20 @@ void PointViewer::set_point_cloud(PCDFILE scene, CustomType point_type) {
 #endif
 }
 
+void PointViewer::set_point_cloud(const pcl::PointCloud<pcl::PointXYZI>::Ptr & cloud) {
+#ifdef USE_GLVIEWER
+	p_glviewer->SetPointCloud(&((*cloud)[0]), cloud->size());
+#endif
+}
+
 void PointViewer::set_point_cloud(const pcl::PointCloud<PointType>::Ptr & cloud) {
+#ifdef USE_GLVIEWER
+	p_glviewer->SetPointCloud(&((*cloud)[0]), cloud->size());
+#endif
+}
+
+
+void PointViewer::set_point_cloud(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr & cloud) {
 #ifdef USE_GLVIEWER
 	p_glviewer->SetPointCloud(&((*cloud)[0]), cloud->size());
 #endif

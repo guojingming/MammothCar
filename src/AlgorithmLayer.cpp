@@ -59,7 +59,7 @@ void ClimbingLayer::climbing_check(pcl::PointCloud<PointType>::Ptr & cloud, char
 	passThrough.filter(*cloud);
 
 	//transforming
-	float angle = -0.8; // -2
+	float angle = -0.2; // -2
 	angle = angle * 3.141592657 / 180;
 	for (int i = 0; i < cloud->size(); i++) {
 		(*cloud)[i].x = -1 * (*cloud)[i].x;
@@ -98,7 +98,16 @@ void ClimbingLayer::climbing_check(pcl::PointCloud<PointType>::Ptr & cloud, char
 		}
 	}
 	float height = max_z - min_z;
-	float offset = 0.05;
+	if (height > 0.15) {
+		height -= 0.04;
+		if (height >= 0.2) {
+			height += 0.015;
+		}
+	}
+	if (height <= 0.03) {
+		height += 0.02;
+	}
+	float offset = 0.04;
 	float threshold2 = min_z + offset + height * 0.25;//0.03
 
 	for (int i = 0; i < cloud->size(); i++) {
@@ -118,7 +127,6 @@ void ClimbingLayer::climbing_check(pcl::PointCloud<PointType>::Ptr & cloud, char
 			}
 		}
 	}
-	
 
 	//保存结果
 	char pointfile_name[50];
@@ -127,31 +135,33 @@ void ClimbingLayer::climbing_check(pcl::PointCloud<PointType>::Ptr & cloud, char
 	std::string temp_str = pointfile_name;
 	std::string pointfile_name_str = point_path;
 	pointfile_name_str += temp_str;
-	PcdUtil::save_pcd_file(pointfile_name_str, cloud);
+	//PcdUtil::save_pcd_file(pointfile_name_str, cloud);
 	pointfile_name_str = result_path;
 	memset(pointfile_name, 0, 50);
 	sprintf(pointfile_name, "%d.txt", frame_count);
 	temp_str = pointfile_name;
 	pointfile_name_str += temp_str;
-	std::ofstream result_file(pointfile_name_str);
+	//std::ofstream result_file(pointfile_name_str);
 
 	//////////////////
-	float threshold = 0.15;//get_height_threshold(min_x, max_x);
+	float threshold = 0.16;//get_height_threshold(min_x, max_x);
 	float long_edge = max_x - min_x;
 	float width_edge = max_y - min_y;
 	char temp[100];
-	if (max_x - min_x != flag) {
-		if (height < threshold) {
+	if (max_x - min_x != flag && !(long_edge >= 1.6 && height <= 0.15) 
+		//&& !(long_edge >= 0.8 && height <= 0.03)
+		) {
+		if (height < threshold || (long_edge <= 0.03) || (height >= threshold && height <= 0.2 && long_edge >= 0.65)) {
 			printf("YES ");
-			result_file << "YES" <<std::endl;
+			//result_file << "YES" <<std::endl;
 			PointViewer::get_instance()->set_text(0, "YES", 0, 40, 0.3f, { 0.0f, 1.0f, 0.0f, 5.0f });
 		} else {
 			printf("NO ");
-			result_file << "NO" << std::endl;
+			//result_file << "NO" << std::endl;
 			PointViewer::get_instance()->set_text(0, "NO", 0, 40, 0.3f, { 1.0f, 0.0f, 0.0f, 5.0f });
 		}
 		printf("long:%f width:%f height:%f", long_edge, width_edge, height);
-		result_file << long_edge << " " << width_edge << " " << height << std::endl;
+		//result_file << long_edge << " " << width_edge << " " << height << std::endl;
 		memset(temp, 0, 100);
 		sprintf(temp, "LONG %3.4f", long_edge);
 		PointViewer::get_instance()->set_text(1, temp, 0, 70, 0.3f, { 1.0f, 1.0f, 1.0f, 5.0f });
@@ -163,8 +173,8 @@ void ClimbingLayer::climbing_check(pcl::PointCloud<PointType>::Ptr & cloud, char
 		PointViewer::get_instance()->set_text(3, temp, 0, 130, 0.3f, { 1.0f, 1.0f, 1.0f, 5.0f });
 	} else {
 		//no 
-		result_file << "YES" << std::endl;
-		result_file << "0 0 0" << std::endl;
+		//result_file << "YES" << std::endl;
+		//result_file << "0 0 0" << std::endl;
 		printf("YES ");
 		PointViewer::get_instance()->set_text(0, "YES", 0, 40, 0.3f, { 0.0f, 1.0f, 0.0f, 5.0f });
 		memset(temp, 0, 100);
@@ -254,8 +264,8 @@ void JluSlamLayer::start_slam(const std::string& gps_folder_path, const std::str
 		float car_angle = (360 - ptnlavr_data.yaw) + 180;
 		float xoy_rotation_angle = car_angle * PI / 180;
 		float xoz_rotation_angle = -73 * PI / 180;
-		float theta1 = xoz_rotation_angle;
-		float theta2 = xoy_rotation_angle;
+		float theta1 = xoz_rotation_angle;//俯仰
+		float theta2 = xoy_rotation_angle;//水平
 		float * data = (float *)pcd_file.pData;
 		data[0] = 0;
 		data[1] = 0;
@@ -298,6 +308,7 @@ void JluSlamLayer::DoTransform(float theta1, float theta2, float trans_x, float 
 		R.m128_f32[3] = V.m128_f32[3];
 		_mm_store_ps(fv, R);
 		fv += 4;
+	
 	}
 }
 

@@ -5,6 +5,10 @@
 
 #define USE_GLVIEWER
 
+#include<iostream>
+
+using namespace std;
+
 namespace mammoth {
 	namespace layer {
 		struct FiledDesc {
@@ -104,7 +108,9 @@ namespace mammoth {
 		public:
 			void init_point_viewer();
 			void set_point_cloud(const pcl::PointCloud<PointType>::Ptr & cloud);
+			void set_point_cloud(const pcl::PointCloud<pcl::PointXYZI>::Ptr & cloud);
 			void set_point_cloud(PCDFILE scene);
+			void set_point_cloud(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr & cloud);
 			template<typename CustomType>
 			void set_point_cloud(PCDFILE scene, CustomType point_type);
 			uint32_t add_cube(PointType * cube_points);

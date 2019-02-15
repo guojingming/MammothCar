@@ -4,7 +4,19 @@
 #include <WinSock2.h>
 #include <cstdlib>
 #include <ctime>
+#include <windows.h>   
+#include <algorithm>
+#include <math.h>
+#include <unordered_map>
+#include <unordered_set>
+#include <stack>
+#include <queue>
+#include <array>
+#include <ctype.h>
 
+#include <list>
+
+//#include "Nim.h"
 #pragma comment(lib,"ws2_32.lib")
 
 using namespace std;
@@ -75,18 +87,123 @@ void papo();
 void temp_test1();
 void ryh_test();
 void gjm_test();
-
+void gjm_algorithm_test();
 void serial_test();
 
-char * obj_dec_point_path = "E:\\LidarData\\obj_dec\\point\\2\\";
-char * obj_dec_result_path = "E:\\LidarData\\obj_dec\\result\\2\\";
+char * obj_dec_point_path = "E:\\LidarData\\obj_dec\\point\\1\\";
+char * obj_dec_result_path = "E:\\LidarData\\obj_dec\\result\\1\\";
 char * hillside_dec_point_path = "E:\\LidarData\\hillside_dec\\point\\1\\";
 char * hillside_dec_result_path = "E:\\LidarData\\hillside_dec\\result\\1\\";
 
 
+void packet_handler(u_char *dumpfile, const struct pcap_pkthdr *header, const u_char *pkt_data) {
+	/* 保存数据包到堆文件 */
+	pcap_dump(dumpfile, header, pkt_data);
+}
+
+
+void pcd_to_bin(std::string pcd_path, string bin_path) {
+	pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGBA>());
+	pcl::io::loadPCDFile<pcl::PointXYZRGBA>(pcd_path, *cloud);
+	std::fstream output(bin_path.c_str(), std::ios::out | std::ios::binary);
+	PointViewer::get_instance()->set_point_cloud(cloud);
+	//printf("%d: %d\n", frame_count, points.size());
+	//float intensive = 0;
+	float data[4] = { 50 };
+	for (int i = 0; i < cloud->size(); i++) {
+		data[0] = (*cloud)[i].x;
+		data[1] = (*cloud)[i].y;
+		data[2] = (*cloud)[i].z;
+		//data[3] = (*cloud)[i].rgba;
+		output.write((char *)data, 4 * sizeof(float));
+	}
+	output.close();
+}
+
+pcl::PointCloud<pcl::PointXYZI>::Ptr readKittiPclBinData(std::string &in_file, std::string& out_file) {
+	// load point cloud
+	std::fstream input(in_file.c_str(), std::ios::in | std::ios::binary);
+	if (!input.good()) {
+		std::cerr << "Could not read file: " << in_file << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	input.seekg(0, std::ios::beg);
+
+	pcl::PointCloud<pcl::PointXYZI>::Ptr points(new pcl::PointCloud<pcl::PointXYZI>);
+
+	int i;
+	for (i = 0; input.good() && !input.eof(); i++) {
+		pcl::PointXYZI point;
+		input.read((char *)&point.x, 3 * sizeof(float));
+		input.read((char *)&point.intensity, sizeof(float));
+		points->push_back(point);
+	}
+	input.close();
+	//    g_cloud_pub.publish( points );
+
+	std::cout << "Read KTTI point cloud with " << i << " points, writing to " << out_file << std::endl;
+	
+	
+	pcl::PCDWriter writer;
+
+	// Save DoN features
+	writer.write<pcl::PointXYZI>(out_file, *points, true);
+
+	return points;
+}
 
 int main(int argc, char ** argv) {
-	temp_test1();
+	//char path1[100];
+	//char path2[100];
+	//PointViewer::get_instance()->init_point_viewer();
+	//for (int i = 0; i <= 10000; i++) {
+	//	memset(path1, 0, 100);
+	//	memset(path2, 0, 100);
+	//	/*sprintf(path1, "D:/KittiTrakingData/point/testing/velodyne/0004/%06d.bin", i);
+	//	sprintf(path2, "D:/KittiTrakingData/point/testing/velodyne/0004/%06d.pcd", i);%
+	//*/
+	//	sprintf(path1, "E:/DataSpace/KittiBin2/%06d.bin", i);
+	//	sprintf(path2, "E:/DataSpace/KittiBin2/%06d.pcd", i);
+	//	//sprintf(path1, "D:/cmp/0004_dui/%06d.bin", i);
+	//	//sprintf(path2, "D:/cmp/0004_dui/%06d.pcd", i);
+	//	
+	//	std::string kitti_bin_path = path1;
+	//	std::string kitti_pcd_path = path2;
+	//	pcl::PointCloud<pcl::PointXYZI>::Ptr cloud = readKittiPclBinData(kitti_bin_path, kitti_pcd_path);
+	//	for (int i = 0; i < cloud->size();i++) {
+	//		(*cloud)[i].y = -1 * (*cloud)[i].y;
+	//	}
+	//	
+	//	PointViewer::get_instance()->set_point_cloud(cloud);
+	//}
+	//
+
+	int a = 10;
+	PointViewer::get_instance()->init_point_viewer();
+	char temp1[100];
+	char temp2[100];
+	for (int i = 0; i < 467; i++) {
+		memset(temp1, 0, 100);
+		memset(temp2, 0, 100);
+		sprintf(temp1, "D:/cmp/pcd_64/%d.pcd", i);
+		sprintf(temp2, "D:/cmp/pcd_64/%d.bin", i);
+		pcd_to_bin(temp1, temp2);
+	}
+	//pcd_to_bin("D:/test.pcd", "D:/total_color.bin");
+	system("pause");
+
+	
+	//char errbuf[100];
+	//string input_file = "E:/jungongxiangmuyanshou/pcap_ori_data/xiepo.pcap";
+	//pcap_t *pfile = pcap_open_offline(input_file.c_str(), errbuf);
+	//PointViewer::get_instance()->init_point_viewer();
+	//pcl::PointCloud<PointType>::Ptr cloud(new pcl::PointCloud<PointType>());
+	//while (true) {
+	//	PcapTransformLayer::get_instance()->get_current_frame(pfile, cloud, 0);
+	//	PointViewer::get_instance()->set_point_cloud(cloud);
+	//}
+	
+	//temp_test1();
 	//papo();
 	return 0;
 }
@@ -120,14 +237,11 @@ void papo() {
 	
 	char pointfile_name[50];
 	char resultfile_name[50];
-	pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_file_data("D:\\sp8.pcap");
+	pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_file_data("E:\\军工项目验收数据\\pcap_ori_data\\斜坡通过性判断.pcap");
 	//pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_dev_handle(1);
 	PointViewer::get_instance()->init_point_viewer();
 	long long frame_count = 0;
-
-	
 	while (1) {
-
 		for (int i = 0; i < param.segment_count; i++) {
 			longitudinal_result.altitudes[i] = -1000;
 		}
@@ -163,13 +277,13 @@ void papo() {
 		string temp_str = pointfile_name;
 		string pointfile_name_str = hillside_dec_point_path;
 		pointfile_name_str += temp_str;
-		PcdUtil::save_pcd_file(pointfile_name_str, cloud);
+		//PcdUtil::save_pcd_file(pointfile_name_str, cloud);
 		pointfile_name_str = hillside_dec_result_path;
 		memset(pointfile_name, 0, 50);
 		sprintf(pointfile_name, "%d.txt", frame_count);
 		temp_str = pointfile_name;
 		pointfile_name_str += temp_str;
-		ofstream result_file(pointfile_name_str);
+		//ofstream result_file(pointfile_name_str);
 
 		//显示结果
 		char temp[100];
@@ -180,7 +294,7 @@ void papo() {
 					longitudinal_result.kbr_results[3][i] = longitudinal_result.kbr_results[3][i] * 1.7;// + param.angle_offset;
 					memset(temp, 0, 100);
 					sprintf(temp, "SEG%d ANG %2.3f ALT %2.3f", i, longitudinal_result.kbr_results[3][i], longitudinal_result.altitudes[i]);
-					result_file << temp << endl;
+					//result_file << temp << endl;
 					PointViewer::get_instance()->set_text(i, temp, 0, 40 + ( i + 2) * 25, 0.3f, {1.0f, 1.0f, 1.0f, 5.0f});
 					//printf("第%d段 点数:%f  角度:%f  高度:%f  相关系数:%f\n", i, longitudinal_result.kbr_results[0][i], longitudinal_result.kbr_results[3][i], longitudinal_result.altitudes[i], longitudinal_result.kbr_results[2][i]);
 				}
@@ -209,7 +323,7 @@ void papo() {
 	
 
 		if (rate >= 0.6) {
-			result_file << "YES " << rate <<endl;
+			//result_file << "YES " << rate <<endl;
 			if (mode_flag == 0) {
 				sprintf(temp, "YES PASSINGRATE %2.6f", rate);
 			} else {
@@ -218,7 +332,7 @@ void papo() {
 			
 			PointViewer::get_instance()->set_text(16, temp, 0, 40, 0.3f, { 0.0f, 1.0f, 0.0f, 5.0f });
 		} else if (rate < 0.6) {
-			result_file << "NO " << rate << endl;
+			//result_file << "NO " << rate << endl;
 			if (mode_flag == 0) {
 				sprintf(temp, "NO PASSINGRATE %2.6f", rate);
 			} else {
@@ -540,8 +654,8 @@ float GetProb2(const float* long_slope_c, const float * sizes, int count) {
 void temp_test1() {
 	PointViewer::get_instance()->init_point_viewer();
 	pcl::PointCloud<PointType>::Ptr cloud(new pcl::PointCloud<PointType>());
-	pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_file_data("D:\\0180717\\5555.pcap");
-	//pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_dev_handle(1);
+	//pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_file_data("E:\\军工项目验收数据\\pcap_ori_data\\大尺度障碍物通过性判断.pcap");
+	pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_dev_handle(3);
 	long long frame_count = 0;
 	while (1) {
 		PcapTransformLayer::get_instance()->get_current_frame(device, cloud, 0);
@@ -726,5 +840,23 @@ float get_random(int n, int m){
 	//srand((unsigned)time(NULL));
 	float r = rand() % (n - m + 1) + m;
 	return r;
+}
+
+void gjm_algorithm_test() {
+	int n = 10;
+	array<int, 5> numbers;
+	numbers.assign(7);
+	unordered_map<int, int> map;
+	
+	for (auto it = numbers.begin(); it != numbers.end(); it++) {
+		cout << *it << endl;
+	}
+	numbers.fill(2);
+	vector<int> o_numbers;
+	o_numbers.assign(10, 6);
+	for (auto it = o_numbers.begin(); it != o_numbers.end(); it++) {
+		cout << *it << endl;
+	}
+	system("pause");
 }
 

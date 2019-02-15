@@ -3,6 +3,17 @@
 using namespace mammoth::layer;
 using namespace mammoth::config;
 
+
+float InputLayerConfig::gyroscope_x_diff = 0;
+float InputLayerConfig::gyroscope_y_diff = 0;
+float InputLayerConfig::gyroscope_z_diff = 0;
+float InputLayerConfig::gyroscope_x_factor = 1;
+float InputLayerConfig::gyroscope_y_factor = 1;
+float InputLayerConfig::gyroscope_z_factor = 1;
+
+
+
+
 unsigned char GyroscopeSerialInput::temp[11] = {0};
 int GyroscopeSerialInput::temp_count = 0;
 double GyroscopeSerialInput::a[3] = {0};
@@ -210,7 +221,7 @@ void GyroscopeSerialInput::read_gyroscope(const std::string& real_data, void* co
 	char* b = new char[teststr.length() + 1];
 	memset(b, 0, teststr.length() + 1);
 	memcpy(b, a, teststr.length());
-	unsigned char* c = (unsigned char*)b;  //  byte与  unsigned char*相同
+	unsigned char* c = (unsigned char*)b;  //  byte锟斤拷  unsigned char*锟斤拷同
 	for (int i = 0; i < teststr.length(); i++) {
 		if ((int)(c[i]) == 0x55) {
 			if (temp_count == 11) {

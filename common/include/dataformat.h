@@ -2,7 +2,6 @@
 #ifndef DataFormat_h__
 #define DataFormat_h__
 
-
 #include <stdint.h>
 #include <vector>
 

@@ -1,6 +1,10 @@
 #pragma once
 
-#include "VisualizationLayerConfig.h"
+#include "UnionConfig.h"
+#include "PreprocessLayer.h"
+#include "PcdUtilLayer.h"
+#include <pcl/common/transforms.h>
+#include<pcl/visualization/pcl_visualizer.h>
 
 namespace mammoth {
 	namespace layer {

@@ -1,6 +1,5 @@
 #include "SerialLibrary.h"
 
-
 #include <cassert>
 
 BaseCom::BaseCom() {
@@ -57,22 +56,12 @@ bool BaseCom::Connect(const std::string& portName, unsigned int baudRate, unsign
 bool BaseCom::Connect(int port, unsigned int baudRate, unsigned int parity, unsigned int dataBits, unsigned int stopBits) {
 	if (port < 1 || port > 1024)
 		return false;
-	////
-
+	///
 	SetComPort(port);
-
 	if (!OpenPort())
 		return false;
-
-
 	if (!SetupPort())
 		return false;
-
-	
-
-	
-
-
 	return SetState(baudRate, dataBits, parity, stopBits);
 }
 
@@ -103,12 +92,8 @@ void BaseCom::Init() {
 bool BaseCom::SetupPort() {
 	if (!IsOpen())
 		return false;
-
-
 	if (!SetupComm(_com_handle, 8192, 8192))
 		return false;
-
-
 	if (!GetCommTimeouts(_com_handle, &_co))
 		return false;
 	_co.ReadIntervalTimeout = 0;
@@ -118,12 +103,8 @@ bool BaseCom::SetupPort() {
 	_co.WriteTotalTimeoutConstant = 0;
 	if (!SetCommTimeouts(_com_handle, &_co))
 		return false;
-
-
 	if (!PurgeComm(_com_handle, PURGE_TXABORT | PURGE_RXABORT | PURGE_TXCLEAR | PURGE_RXCLEAR))
 		return false;
-
-
 	return true;
 }
 
@@ -146,17 +127,14 @@ bool BaseCom::openLinuxPort(const SerialPortInfo& portinfo) {
 	} else {
 		printf("open %s .....\n", portinfo.name.c_str());
 	}
-
-
-	if (fcntl(_fdSerial, F_SETFL, FNDELAY) < 0)//·Ç×èÈû£¬¸²¸ÇÇ°ÃæopenµÄÊôÐÔ
+	if (fcntl(_fdSerial, F_SETFL, FNDELAY) < 0)//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç°ï¿½ï¿½openï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	{
 		printf("set %s noblock failed\n", _portinfo.name.c_str());
 	} else {
 		printf("set %s noblock succ\n", _portinfo.name.c_str());
 	}
-
 	/*
-	int ifcntl = fcntl(_fdSerial, F_SETFL, 0); //×èÈû
+	int ifcntl = fcntl(_fdSerial, F_SETFL, 0); //ï¿½ï¿½ï¿½ï¿½
 	if (ifcntl < 0)
 	{
 	printf("fcntl %s  failed, result is %d!\n", portinfo.name.c_str(), ifcntl);
@@ -166,8 +144,6 @@ bool BaseCom::openLinuxPort(const SerialPortInfo& portinfo) {
 	printf("fcntl %s succ, result is %d!\n", portinfo.name.c_str(), ifcntl);
 	}
 	*/
-
-
 	if (isatty(STDIN_FILENO) == 0) {
 		printf("%s is not a terminal device\n", portinfo.name.c_str());
 	} else {
@@ -211,25 +187,25 @@ bool BaseCom::setLinuxPortOpt(const SerialPortInfo& portinfo) {
 
 	switch (portinfo.parity) {
 	case 'o':
-	case 'O':                     //ÆæÐ£Ñé
+	case 'O':                     //ï¿½ï¿½Ð£ï¿½ï¿½
 		newtio.c_cflag |= PARENB;
 		newtio.c_cflag |= PARODD;
 		newtio.c_iflag |= (INPCK);
 		break;
 	case 'e':
-	case 'E':                     //Å¼Ð£Ñé
+	case 'E':                     //Å¼Ð£ï¿½ï¿½
 		newtio.c_iflag |= (INPCK | ISTRIP);
 		newtio.c_cflag |= PARENB;
 		newtio.c_cflag &= ~PARODD;
 		break;
 	case 'n':
-	case 'N':                    //ÎÞÐ£Ñé
+	case 'N':                    //ï¿½ï¿½Ð£ï¿½ï¿½
 		newtio.c_cflag &= ~PARENB;
 		newtio.c_iflag &= ~INPCK;
 		break;
 	case 's':
 	case 'S':
-		newtio.c_cflag &= ~PARENB; //Çå³ýÐ£ÑéÎ»
+		newtio.c_cflag &= ~PARENB; //ï¿½ï¿½ï¿½Ð£ï¿½ï¿½Î»
 		newtio.c_cflag &= ~CSTOPB; //??????????????
 		newtio.c_iflag |= INPCK; //disable pairty checking
 		break;
@@ -244,9 +220,9 @@ bool BaseCom::setLinuxPortOpt(const SerialPortInfo& portinfo) {
 			cfsetispeed(&newtio, speed_arr[i]);
 			cfsetospeed(&newtio, speed_arr[i]);
 			/*
-			TCSANOW£ºÁ¢¼´Ö´ÐÐ¶ø²»µÈ´ýÊý¾Ý·¢ËÍ»òÕß½ÓÊÜÍê³É¡£
-			TCSADRAIN£ºµÈ´ýËùÓÐÊý¾Ý´«µÝÍê³ÉºóÖ´ÐÐ¡£
-			TCSAFLUSH£ºFlush input and output buffers and make the change
+			TCSANOWï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½È´ï¿½ï¿½ï¿½ï¿½Ý·ï¿½ï¿½Í»ï¿½ï¿½ß½ï¿½ï¿½ï¿½ï¿½ï¿½É¡ï¿½
+			TCSADRAINï¿½ï¿½ï¿½È´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý´ï¿½ï¿½ï¿½ï¿½ï¿½Éºï¿½Ö´ï¿½Ð¡ï¿½
+			TCSAFLUSHï¿½ï¿½Flush input and output buffers and make the change
 			*/
 			if ((tcsetattr(_fdSerial, TCSANOW, &newtio)) != 0) {
 				printf("%s set error", portinfo.name.c_str());
@@ -256,7 +232,6 @@ bool BaseCom::setLinuxPortOpt(const SerialPortInfo& portinfo) {
 			break;
 		}
 	}
-
 	if (portinfo.stopBits == 1) {
 		newtio.c_cflag &= ~CSTOPB;
 	} else if (portinfo.stopBits == 2) {
@@ -265,15 +240,10 @@ bool BaseCom::setLinuxPortOpt(const SerialPortInfo& portinfo) {
 		printf("%s Unsupported stopbits error", portinfo.name.c_str());
 		return false;
 	}
-
 	newtio.c_cflag |= IXON | IXOFF | IXANY;
-
 	newtio.c_cflag &= ~CSIZE;
-
 	newtio.c_oflag &= ~OPOST;
-
 	newtio.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
-
 	newtio.c_cc[VTIME] = 0;
 	newtio.c_cc[VMIN] = 0;
 	if (tcflush(_fdSerial, TCIOFLUSH) == -1) {
@@ -282,8 +252,6 @@ bool BaseCom::setLinuxPortOpt(const SerialPortInfo& portinfo) {
 	printf("%s set done!\n", portinfo.name.c_str());
 	_isOpen = true;
 	return true;
-
-
 }
 
 
@@ -302,7 +270,6 @@ void BaseCom::Close() {
 #endif
 }
 
-
 bool BaseCom::IsOpen() {
 #ifdef WIN32
 	return _com_handle != INVALID_HANDLE_VALUE;
@@ -311,21 +278,13 @@ bool BaseCom::IsOpen() {
 #endif
 }
 
-
-
-
-
-
 #ifdef WIN32
 SyncCom::SyncCom() {
 }
 
-
 bool SyncCom::OpenPort() {
 	if (IsOpen())
 		Close();
-
-
 	_com_handle = CreateFileA(
 		_com_str,
 		GENERIC_READ | GENERIC_WRITE,
@@ -335,11 +294,8 @@ bool SyncCom::OpenPort() {
 		FILE_ATTRIBUTE_NORMAL,
 		NULL
 		);
-
-
 	return IsOpen();
 }
-
 
 int SyncCom::Read(char* buf, int buf_len) {
 	if (!IsOpen()) {
@@ -352,7 +308,6 @@ int SyncCom::Read(char* buf, int buf_len) {
 		PurgeComm(_com_handle, PURGE_RXABORT | PURGE_RXCLEAR);
 		return 0;
 	}
-
 	unsigned long r_len = 0;
 	buf_len = min(buf_len - 1, (int)stat.cbInQue);
 	//DWORD value = WaitForSingleObject(_com_handle, -1);
@@ -360,7 +315,6 @@ int SyncCom::Read(char* buf, int buf_len) {
 		r_len = 0;
 		printf("read error\n");
 	}
-	
     buf[r_len] = '\0';
 	return r_len;
 }
@@ -399,9 +353,6 @@ ASynCom::ASynCom() {
 #endif
 }
 
-
-
-
 ASynCom::~ASynCom() {
 	Close();
 #ifdef WIN32
@@ -413,7 +364,6 @@ ASynCom::~ASynCom() {
 		CloseHandle(_wait_o.hEvent);
 #endif
 }
-
 
 #ifdef WIN32
 bool ASynCom::OpenPort() {
@@ -435,36 +385,21 @@ bool ASynCom::OpenPort() {
 }
 #endif
 
-
 int ASynCom::Read(char* buf, int buf_len) {
 #ifdef WIN32
 	if (!IsOpen())
 		return 0;
-
-
 	buf[0] = '\0';
-
-
 	COMSTAT  stat;
 	DWORD error;
-
-
 	if (ClearCommError(_com_handle, &error, &stat) && error > 0) {
 		PurgeComm(_com_handle, PURGE_RXABORT | PURGE_RXCLEAR);
 		return 0;
 	}
-
-
 	if (!stat.cbInQue)
 		return 0;
-
-
 	unsigned long r_len = 0;
-
-
 	buf_len = min((int)(buf_len - 1), (int)stat.cbInQue);
-
-
 	if (!ReadFile(_com_handle, buf, buf_len, &r_len, &_ro)) {
 		if (GetLastError() == ERROR_IO_PENDING) {
 			if (!GetOverlappedResult(_com_handle, &_ro, &r_len, false)) {
@@ -474,12 +409,10 @@ int ASynCom::Read(char* buf, int buf_len) {
 		} else
 			r_len = 0;
 	}
-
-
 	buf[r_len] = '\0';
 	return r_len;
 #else
-	return (int)readDataTty(_fdSerial, buf, 20, buf_len); //100 Ã»ÓÐÊý¾Ý¾ÍµÈ´ý100ºÁÃë
+	return (int)readDataTty(_fdSerial, buf, 20, buf_len); //100 Ã»ï¿½ï¿½ï¿½ï¿½ï¿½Ý¾ÍµÈ´ï¿½100ï¿½ï¿½ï¿½ï¿½
 #endif
 
 }
@@ -489,20 +422,14 @@ bool ASynCom::SendData(const char* buf, int buf_len) {
 #ifdef WIN32
 	if (!IsOpen())
 		return false;
-
-
 	DWORD error;
 	if (ClearCommError(_com_handle, &error, NULL) && error > 0)
 		PurgeComm(_com_handle, PURGE_TXABORT | PURGE_TXCLEAR);
-
-
 	unsigned long w_len = 0, o_len = 0;
 	if (!WriteFile(_com_handle, buf, buf_len, &w_len, &_wo)) {
 		if (GetLastError() != ERROR_IO_PENDING)
 			return false;
 	}
-
-
 	return true;
 #else
 	ssize_t sendlen = sendDataTty(_fdSerial, buf, buf_len);
@@ -563,12 +490,8 @@ void ASynCom::OnProcRecvData(void* context) {
 				GetOverlappedResult(pcom->_com_handle, &pcom->_wait_o, &length, true);
 			}
 		}
-
-
 		if (mask & EV_ERR)
 			ClearCommError(pcom->_com_handle, &error, &stat);
-
-
 		if (mask & EV_RXCHAR) {
 			ClearCommError(pcom->_com_handle, &error, &stat);
 			if (stat.cbInQue > 0) {
@@ -648,8 +571,6 @@ ssize_t ASynCom::readDataTty(int fd, char *rcv_buf, int TimeOut, int Len) {
 			if (Len <= pos) {
 				break;
 			}
-
-
 			FD_ZERO(&rfds);
 			FD_SET(fd, &rfds);
 			retval = select(fd + 1, &rfds, NULL, NULL, &tv);

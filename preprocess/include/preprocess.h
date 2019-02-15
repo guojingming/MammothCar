@@ -1,7 +1,39 @@
 #pragma once
 
-#include "PreprocessLayerConfig.h"
+#include "UnionConfig.h"
 
+#include "PcdUtilLayerConfig.h"
+
+#ifdef WIN32
+#include "pcap.h"
+#include <windows.h>
+#include <omp.h>
+#include <direct.h>  
+#include <io.h>
+#endif
+
+#include "StdUtilLayer.h"
+#include "InputLayer.h"
+#include "PcdUtilLayer.h"
+
+namespace mammoth {
+	namespace config {
+		class PreprocessLayerConfig {
+		public:
+			static double * hdl32_vertical_angles;
+			static uint8_t * hdl32_vertical_ids;
+			static double * vlp16_vertical_angles;
+			static uint8_t * vlp16_vertical_ids;
+			static double * pandar40P_vertical_angles;
+			static double * pandar40P_horizontal_angles;
+			static double *banewakeCE30D_vertical_angles;
+			// static double * rslidar16_vertical_angles;
+			// static double * rslidar16_horizontal_angles;
+		};
+
+		//enum PRESET_CONFIGS {VLP16, HDL32E, PANDAR40P};
+	}
+}
 namespace mammoth {
 	namespace layer {
 		class AttitudeLayerBase {
@@ -218,3 +250,192 @@ namespace mammoth {
 
 	}
 }
+
+
+double * PreprocessLayerConfig::hdl32_vertical_angles = new double[32]{
+	-30.67,
+	-9.33,
+	-29.33,
+	-8.00,
+	-28.00,
+	-6.66,
+	-26.66,
+	-5.33,
+	-25.33,
+	-4.00,
+	-24.00,
+	-2.67,
+	-22.67,
+	-1.33,
+	-21.33,
+	0,
+	-20,
+	1.33,
+	-18.67,
+	2.67,
+	-17.33,
+	4,
+	-16,
+	5.33,
+	-14.67,
+	6.67,
+	-13.33,
+	8,
+	-12,
+	9.33,
+	-10.67,
+	10.67
+};
+
+uint8_t * PreprocessLayerConfig::hdl32_vertical_ids = new uint8_t[32] {
+	-23 * -1 + 9,
+	-7 * -1 + 9,
+	-22 * -1 + 9,
+	-6 * -1 + 9,
+	-21 * -1 + 9,
+	-5 * -1 + 9,
+	-20 * -1 + 9,
+	-4 * -1 + 9,
+	-19 * -1 + 9,
+	-3 * -1 + 9,
+	-18 * -1 + 9,
+	-2 * -1 + 9,
+	-17 * -1 + 9,
+	-1 * -1 + 9,
+	-16 * -1 + 9,
+	0 * -1 + 9,
+	-15 * -1 + 9,
+	1 * -1 + 9,
+	-14 * -1 + 9,
+	2 * -1 + 9,
+	-13 * -1 + 9,
+	3 * -1 + 9,
+	-12 * -1 + 9,
+	4 * -1 + 9,
+	-11 * -1 + 9,
+	5 * -1 + 9,
+	-10 * -1 + 9,
+	6 * -1 + 9,
+	-9 * -1 + 9,
+	7 * -1 + 9,
+	-8 * -1 + 9,
+	8 * -1 + 9
+};
+
+
+double * PreprocessLayerConfig::vlp16_vertical_angles = new double[32]{
+	-15,
+	1,
+	-13,
+	3,
+	-11,
+	5,
+	-9,
+	7,
+	-7,
+	9,
+	-5,
+	11,
+	-3,
+	13,
+	-1,
+	15,
+	-15,
+	1,
+	-13,
+	3,
+	-11,
+	5,
+	-9,
+	7,
+	-7,
+	9,
+	-5,
+	11,
+	-3,
+	13,
+	-1,
+	15
+};
+
+uint8_t * PreprocessLayerConfig::vlp16_vertical_ids = new uint8_t[32]{
+	0,
+	2,
+	4,
+	6,
+	8,
+	10,
+	12,
+	14,
+	1,
+	3,
+	5,
+	7,
+	9,
+	11,
+	13,
+	15,
+	0,
+	2,
+	4,
+	6,
+	8,
+	10,
+	12,
+	14,
+	1,
+	3,
+	5,
+	7,
+	9,
+	11,
+	13,
+	15
+};
+
+
+double * PreprocessLayerConfig::pandar40P_horizontal_angles = new double[40]{
+	0, 0, 0, 0, -2.5, -2.5, 2.5, -5,
+	-2.5, 2.5, -5, -2.5, 2.5, -5, 0, 2.5,
+	-5, 0, 5, -2.5, 0, 5, -2.5, 0,
+	5, -2.5, 2.5, 5, -2.5, 2.5, 2.5, 2.5,
+	0, 0, 0, 0, -2.5, -2.5, -2.5, -2.5
+};
+
+double * PreprocessLayerConfig::pandar40P_vertical_angles = new double[40]{
+	7,6,5,4,3,2,1.67,1.33,1,0.67,
+	0.33,0,-0.33,-0.67,-1,-1.33,-1.67,-2,-2.33,-2.67,
+	-3,-3.33,-3.67,-4,-4.33,-4.67,-5,-5.33,-5.67,-6,
+	-7,-8,-9,-10,-11,-12,-13,-14,-15,-16
+};
+
+// double * rslidar16_horizontal_angles = new double[32]{
+// 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+// };
+
+// double * rslidar16_vertical_angles = new double[32]{
+// 	-15,-13,-11,-9,-7,-5,-3,-1,15,13,11,9,7,5,3,1,-15,-13,-11,-9,-7,-5,-3,-1,15,13,11,9,7,5,3,1
+// };
+
+double *PreprocessLayerConfig::banewakeCE30D_vertical_angles = new double[20]{
+	1.9,
+	1.7,
+	1.5,
+	1.3,
+	1.1,
+	0.9,
+	0.7,
+	0.5,
+	0.3,
+	0.1,
+	-0.1,
+	-0.3,
+	-0.5,
+	-0.7,
+	-0.9,
+	-1.1,
+	-1.3,
+	-1.5,
+	-1.7,
+	-1.9
+};

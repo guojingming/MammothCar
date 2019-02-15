@@ -84,17 +84,17 @@ void MultipleLidarViewer::showVelodyne16and32Points(int ethernet_num1, int ether
 			continue;
 		}
 		for (int i = 0; i < lidar_count; i++) {
-			//Í£Ö¹²É¼¯ ¿Õ¹ý ²»²Ù×÷vector
+			//Í£Ö¹ï¿½É¼ï¿½ ï¿½Õ¹ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½vector
 			grabbing_signals[i] = 0; 
 		}
-		//ºÏ²¢
+		//ï¿½Ï²ï¿½
 		printf("hdl:%d\n", hdl32_cloud_ptr->size());
 		PcdTransformLayer::get_instance()->combine(vlp16_cloud_ptr, hdl32_cloud_ptr, combined_cloud);
 		
-		//ÏÔÊ¾
+		//ï¿½ï¿½Ê¾
 		PointViewer::get_instance()->set_point_cloud(combined_cloud);
 		for (int i = 0; i < lidar_count; i++) {
-			//ÏÂÒ»ÂÖ²É¼¯
+			//ï¿½ï¿½Ò»ï¿½Ö²É¼ï¿½
 			finish_signals[i] = 0;
 			grabbing_signals[i] = 1;
 			vlp16_cloud_ptr = nullptr;

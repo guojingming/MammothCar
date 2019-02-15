@@ -1,9 +1,9 @@
 #pragma once
 
-#include "UnionConfig.h"
+#include "unionconfig.h"
 
-#include "PreprocessLayer.h"
-#include "StdUtilLayer.h"
+#include "preprocess.h"
+#include "stdutil.h"
 
 namespace mammoth {
 	namespace layer {

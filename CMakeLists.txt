@@ -38,6 +38,9 @@ file(GLOB_RECURSE MY_SRCS
     "${TEST_PATH}/src/*.c" "${TEST_PATH}/src/*.cpp"
 )
 
+message("MY_HEADERS : ${MY_HEADERS}")
+message("MY_SRCS : ${MY_SRCS}")
+
 file(GLOB_RECURSE MY_LIBS
     "${CMAKE_CURRENT_SOURCE_DIR}/${COMMON_PATH}/lib/*.lib"
     "${CMAKE_CURRENT_SOURCE_DIR}/${IO_PATH}/lib/*.lib"
@@ -81,6 +84,15 @@ include_directories(${PCAP_INCLUDE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 #include_directories(${KALMAN_FILTER_INCLUDE_DIR})
 # include_directories(${MRPT_INCLUDE_DIRS})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${COMMON_PATH}/include/)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${IO_PATH}/include/)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${PREPROCESS_PATH}/include/)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${UTIL_PATH}/include/)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${ALGORITHM_PATH}/include/)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${VISIUALIZATION_PATH}/include/)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${APP_PATH}/include/)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${TEST_PATH}/include/)
+
 
 if(WIN32)
     add_executable(${PROJECT_NAME} ${MY_SRCS} ${MY_HEADERS})

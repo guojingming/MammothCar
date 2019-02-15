@@ -1,4 +1,4 @@
-#include "InputLayer.h"
+#include "input.h"
 
 using namespace mammoth::layer;
 using namespace mammoth::config;

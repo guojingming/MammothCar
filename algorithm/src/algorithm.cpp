@@ -1,4 +1,4 @@
-#include "AlgorithmLayer.h"
+#include "algorithm.h"
 
 using namespace mammoth::config;
 using namespace mammoth::layer;

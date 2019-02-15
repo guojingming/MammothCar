@@ -1,11 +1,11 @@
 #pragma once
 
 //may use pcl
-#include "PcdUtilLayer.h"
-#include "PreprocessLayer.h"
-#include "AlgorithmLayer.h"
-#include "VisualizationLayer.h"
+#include "pcdutil.h"
+#include "preprocess.h"
+#include "algorithm.h"
+#include "visualization.h"
 //only use std and windows.h
-#include "InputLayer.h"
-#include "PersistantLayer.h"
-#include "StdUtilLayer.h"
+#include "input.h"
+#include "persistant.h"
+#include "stdutil.h"

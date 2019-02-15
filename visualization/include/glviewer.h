@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <functional>
 #include <stdio.h>
-#include "DataFormat.h"
+#include "dataformat.h"
 
 namespace glviewer
 {

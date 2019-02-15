@@ -1,4 +1,4 @@
-#include "PcdUtilLayer.h"
+#include "pcdutil.h"
 
 using namespace mammoth::layer;
 using namespace mammoth::config;
@@ -24,7 +24,7 @@ int PcdUtil::read_pcd_file(const std::string pcd_file_path, PCDFILE* pcd_file) {
 //0 binary 1 ascii
 void PcdUtil::save_pcd_file(const std::string pcd_file_path, const pcl::PointCloud<PointType>::Ptr & cloud, short mode) {
 	if (cloud->size() == 0) {
-		printf("ÒªÐ´Èë %s µÄPCDµãÔÆÊý×é´óÐ¡Îª0£¬Ð´Èë²Ù×÷È¡Ïû\n", pcd_file_path.c_str());
+		printf("ÒªÐ´ï¿½ï¿½ %s ï¿½ï¿½PCDï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¡Îª0ï¿½ï¿½Ð´ï¿½ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½\n", pcd_file_path.c_str());
 		return;
 	}
 	if (mode == 0) {
@@ -37,7 +37,7 @@ void PcdUtil::save_pcd_file(const std::string pcd_file_path, const pcl::PointClo
 template<typename CustomType>
 static void save_pcd_file(const std::string pcd_file_path, const PCDFILE * pcd_file, CustomType type, short mode) {
 	if (pcd_file.header.Points == 0) {
-		printf("ÒªÐ´Èë %s µÄPCDµãÔÆÊý×é´óÐ¡Îª0£¬Ð´Èë²Ù×÷È¡Ïû\n", pcd_file_path.c_str());
+		printf("ÒªÐ´ï¿½ï¿½ %s ï¿½ï¿½PCDï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¡Îª0ï¿½ï¿½Ð´ï¿½ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½\n", pcd_file_path.c_str());
 		return;
 	}
 	if (mode == 0) {
@@ -49,7 +49,7 @@ static void save_pcd_file(const std::string pcd_file_path, const PCDFILE * pcd_f
 
 void PcdUtil::save_pcd_file(const std::string pcd_file_path, const PCDFILE * pcd_file, short mode) {
 	if (pcd_file->header.Points == 0) {
-		printf("ÒªÐ´Èë %s µÄPCDµãÔÆÊý×é´óÐ¡Îª0£¬Ð´Èë²Ù×÷È¡Ïû\n", pcd_file_path.c_str());
+		printf("ÒªÐ´ï¿½ï¿½ %s ï¿½ï¿½PCDï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¡Îª0ï¿½ï¿½Ð´ï¿½ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½\n", pcd_file_path.c_str());
 		return;
 	}
 	if (mode == 0) {

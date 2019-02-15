@@ -1,8 +1,8 @@
 #pragma once
 
-#include "UnionConfig.h"
-#include "PreprocessLayer.h"
-#include "PcdUtilLayer.h"
+#include "unionconfig.h"
+#include "preprocess.h"
+#include "pcdutil.h"
 #include <pcl/common/transforms.h>
 #include<pcl/visualization/pcl_visualizer.h>
 

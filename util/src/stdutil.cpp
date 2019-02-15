@@ -1,4 +1,4 @@
-#include "StdUtilLayer.h"
+#include "stdutil.h"
 
 using namespace mammoth::layer;
 
@@ -345,7 +345,7 @@ void SerialUtil::read_gps(const std::string& data, void* context) {
 
 void SerialUtil::write(ASynCom* com, const std::string& msg, int* cont) {
 	std::string temp;
-	//Ñ­»··¢ËÍ
+	//Ñ­ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	while (true) {
 		(*cont)++;
 		temp = msg + " times is " + std::to_string(*cont);
@@ -430,7 +430,7 @@ void FileUtil::get_all_files(std::string path, std::vector<std::string>& files) 
 
 	int length = files.size();
 	std::string * strs = new std::string[length];
-	//×ÖµäÐòÅÅÐò
+	//ï¿½Öµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	for (int i = 0; i < length; i++) {
 		std::string str = files[i];
 		std::string temp = str.substr(0, str.find_first_of("_"));

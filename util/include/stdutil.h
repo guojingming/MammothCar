@@ -1,8 +1,8 @@
 #pragma once
 
 
-#include "UnionConfig.h"
-#include "SerialLibrary.h"
+#include "unionconfig.h"
+#include "serialutil.h"
 
 #include <thread>
 #include <fstream>

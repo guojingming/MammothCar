@@ -1,8 +1,8 @@
 #pragma once
 
-#include "UnionConfig.h"
+#include "unionconfig.h"
 
-#include "StdUtilLayer.h"
+#include "stdutil.h"
 #include <iomanip>
 
 namespace mammoth

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "UnionConfig.h"
+#include "unionconfig.h"
 
-#include "PcdUtilLayerConfig.h"
+#include "pcdutil.h"
 
 #ifdef WIN32
 #include "pcap.h"
@@ -12,9 +12,9 @@
 #include <io.h>
 #endif
 
-#include "StdUtilLayer.h"
-#include "InputLayer.h"
-#include "PcdUtilLayer.h"
+#include "stdutil.h"
+#include "input.h"
+#include "pcdutil.h"
 
 namespace mammoth {
 	namespace config {

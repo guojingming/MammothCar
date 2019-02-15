@@ -1,4 +1,4 @@
-#include "VisualizationLayer.h"
+#include "visualization.h"
 
 using namespace mammoth::layer;
 

@@ -1,5 +1,5 @@
-﻿#include "Mammoth.h"
-#include "SerialLibrary.h"
+﻿#include "mammoth.h"
+#include "serialutil.h"
 #include <crtdbg.h>
 #include <WinSock2.h>
 #include <cstdlib>
@@ -16,7 +16,6 @@
 
 #include <list>
 
-//#include "Nim.h"
 #pragma comment(lib,"ws2_32.lib")
 
 using namespace std;
@@ -95,12 +94,10 @@ char * obj_dec_result_path = "E:\\LidarData\\obj_dec\\result\\1\\";
 char * hillside_dec_point_path = "E:\\LidarData\\hillside_dec\\point\\1\\";
 char * hillside_dec_result_path = "E:\\LidarData\\hillside_dec\\result\\1\\";
 
-
 void packet_handler(u_char *dumpfile, const struct pcap_pkthdr *header, const u_char *pkt_data) {
 	/* 保存数据包到堆文件 */
 	pcap_dump(dumpfile, header, pkt_data);
 }
-
 
 void pcd_to_bin(std::string pcd_path, string bin_path) {
 	pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGBA>());

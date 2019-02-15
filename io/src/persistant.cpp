@@ -1,4 +1,4 @@
-#include "PersistantLayer.h"
+#include "persistant.h"
 
 using namespace mammoth::layer;
 using namespace mammoth::config;
@@ -9,18 +9,18 @@ void MysqlPersistantLayer::connect() {
 	//sql::Connection *con;
 	//sql::Statement *state;
 	//sql::ResultSet *result;
-	//// ³õÊ¼»¯Çı¶¯  
+	//// ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  
 	//driver = sql::mysql::get_mysql_driver_instance();
-	//// ½¨Á¢Á´½Ó  
+	//// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  
 	////con = driver->connect("tcp://192.168.0.243:3306", "root", "1234");
 	//con = driver->connect(PersistantLayerConfig::mysql_address.c_str(), PersistantLayerConfig::mysql_user.c_str(), PersistantLayerConfig::mysql_password.c_str());
 	//state = con->createStatement();
 	//std::string change_database_cmd = "use " + PersistantLayerConfig::mysql_database;
 	//state->execute("use lidar");
 	////state->execute(change_database_cmd);
-	//// ²éÑ¯  
+	//// ï¿½ï¿½Ñ¯  
 	//result = state->executeQuery("select * from test");
-	//// Êä³ö²éÑ¯  
+	//// ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¯  
 	//while (result->next()) {
 	//	int id = result->getInt("test_id");
 	//	std::string name = result->getString("test_value");
@@ -119,7 +119,7 @@ void DataGatherLayer::gps_thread() {
 
 void DataGatherLayer::pcd_thread() {
 
-	cv::VideoCapture cap(1);//¿ªÆôµçÄÔÉãÏñÍ·  
+	cv::VideoCapture cap(1);//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í·  
 	if (cap.isOpened())
 		std::cout << "camera is opened" << std::endl;
 	else
@@ -127,7 +127,7 @@ void DataGatherLayer::pcd_thread() {
 	cv::Mat frame;
 	cap >> frame;
 	cap >> frame;
-	//ÉèÖÃÉãÏñÍ··Ö±æÂÊ640*480  
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í·ï¿½Ö±ï¿½ï¿½ï¿½640*480  
 	cap.set(CV_CAP_PROP_FRAME_HEIGHT, 720);
 	cap.set(CV_CAP_PROP_FRAME_WIDTH, 1280);
 

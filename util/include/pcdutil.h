@@ -9,11 +9,11 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp" 
 
-#include "UnionConfig.h"
+#include "unionconfig.h"
 
-#include "glViewer.h"
-#include "DataFormat.h"
-#include "StdUtilLayer.h"
+#include "glviewer.h"
+#include "dataformat.h"
+#include "stdutil.h"
 
 #define PointType pcl::PointXYZRGBA
 

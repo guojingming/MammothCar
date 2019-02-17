@@ -1,6 +1,6 @@
 #include "climbchecking.h"
 
-using namespace mammoth::layer;
+using namespace mammoth::util;
 using namespace mammoth::config;
 using namespace mammoth::algorithm;
 

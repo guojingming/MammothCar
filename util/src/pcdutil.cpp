@@ -1,6 +1,6 @@
 #include "pcdutil.h"
 
-using namespace mammoth::layer;
+using namespace mammoth::util;
 using namespace mammoth::config;
 using namespace glviewer;
 

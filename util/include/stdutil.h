@@ -28,7 +28,7 @@
 #define BUFFER_SIZE 512
 
 namespace mammoth{
-	namespace layer {
+	namespace util {
 		class FileUtil {
 		public:
 			//0 read-only 1 append 2 write 

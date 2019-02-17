@@ -1,7 +1,7 @@
 #include "mapping.h"
 
+using namespace mammoth::util;
 using namespace mammoth::io;
-using namespace mammoth::layer;
 using namespace mammoth::config;
 using namespace mammoth::algorithm;
 

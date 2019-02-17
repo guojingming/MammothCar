@@ -19,7 +19,6 @@
 #pragma comment(lib,"ws2_32.lib")
 
 using namespace std;
-using namespace mammoth::layer;
 using namespace mammoth::io;
 using namespace mammoth::algorithm;
 using Eigen::MatrixXd;

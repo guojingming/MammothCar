@@ -1,6 +1,6 @@
 #include "multidatagather.h"
 
-using namespace mammoth::layer;
+using namespace mammoth::util;
 using namespace mammoth::io;
 using namespace mammoth::config;
 

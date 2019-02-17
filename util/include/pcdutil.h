@@ -26,7 +26,7 @@
 using namespace std;
 
 namespace mammoth {
-	namespace layer {
+	namespace util {
 		struct FiledDesc {
 			char Name[8];
 			uint32_t Size = 0;
@@ -78,19 +78,13 @@ namespace mammoth {
 			static void pcdLoad(FILE* fp, PCDFILE* File);
 			static void pcdRelease(PCDFILE* f);
 			static FiledDesc* pcdContains(PCDHEADER* pHeader, const char* field);
-
 			static int read_pcd_file(const std::string pcd_file_path, pcl::PointCloud<PointType>::Ptr & cloud);
 			static int read_pcd_file(const std::string pcd_file_path, PCDFILE* pcd_file);
-
 			static void save_pcd_file(const std::string pcd_file_path, const pcl::PointCloud<PointType>::Ptr & cloud, short mode = 0);
 			static void save_pcd_file(const std::string pcd_file_path, const PCDFILE * pcd_file, short mode = 0);
 			template<typename CustomType>
 			static void save_pcd_file(const std::string pcd_file_path, const PCDFILE * pcd_file, CustomType type, short mode = 0);
-
 			static void trans_pcd_to_xyz(const std::string pcd_file_path, const std::string  xyz_file_path);
-
-
-		
 			static HPCD pcdOpen(const char* filename);
 			static void pcdWrite(HPCD hpcd, glviewer::DataFormatDesc dsc, void* Arr, size_t Count);
 			static void pcdClose(HPCD hp);

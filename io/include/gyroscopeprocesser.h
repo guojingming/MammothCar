@@ -5,7 +5,7 @@
 #include "stdutil.h"
 #include <iomanip>
 
-using namespace mammoth::layer;
+using namespace mammoth::util;
 
 namespace mammoth{
 	namespace io{

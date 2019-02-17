@@ -1,6 +1,6 @@
 #include "pcapprocesser.h"
 
-using namespace mammoth::layer;
+using namespace mammoth::util;
 using namespace mammoth::io;
 using namespace mammoth::config;
 
@@ -168,8 +168,6 @@ void PcapProcesser::play_pcap_file(std::string pcap_path, int start_packet_numbe
 	float angle_min = 0;
 	float angle_max = 0;
 	bool start_counting = true;
-	float angle_map[240];//0 1.5 3 4.5
-	memset(angle_map, 0, sizeof(float) * 240);
 	while ((res = pcap_next_ex(adhandle, &pkthdr, &pktdata)) >= 0) {
 		if (pkthdr->caplen == 1248) {
 			///////////////////////
@@ -210,45 +208,27 @@ void PcapProcesser::play_pcap_file(std::string pcap_path, int start_packet_numbe
 					}
 				}
 			}
-			float angle_average = 0;
 			for (int i = 0; i < block_count; i++) {
-				angle_average += angles[i];
-			}
-			angle_average /= block_count;
-			int angle_index = (int)(angle_average / 1.5);
-			if (angle_map[angle_index] == 0) {
-				//��ӵ���
-				for (int i = 0; i < block_count; i++) {
-					for (int j = 0; j < channel_count; j++) {
-						MyPoint3D point;
-						float distance = distance_mm[i * channel_count + j] / 1000.0;
-						int flectivity_value = flectivity[i * channel_count + j];
-						float horizontal_angle = angles[i] * PI / 180;
-						float vertical_angle = LidarConfig::hdl32_vertical_angles[j % 32] * PI / 180;
-						point.z = distance * sin(vertical_angle);
-						point.y = distance * cos(vertical_angle) * sin(horizontal_angle);
-						point.x = distance * cos(vertical_angle) * cos(horizontal_angle);
-						PointType pclPoint;
-						pclPoint.x = 2 * (point.y);
-						pclPoint.y = -2 * (point.x);
-						pclPoint.z = 2 * point.z;
-						pclPoint.r = 0;
-						pclPoint.b = flectivity_value;
-						pclPoint.g = 0;
-						scene->push_back(pclPoint);
-					}
-				}
-				angle_map[angle_index] = 1;
-			}
-			//����Ƿ�չ���һȦ
-			int angle_count = 0;
-			for (int i = 0; i < 240; i++) {
-				if (angle_map[i] == 1) {
-					angle_count++;
+				for (int j = 0; j < channel_count; j++) {
+					MyPoint3D point;
+					float distance = distance_mm[i * channel_count + j] / 1000.0;
+					int flectivity_value = flectivity[i * channel_count + j];
+					float horizontal_angle = angles[i] * PI / 180;
+					float vertical_angle = LidarConfig::hdl32_vertical_angles[j % 32] * PI / 180;
+					point.z = distance * sin(vertical_angle);
+					point.y = distance * cos(vertical_angle) * sin(horizontal_angle);
+					point.x = distance * cos(vertical_angle) * cos(horizontal_angle);
+					PointType pclPoint;
+					pclPoint.x = 2 * (point.y);
+					pclPoint.y = -2 * (point.x);
+					pclPoint.z = 2 * point.z;
+					pclPoint.r = 0;
+					pclPoint.b = flectivity_value;
+					pclPoint.g = 0;
+					scene->push_back(pclPoint);
 				}
 			}
-			if (angle_count >= 235) {
-				//����  ��ʾ
+			if (count >= 240) {
 				float seg = maxFlectivity * 1.0 / 256;
 				int pointSize = scene->points.size();
 				for (int i = 0; i < scene->points.size(); i++) {
@@ -257,29 +237,14 @@ void PcapProcesser::play_pcap_file(std::string pcap_path, int start_packet_numbe
 					scene->points[i].b = 255 - (int)(flex / seg) * 5;
 					scene->points[i].g = (int)(flex / seg) * 5;
 				}
-				//PointViewer::get_instance()->set_point_cloud(scene);
-				//scene->clear();
-				memset(angle_map, 0, sizeof(float) * 240);
+				PointViewer::get_instance()->set_point_cloud(scene);
+				scene->clear();
 			}
 			delete angles;
 			delete distance_mm;
 			delete flectivity;
 		}
-		if (res == 0) {
-			continue;
-		}
-		static double m_Packet_Count = 0;
-		static DWORD  m_PacketsLen = 0;
-		static DWORD  m_TickCount = 0;
-		static double m_Speed = 0.0;
-		m_PacketsLen += pkthdr->len;
-		m_Packet_Count++;
-		if (GetTickCount() - m_TickCount > 1000) {
-			m_Speed = m_PacketsLen / 1000.0;
-			m_TickCount = GetTickCount();
-			m_PacketsLen = 0;
-			m_Packet_Count = 0;
-		}
+		count++;
 	}
 	if (res == -1) {
 		printf("Error reading the packets: %s\n", pcap_geterr(adhandle));

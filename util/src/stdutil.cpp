@@ -1,6 +1,6 @@
 #include "stdutil.h"
 
-using namespace mammoth::layer;
+using namespace mammoth::util;
 
 bool UdpServer::Init() {
 #ifdef _WIN32

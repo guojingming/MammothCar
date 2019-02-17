@@ -11,10 +11,8 @@
 #include <direct.h>  
 #include <io.h>
 #endif
-
 #include "stdutil.h"
 #include "pcdutil.h"
-
 
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv/cv.h>

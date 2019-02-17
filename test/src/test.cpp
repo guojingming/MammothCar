@@ -101,7 +101,7 @@ void packet_handler(u_char *dumpfile, const struct pcap_pkthdr *header, const u_
 }
 
 
-pcl::PointCloud<pcl::PointXYZI>::Ptr readKittiPclBinData(std::string &in_file, std::string& out_file) {
+pcl::PointCloud<pcl::PointXYZI>::Ptr read_kitti_bin(std::string &in_file, std::string& out_file) {
 	// load point cloud
 	std::fstream input(in_file.c_str(), std::ios::in | std::ios::binary);
 	if (!input.good()) {
@@ -109,9 +109,7 @@ pcl::PointCloud<pcl::PointXYZI>::Ptr readKittiPclBinData(std::string &in_file, s
 		exit(EXIT_FAILURE);
 	}
 	input.seekg(0, std::ios::beg);
-
 	pcl::PointCloud<pcl::PointXYZI>::Ptr points(new pcl::PointCloud<pcl::PointXYZI>);
-
 	int i;
 	for (i = 0; input.good() && !input.eof(); i++) {
 		pcl::PointXYZI point;
@@ -121,15 +119,10 @@ pcl::PointCloud<pcl::PointXYZI>::Ptr readKittiPclBinData(std::string &in_file, s
 	}
 	input.close();
 	//    g_cloud_pub.publish( points );
-
 	std::cout << "Read KTTI point cloud with " << i << " points, writing to " << out_file << std::endl;
-	
-	
 	pcl::PCDWriter writer;
-
 	// Save DoN features
 	writer.write<pcl::PointXYZI>(out_file, *points, true);
-
 	return points;
 }
 

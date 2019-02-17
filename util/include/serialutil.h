@@ -4,6 +4,7 @@
 #include <string>
 #include <stdio.h>
 #include <stdlib.h>
+#include <algorithm>
 #ifdef WIN32
 #define _WINSOCKAPI_
 #include <windows.h>

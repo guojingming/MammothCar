@@ -1,6 +1,7 @@
 #include "visualization.h"
 
 using namespace mammoth::layer;
+using namespace mammoth::io;
 
 int MultipleLidarViewer::lidar_count = 2;
 int * MultipleLidarViewer::finish_signals = new int[lidar_count];
@@ -10,7 +11,7 @@ pcl::PointCloud<PointType>::Ptr MultipleLidarViewer::vlp16_cloud_ptr = nullptr;
 pcl::PointCloud<PointType>::Ptr MultipleLidarViewer::hdl32_cloud_ptr = nullptr;
 
 int lidar_vlp16() {
-	pcap_t * velodyne16_lidar = PcapTransformLayer::get_instance()->get_pcap_dev_handle(5);
+	pcap_t * velodyne16_lidar = PcapProcesser::get_instance()->get_pcap_dev_handle(5);
 	Eigen::Matrix4f transform = Eigen::Matrix4f::Identity();
 	transform(0, 0) = -0.0026426241;
 	transform(0, 1) = -0.033511896;
@@ -35,7 +36,7 @@ int lidar_vlp16() {
 		if (MultipleLidarViewer::grabbing_signals[0] == 0) {
 			continue;
 		}
-		PcapTransformLayer::get_instance()->get_current_frame(velodyne16_lidar, vlp16_cloud, 1);
+		PcapProcesser::get_instance()->get_current_frame(velodyne16_lidar, vlp16_cloud, 1);
 		pcl::transformPointCloud(*vlp16_cloud, *trans_vlp16_cloud, transform);
 		//finish
 		MultipleLidarViewer::vlp16_cloud_ptr = trans_vlp16_cloud;
@@ -46,13 +47,13 @@ int lidar_vlp16() {
 }
 
 int lidar_hdl32() {
-	pcap_t * velodyne32_lidar = PcapTransformLayer::get_instance()->get_pcap_dev_handle(1);
+	pcap_t * velodyne32_lidar = PcapProcesser::get_instance()->get_pcap_dev_handle(1);
 	pcl::PointCloud<PointType>::Ptr hdl32_cloud(new pcl::PointCloud<PointType>());
 	while (true) {
 		if (MultipleLidarViewer::grabbing_signals[1] == 0) {
 			continue;
 		}
-		PcapTransformLayer::get_instance()->get_current_frame(velodyne32_lidar, hdl32_cloud, 0);
+		PcapProcesser::get_instance()->get_current_frame(velodyne32_lidar, hdl32_cloud, 0);
 		//finish
 		MultipleLidarViewer::hdl32_cloud_ptr = hdl32_cloud;
 		printf("thread hdl32: %d\n", hdl32_cloud->size());
@@ -89,7 +90,7 @@ void MultipleLidarViewer::showVelodyne16and32Points(int ethernet_num1, int ether
 		}
 		//�ϲ�
 		printf("hdl:%d\n", hdl32_cloud_ptr->size());
-		PcdTransformLayer::get_instance()->combine(vlp16_cloud_ptr, hdl32_cloud_ptr, combined_cloud);
+		PcdProcesser::get_instance()->combine(vlp16_cloud_ptr, hdl32_cloud_ptr, combined_cloud);
 		
 		//��ʾ
 		PointViewer::get_instance()->set_point_cloud(combined_cloud);

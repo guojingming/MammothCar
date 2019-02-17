@@ -5,10 +5,10 @@
 #include "stdutil.h"
 #include <iomanip>
 
-namespace mammoth
-{
-	namespace layer
-	{
+using namespace mammoth::layer;
+
+namespace mammoth{
+	namespace io{
 		struct GPSPackage;
 		class GnssEthernetInput;
 		typedef bool (GnssEthernetInput::*SolverFunction)(std::vector<std::string>& token, GPSPackage & package);
@@ -44,7 +44,7 @@ namespace mammoth {
 }
 
 namespace mammoth {
-	namespace layer {
+	namespace io {
 		class GyroscopeSerialInput {
 		public:
 			//static void start(std::string serial_number, int baud_rate);
@@ -62,7 +62,6 @@ namespace mammoth {
 		private:
 			static std::string char_to_hex(std::string const &string);
 			static unsigned char hex_to_char(std::string const &string);
-			
 			static void decode_imu_data();
 			static void read_gyroscope(const std::string& real_data, void* context);
 			static unsigned char temp[11];
@@ -70,14 +69,9 @@ namespace mammoth {
 			static double a[3], w[3], Angle[3], T;
 			static int cmd_count;
 			static int gyroscope_flag;
-			
 			static float* buffer;
 			static int buffer_size;
-
-			
-
 			static SyncCom sync_com;
-
 		};
 
 
@@ -202,18 +196,6 @@ namespace mammoth {
 			void Output() {
 				std::cout << "Gyro : [ " << std::setprecision(10) << std::setiosflags(std::ios::fixed) << m_gyroX << " , " << m_gyroY << " , " << m_gyroZ << " ]\n";
 				std::cout << "Accl : [ " << std::setprecision(10) << std::setiosflags(std::ios::fixed) << m_acclX << " , " << m_acclY << " , " << m_acclZ << " ]\n";
-				// if (m_deltaAngleX > 0.03f || m_deltaAngleX < -0.03f)
-				//   m_angleX += m_deltaAngleX;
-				// if (m_deltaAngleY > 0.03f || m_deltaAngleY < -0.03f)
-				//   m_angleY += m_deltaAngleY;
-				// if (m_deltaAngleZ > 0.03f || m_deltaAngleZ < -0.03f)
-				//   m_angleZ += m_deltaAngleZ;
-				// std::cout << "deltaAngle : [ " << std::setprecision(10) << std::setiosflags(std::ios::fixed) << m_deltaAngleX << ", " << m_deltaAngleY << ", " << m_deltaAngleZ << " ]" << std::endl;
-
-				//std::cout << "Angle      : [ " << std::setprecision(10) << std::setiosflags(std::ios::fixed) << m_angleX << ", " << m_angleY << ", " << m_angleZ << " ]" << std::endl;
-				// std::cout << "latitude / longitude / elevation : [" << std::setprecision(8) << std::setiosflags(std::ios::fixed) << m_latitude << " " << m_latitudeDirection << ", " << m_longitude << " " << m_longitudeDirection << "]" << std::endl;
-				// std::cout << "yErr / laErr / loErr / elErr     : [" << std::setprecision(3) << std::setiosflags(std::ios::fixed) << m_yawErr << ", " << m_latitudeErr << ", " << m_longitudeErr << ", " << m_elevationErr << "]" << std::endl;
-				// std::cout << "Quality                          : [" << m_gpsQuality << "]" << std::endl;
 			}
 		};
 
@@ -223,15 +205,12 @@ namespace mammoth {
 			bool Solve(std::vector<unsigned char> & msg);
 			ImuPackage m_imuPackage;
 		private:
-			
 			bool _Phrase(const std::string& msg, std::vector<std::string>& token);
-
 			bool _GyroSolver(short lowHex, short highHex, double & value);
 			bool _AcclSolver(short lowHex, short highHex, double & value);
 			bool _AngleSolver(short lowHex, short highHex, double & value);
 			bool _VelSolver(short lowHex, short highHex, double & value);
 			bool _MaginSolver(short highHex, double & value);
-
 		};
 	}
 }

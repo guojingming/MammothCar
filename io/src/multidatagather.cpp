@@ -1,73 +1,37 @@
-#include "persistant.h"
+#include "multidatagather.h"
 
 using namespace mammoth::layer;
+using namespace mammoth::io;
 using namespace mammoth::config;
 
-void MysqlPersistantLayer::connect() {
+MultiDataGather * MultiDataGather::layer = nullptr;
 
-	//sql::mysql::MySQL_Driver *driver;
-	//sql::Connection *con;
-	//sql::Statement *state;
-	//sql::ResultSet *result;
-	//// ��ʼ������  
-	//driver = sql::mysql::get_mysql_driver_instance();
-	//// ��������  
-	////con = driver->connect("tcp://192.168.0.243:3306", "root", "1234");
-	//con = driver->connect(PersistantLayerConfig::mysql_address.c_str(), PersistantLayerConfig::mysql_user.c_str(), PersistantLayerConfig::mysql_password.c_str());
-	//state = con->createStatement();
-	//std::string change_database_cmd = "use " + PersistantLayerConfig::mysql_database;
-	//state->execute("use lidar");
-	////state->execute(change_database_cmd);
-	//// ��ѯ  
-	//result = state->executeQuery("select * from test");
-	//// �����ѯ  
-	//while (result->next()) {
-	//	int id = result->getInt("test_id");
-	//	std::string name = result->getString("test_value");
-	//	std::cout << id << " : " << name << std::endl;
-	//}
-	//delete state;
-	//delete con;
+MultiDataGather::MultiDataGather() {
 
 }
 
-int MysqlPersistantLayer::excute_sql(std::string sql) {
-
-	return 0;
-}
-
-void MysqlPersistantLayer::disconnect() {
-
-}
-
-DataGatherLayer * DataGatherLayer::layer = nullptr;
-
-DataGatherLayer::DataGatherLayer() {
-
-}
-
-DataGatherLayer::~DataGatherLayer() {
+MultiDataGather::~MultiDataGather() {
 	if (layer != nullptr) {
 		delete layer;
 	}
 }
 
-DataGatherLayer* DataGatherLayer::get_instance() {
+MultiDataGather* MultiDataGather::get_instance() {
 	if (layer == nullptr) {
-		layer = new DataGatherLayer();
+		layer = new MultiDataGather();
 	}
 	return layer;
 }
 
-std::string DataGatherLayer::gps_folder_path = "";
-std::string DataGatherLayer::pcd_folder_path = "";
-std::string DataGatherLayer::imu_folder_path = "";
-std::string DataGatherLayer::ori_imu_folder_path = "";
-int DataGatherLayer::gps_count = 0;
-int DataGatherLayer::pcd_count = 0; 
-int DataGatherLayer::imu_count = 0;
+std::string MultiDataGather::gps_folder_path = "";
+std::string MultiDataGather::pcd_folder_path = "";
+std::string MultiDataGather::imu_folder_path = "";
+std::string MultiDataGather::ori_imu_folder_path = "";
+int MultiDataGather::gps_count = 0;
+int MultiDataGather::pcd_count = 0; 
+int MultiDataGather::imu_count = 0;
 
-void DataGatherLayer::start_grab(const std::string& gps_folder_path, const std::string& pcd_folder_path, const std::string& imu_folder_path, const std::string& ori_imu_folder_path) {
+void MultiDataGather::start_grab(const std::string& gps_folder_path, const std::string& pcd_folder_path, const std::string& imu_folder_path, const std::string& ori_imu_folder_path) {
 	this->gps_folder_path = gps_folder_path;
 	this->pcd_folder_path = pcd_folder_path;
 	this->imu_folder_path = imu_folder_path;
@@ -78,11 +42,11 @@ void DataGatherLayer::start_grab(const std::string& gps_folder_path, const std::
 	system("pause");
 }
 
-void DataGatherLayer::gps_thread() {
+void MultiDataGather::gps_thread() {
 	gps_count = 0;
 	char gps_path[200];
 	char gps_content[100];
-	UdpAttitudeLayer tcpAttitudeSolver;
+	UdpAttitude tcpAttitudeSolver;
 	int last_pcd_count = -1;
 	FileUtil * current_file = nullptr;
 	while (true) {
@@ -117,8 +81,7 @@ void DataGatherLayer::gps_thread() {
 	}
 }
 
-void DataGatherLayer::pcd_thread() {
-
+void MultiDataGather::pcd_thread() {
 	cv::VideoCapture cap(1);//�����������ͷ  
 	if (cap.isOpened())
 		std::cout << "camera is opened" << std::endl;
@@ -145,13 +108,13 @@ void DataGatherLayer::pcd_thread() {
 		imshow("cam", frame);
 		cv::waitKey(5);
  		imwrite(temp, frame);
-		PcapTransformLayer::get_instance()->get_current_frame_pandar(pcd_path, file);
+		//PcapProcesser::get_instance()->get_current_frame(pcd_path, file, 0);
 
 		pcd_count++;
 	}
 }
 
-void DataGatherLayer::imu_thread() {
+void MultiDataGather::imu_thread() {
 	imu_count = 0;
 	int last_pcd_count = -1;
 	char imu_path[200]; 

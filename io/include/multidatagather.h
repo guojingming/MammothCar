@@ -2,28 +2,25 @@
 
 #include "unionconfig.h"
 
-#include "preprocess.h"
+#include "pcapprocesser.h"
+#include "gnssprocesser.h"
+
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv/cv.h>
+#include <opencv2/core/core.hpp>
+
 #include "stdutil.h"
 
 namespace mammoth {
-	namespace layer {
-		class MysqlPersistantLayer {
+	namespace io {
+		class MultiDataGather {
 		public:
-			static void connect();
-			static int excute_sql(std::string sql);
-			static void disconnect();
-		private:
-
-		};
-
-		class DataGatherLayer {
-		public:
-			~DataGatherLayer();
-			static DataGatherLayer * get_instance();
+			~MultiDataGather();
+			static MultiDataGather * get_instance();
 			void start_grab(const std::string& gps_folder_path, const std::string& pcd_folder_path, const std::string& imu_folder_path, const std::string& ori_imu_folder_path);
 		private:
-			static DataGatherLayer * layer;
-			DataGatherLayer();
+			static MultiDataGather * layer;
+			MultiDataGather();
 			static std::string gps_folder_path;
 			static std::string pcd_folder_path;
 			static std::string imu_folder_path;

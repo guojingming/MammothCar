@@ -309,7 +309,8 @@ int SyncCom::Read(char* buf, int buf_len) {
 		return 0;
 	}
 	unsigned long r_len = 0;
-	buf_len = min(buf_len - 1, (int)stat.cbInQue);
+
+	buf_len = buf_len - 1 < (int)stat.cbInQue ? buf_len - 1 : (int)stat.cbInQue;
 	//DWORD value = WaitForSingleObject(_com_handle, -1);
 	if (!ReadFile(_com_handle, buf, buf_len, &r_len, NULL)) {
 		r_len = 0;
@@ -399,7 +400,7 @@ int ASynCom::Read(char* buf, int buf_len) {
 	if (!stat.cbInQue)
 		return 0;
 	unsigned long r_len = 0;
-	buf_len = min((int)(buf_len - 1), (int)stat.cbInQue);
+	buf_len = (int)(buf_len - 1) < (int)stat.cbInQue ? (int)(buf_len - 1) : (int)stat.cbInQue;
 	if (!ReadFile(_com_handle, buf, buf_len, &r_len, &_ro)) {
 		if (GetLastError() == ERROR_IO_PENDING) {
 			if (!GetOverlappedResult(_com_handle, &_ro, &r_len, false)) {

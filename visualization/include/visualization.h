@@ -1,7 +1,10 @@
 #pragma once
 
 #include "unionconfig.h"
-#include "preprocess.h"
+
+#include "pcapprocesser.h"
+#include "pcdprocesser.h"
+
 #include "pcdutil.h"
 #include <pcl/common/transforms.h>
 #include<pcl/visualization/pcl_visualizer.h>

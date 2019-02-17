@@ -1,8 +1,8 @@
-#include "input.h"
+#include "gyroscopeprocesser.h"
 
 using namespace mammoth::layer;
+using namespace mammoth::io;
 using namespace mammoth::config;
-
 
 float InputLayerConfig::gyroscope_x_diff = 0;
 float InputLayerConfig::gyroscope_y_diff = 0;
@@ -10,9 +10,6 @@ float InputLayerConfig::gyroscope_z_diff = 0;
 float InputLayerConfig::gyroscope_x_factor = 1;
 float InputLayerConfig::gyroscope_y_factor = 1;
 float InputLayerConfig::gyroscope_z_factor = 1;
-
-
-
 
 unsigned char GyroscopeSerialInput::temp[11] = {0};
 int GyroscopeSerialInput::temp_count = 0;

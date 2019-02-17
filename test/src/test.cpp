@@ -20,6 +20,8 @@
 
 using namespace std;
 using namespace mammoth::layer;
+using namespace mammoth::io;
+using namespace mammoth::algorithm;
 using Eigen::MatrixXd;
 
 struct Point3D {
@@ -65,7 +67,7 @@ struct Parameters {
 	//障碍物
 	//当前格子内高度差大于多少认为有障碍
 	float height_threshold1; //30cm
-	//相邻格子内高度差大于多少认为有障碍
+	//相邻格子内高度差大于 多少认为有障碍
 	float height_threshold2; //40cm
 	//相邻格子内高度差低于多少认为连续
 	float height_threshold3; //20cm
@@ -99,23 +101,6 @@ void packet_handler(u_char *dumpfile, const struct pcap_pkthdr *header, const u_
 	pcap_dump(dumpfile, header, pkt_data);
 }
 
-void pcd_to_bin(std::string pcd_path, string bin_path) {
-	pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGBA>());
-	pcl::io::loadPCDFile<pcl::PointXYZRGBA>(pcd_path, *cloud);
-	std::fstream output(bin_path.c_str(), std::ios::out | std::ios::binary);
-	PointViewer::get_instance()->set_point_cloud(cloud);
-	//printf("%d: %d\n", frame_count, points.size());
-	//float intensive = 0;
-	float data[4] = { 50 };
-	for (int i = 0; i < cloud->size(); i++) {
-		data[0] = (*cloud)[i].x;
-		data[1] = (*cloud)[i].y;
-		data[2] = (*cloud)[i].z;
-		//data[3] = (*cloud)[i].rgba;
-		output.write((char *)data, 4 * sizeof(float));
-	}
-	output.close();
-}
 
 pcl::PointCloud<pcl::PointXYZI>::Ptr readKittiPclBinData(std::string &in_file, std::string& out_file) {
 	// load point cloud
@@ -184,7 +169,7 @@ int main(int argc, char ** argv) {
 		memset(temp2, 0, 100);
 		sprintf(temp1, "D:/cmp/pcd_64/%d.pcd", i);
 		sprintf(temp2, "D:/cmp/pcd_64/%d.bin", i);
-		pcd_to_bin(temp1, temp2);
+		PcdProcesser::get_instance()->pcd_to_bin(temp1, temp2);
 	}
 	//pcd_to_bin("D:/test.pcd", "D:/total_color.bin");
 	system("pause");
@@ -196,7 +181,7 @@ int main(int argc, char ** argv) {
 	//PointViewer::get_instance()->init_point_viewer();
 	//pcl::PointCloud<PointType>::Ptr cloud(new pcl::PointCloud<PointType>());
 	//while (true) {
-	//	PcapTransformLayer::get_instance()->get_current_frame(pfile, cloud, 0);
+	//	PcapProcesser::get_instance()->get_current_frame(pfile, cloud, 0);
 	//	PointViewer::get_instance()->set_point_cloud(cloud);
 	//}
 	
@@ -234,8 +219,8 @@ void papo() {
 	
 	char pointfile_name[50];
 	char resultfile_name[50];
-	pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_file_data("E:\\军工项目验收数据\\pcap_ori_data\\斜坡通过性判断.pcap");
-	//pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_dev_handle(1);
+	pcap_t * device = PcapProcesser::get_instance()->get_pcap_file_data("E:\\军工项目验收数据\\pcap_ori_data\\斜坡通过性判断.pcap");
+	//pcap_t * device = PcapProcesser::get_instance()->get_pcap_dev_handle(1);
 	PointViewer::get_instance()->init_point_viewer();
 	long long frame_count = 0;
 	while (1) {
@@ -243,7 +228,7 @@ void papo() {
 			longitudinal_result.altitudes[i] = -1000;
 		}
 		//PcdUtil::read_pcd_file("D:/test_frame.pcd", cloud);
-		PcapTransformLayer::get_instance()->get_current_frame(device, cloud, 0);
+		PcapProcesser::get_instance()->get_current_frame(device, cloud, 0);
 
 		pcl::PassThrough<PointType> passThrough;
 		passThrough.setInputCloud(cloud);
@@ -651,11 +636,11 @@ float GetProb2(const float* long_slope_c, const float * sizes, int count) {
 void temp_test1() {
 	PointViewer::get_instance()->init_point_viewer();
 	pcl::PointCloud<PointType>::Ptr cloud(new pcl::PointCloud<PointType>());
-	//pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_file_data("E:\\军工项目验收数据\\pcap_ori_data\\大尺度障碍物通过性判断.pcap");
-	pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_dev_handle(3);
+	//pcap_t * device = PcapProcesser::get_instance()->get_pcap_file_data("E:\\军工项目验收数据\\pcap_ori_data\\大尺度障碍物通过性判断.pcap");
+	pcap_t * device = PcapProcesser::get_instance()->get_pcap_dev_handle(3);
 	long long frame_count = 0;
 	while (1) {
-		PcapTransformLayer::get_instance()->get_current_frame(device, cloud, 0);
+		PcapProcesser::get_instance()->get_current_frame(device, cloud, 0);
 		ClimbingLayer::get_instance()->climbing_check(cloud, obj_dec_point_path, obj_dec_result_path, frame_count);
 		//PointViewer::get_instance()->print_camera_data();
 		if (cloud->size() != 0) {                  
@@ -699,9 +684,9 @@ void gjm_test() {
 	pcl::PointCloud<PointType>::Ptr cloud(new pcl::PointCloud<PointType>());
 
 	//PcdUtil::read_pcd_file("D:\\t3.pcd", cloud);
-	pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_file_data("D:\\0180717\\7.pcap");
+	pcap_t * device = PcapProcesser::get_instance()->get_pcap_file_data("D:\\0180717\\7.pcap");
 	while (1) {
-		PcapTransformLayer::get_instance()->get_current_frame(device, cloud, 0);
+		PcapProcesser::get_instance()->get_current_frame(device, cloud, 0);
 		PointViewer::get_instance()->set_point_cloud(cloud);
 	}
 
@@ -718,34 +703,6 @@ void gjm_test() {
 
 	//SLAM
 	//JluSlamLayer::get_instance()->start_slam("E:\\DataSpace\\LidarDataSpace\\new_lidar_20180226-1\\gps_data","E:\\DataSpace\\LidarDataSpace\\new_lidar_20180226-1\\pcd_data");
-}
-
-void ryh_test() {
-	PointViewer::get_instance()->init_point_viewer();
-	pcl::PointCloud<PointType>::Ptr cloud(new pcl::PointCloud<PointType>());
-	pcap_t * device = PcapTransformLayer::get_instance()->get_pcap_dev_handle(4);
-	WSADATA wsaData;
-	WSAStartup(WINSOCK_VERSION, &wsaData);
-	SOCKET sock;
-	sock = socket(AF_INET, SOCK_DGRAM, 0);
-	char buffer[50] = "version";
-	char dest_ip[] = "192.168.1.80";
-	unsigned short dest_port = 2368;
-	sockaddr_in RemoteAddr;
-	RemoteAddr.sin_family = AF_INET;
-	RemoteAddr.sin_port = htons(dest_port);
-	RemoteAddr.sin_addr.S_un.S_addr = inet_addr(dest_ip);
-	sendto(sock, buffer, 50, 0, (sockaddr*)&RemoteAddr, sizeof(RemoteAddr));
-	strcpy_s(buffer, "getDistanceAndAmplitudeSorted");
-	sendto(sock, buffer, 50, 0, (sockaddr*)&RemoteAddr, sizeof(RemoteAddr));
-	cv::namedWindow("grid");
-	cv::Mat img = cv::Mat(21, 118, CV_8UC3, cv::Scalar(0, 0, 0));
-	while (1) {
-		PcapTransformLayer::get_instance()->get_current_frame_CE30D(img, device, cloud, 0);
-		PointViewer::get_instance()->set_point_cloud(cloud);
-	}
-	closesocket(sock);
-	//	system("pause");
 }
 
 void serial_test() {

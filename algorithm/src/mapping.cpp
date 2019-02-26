@@ -2,29 +2,28 @@
 
 using namespace mammoth::util;
 using namespace mammoth::io;
-using namespace mammoth::config;
 using namespace mammoth::algorithm;
 
-JluSlamLayer * JluSlamLayer::layer = nullptr;
+MappingProcesser * MappingProcesser::layer = nullptr;
 
-JluSlamLayer::JluSlamLayer() {
+MappingProcesser::MappingProcesser() {
 
 }
 
-JluSlamLayer::~JluSlamLayer() {
+MappingProcesser::~MappingProcesser() {
 	if (layer != nullptr) {
 		delete layer;
 	}
 }
 
-JluSlamLayer * JluSlamLayer::get_instance() {
+MappingProcesser * MappingProcesser::get_instance() {
 	if (layer == nullptr) {
-		layer = new JluSlamLayer();
+		layer = new MappingProcesser();
 	}
 	return layer;
 }
 
-void JluSlamLayer::start_slam(const std::string& gps_folder_path, const std::string& pcd_folder_path, int start_number) {
+void MappingProcesser::start_slam(const std::string& gps_folder_path, const std::string& pcd_folder_path, int start_number) {
 	std::vector<std::string> file_names;
 	std::string folder_path = pcd_folder_path + "\\*.pcd";
 	FileUtil::get_all_files(folder_path, file_names);
@@ -35,7 +34,6 @@ void JluSlamLayer::start_slam(const std::string& gps_folder_path, const std::str
 	//for (int i = 0; i < file_names.size(); i++) {
 		std::string number_str = file_names[i].substr(0, file_names[i].find_first_of('_'));
 		std::string file_path = file_names[i];
-		//���ļ�
 		std::string read_pcd_path = pcd_folder_path + "\\" + file_path;
 		printf("%s\n", file_path.c_str());
 		char temp[100];
@@ -70,7 +68,6 @@ void JluSlamLayer::start_slam(const std::string& gps_folder_path, const std::str
 		gga_data.lat = atof(latitude_str.c_str());
 		PTNLAVR_Data ptnlavr_data;
 		ptnlavr_data.yaw = atof(yaw_str.c_str());
-		//����λ������
 		double lat0 = 4349.13958348;
 		double lon0 = 12516.60912408;
 		Vec2d location_vec = GnssProcesser::get_instance()->get_distance1(gga_data.lat, gga_data.lon, lat0, lon0);
@@ -101,7 +98,7 @@ void JluSlamLayer::start_slam(const std::string& gps_folder_path, const std::str
 	system("pause");
 }
 
-void JluSlamLayer::DoTransform(float theta1, float theta2, float trans_x, float trans_y, void* pData, size_t count) {
+void MappingProcesser::DoTransform(float theta1, float theta2, float trans_x, float trans_y, void* pData, size_t count) {
 	float* fv = (float*)pData;
 	register __m128 Q1_1 = _mm_set_ps(0.0f, -1 * sinf(theta1), cosf(theta1) * sinf(theta2), cosf(theta1) * cosf(theta2));
 	register __m128 Q1_2 = _mm_set_ps(0, 0, -1 * cosf(theta2), sinf(theta2));

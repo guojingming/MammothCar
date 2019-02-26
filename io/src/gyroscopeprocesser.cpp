@@ -2,7 +2,6 @@
 
 using namespace mammoth::util;
 using namespace mammoth::io;
-using namespace mammoth::config;
 
 float InputLayerConfig::gyroscope_x_diff = 0;
 float InputLayerConfig::gyroscope_y_diff = 0;

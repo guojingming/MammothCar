@@ -1,7 +1,6 @@
 #include "climbchecking.h"
 
 using namespace mammoth::util;
-using namespace mammoth::config;
 using namespace mammoth::algorithm;
 
 ClimbingLayer * ClimbingLayer::layer = nullptr;
@@ -70,14 +69,10 @@ void ClimbingLayer::climbing_check(pcl::PointCloud<PointType>::Ptr & cloud, char
 		(*cloud)[i].b = 0;
 	}
 
-
-	
 	//ground altitude
 	float consult_ground_average_altitude = -2.45;
 	//= get_ground_average_altitude(cloud);
-
 	float threshold1 = consult_ground_average_altitude - 0.1;
-
 	float max_x = -10000;
 	float max_y = -10000;
 	float max_z = -10000;

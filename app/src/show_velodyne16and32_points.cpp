@@ -1,7 +1,6 @@
 #include "mammoth.h"
 
 using namespace mammoth::io;
-using namespace mammoth::config;
 
 int lidar_count = 2;
 int * finish_signals = new int[lidar_count];

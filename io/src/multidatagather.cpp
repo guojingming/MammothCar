@@ -2,7 +2,6 @@
 
 using namespace mammoth::util;
 using namespace mammoth::io;
-using namespace mammoth::config;
 
 MultiDataGather * MultiDataGather::layer = nullptr;
 

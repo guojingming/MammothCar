@@ -2,7 +2,6 @@
 
 using namespace mammoth::util;
 using namespace mammoth::io;
-using namespace mammoth::config;
 
 PcdProcesser * PcdProcesser::layer = nullptr;
 

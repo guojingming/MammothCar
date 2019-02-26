@@ -29,19 +29,16 @@ struct StringFinder {
 	std::string m_str;
 };
 
-namespace mammoth {
-	namespace config {
-		class InputLayerConfig {
-		public:
-			static float gyroscope_x_diff;
-			static float gyroscope_y_diff;
-			static float gyroscope_z_diff;
-			static float gyroscope_x_factor;
-			static float gyroscope_y_factor;
-			static float gyroscope_z_factor;
-		};
-	}
-}
+class InputLayerConfig {
+public:
+	static float gyroscope_x_diff;
+	static float gyroscope_y_diff;
+	static float gyroscope_z_diff;
+	static float gyroscope_x_factor;
+	static float gyroscope_y_factor;
+	static float gyroscope_z_factor;
+};
+
 
 namespace mammoth {
 	namespace io {

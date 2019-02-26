@@ -18,17 +18,13 @@
 #include <opencv/cv.h>
 #include <opencv2/core/core.hpp>
 
-namespace mammoth{
-    namespace config{
-        class LidarConfig {
-        public:
-            static double * hdl32_vertical_angles;
-            static uint8_t * hdl32_vertical_ids;
-            static double * vlp16_vertical_angles;
-            static uint8_t * vlp16_vertical_ids;
-        };
-    }
-}
+class LidarConfig {
+public:
+    static double * hdl32_vertical_angles;
+    static uint8_t * hdl32_vertical_ids;
+    static double * vlp16_vertical_angles;
+    static uint8_t * vlp16_vertical_ids;
+};
 
 namespace mammoth{
     namespace io{

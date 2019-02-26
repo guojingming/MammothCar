@@ -1,7 +1,6 @@
 #include "clustering.h"
 
 using namespace mammoth::util;
-using namespace mammoth::config;
 using namespace mammoth::algorithm;
 
 std::vector<uint32_t> DimensionReductionCluster::cube_handles;

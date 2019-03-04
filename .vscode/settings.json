@@ -36,6 +36,7 @@
         "typeinfo": "cpp",
         "utility": "cpp",
         "iostream": "cpp",
-        "algorithm": "cpp"
+        "algorithm": "cpp",
+        "xstring": "cpp"
     }
 }

@@ -1,6 +1,7 @@
 #include "mammoth.h"
 
 using namespace mammoth::io;
+using namespace mammoth::algorithm;
 
 int lidar_count = 2;
 int * finish_signals = new int[lidar_count];
@@ -64,7 +65,27 @@ int lidar_hdl32() {
 
 int main(){
     PointViewer::get_instance()->init_point_viewer();
-	memset(finish_signals, 0, 2);
+	pcl::PointCloud<PointType>::Ptr cloud(new pcl::PointCloud<PointType>());
+	clock_t start_time = 0, end_time = 0;
+	for (int i = 0; i < 10000; ++i) {
+		start_time = clock();
+		PcdUtil::read_pcd_file("E:/xbw/obj_dec_data/"+ to_string(i) +".pcd", cloud);
+	//	PcdUtil::read_pcd_file("03.pcd", cloud);
+
+		//clustering.cpp
+		DimensionReductionCluster::start_clusting(cloud);
+		if (cloud->size() != 0)
+			PointViewer::get_instance()->set_point_cloud(cloud);
+		end_time = clock();
+		Sleep(50);
+		//cout << to_string(end_time - start_time) + "ms" << endl;
+		//cout << to_string(i) + ".pcd" << endl;
+	}
+	system("pause");
+
+
+
+	/*memset(finish_signals, 0, 2);
 	memset(grabbing_signals, 1, 2);
     pcl::PointCloud<PointType>::Ptr combined_cloud(new pcl::PointCloud<PointType>());
 	std::thread t1(lidar_vlp16);
@@ -94,7 +115,7 @@ int main(){
 			vlp16_cloud_ptr = nullptr;
 			hdl32_cloud_ptr = nullptr;
 		}
-    }
+    }*/
     return 0;
 }
     

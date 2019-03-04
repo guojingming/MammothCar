@@ -66,12 +66,21 @@ int lidar_hdl32() {
 int main(){
     PointViewer::get_instance()->init_point_viewer();
 	pcl::PointCloud<PointType>::Ptr cloud(new pcl::PointCloud<PointType>());
-	PcdUtil::read_pcd_file("E:/xbw/obj_dec_data/0.pcd", cloud);
-	
-	//clustering.cpp
-	DimensionReductionCluster::start_clusting(cloud);
+	clock_t start_time = 0, end_time = 0;
+	for (int i = 0; i < 10000; ++i) {
+		start_time = clock();
+		PcdUtil::read_pcd_file("E:/xbw/obj_dec_data/"+ to_string(i) +".pcd", cloud);
+	//	PcdUtil::read_pcd_file("03.pcd", cloud);
 
-	PointViewer::get_instance()->set_point_cloud(cloud);
+		//clustering.cpp
+		DimensionReductionCluster::start_clusting(cloud);
+		if (cloud->size() != 0)
+			PointViewer::get_instance()->set_point_cloud(cloud);
+		end_time = clock();
+		Sleep(50);
+		//cout << to_string(end_time - start_time) + "ms" << endl;
+		//cout << to_string(i) + ".pcd" << endl;
+	}
 	system("pause");
 
 

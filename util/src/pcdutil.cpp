@@ -188,6 +188,14 @@ void PointViewer::selectResultHandle(glviewer::SelectResult<void*>* _Rx) {
 	float min_z = 100;
 	float average_z = 0;
 	float max_z = -100;
+
+
+	float min_x = 100;
+	float max_x = -100;
+
+	float min_y = 100;
+	float max_y = -100;
+
 	for (glviewer::SelectResult<PointType>::iterator it = _R->begin(); it != _R->end(); it++) {
 		if (count >= 1) {
 			if (it->z <= min_z) {
@@ -199,6 +207,20 @@ void PointViewer::selectResultHandle(glviewer::SelectResult<void*>* _Rx) {
 			average_z += it->z;
 		}
 
+		if (it->x >= max_x) {
+			max_x = it->x;
+		}
+		if (it->x <= min_x) {
+			min_x = it->x;
+		}
+		if (it->y >= max_y) {
+			max_y = it->y;
+		}
+		if (it->y <= min_y) {
+			min_y = it->y;
+		}
+
+
 		if (count < 10 && count >= 1) {
 			std::cout << "[" << count << "]   " << "x:" << it->x << " y:" << it->y << " z:" << it->z << std::endl;
 		} else if (count >= 10 && count < 100) {
@@ -208,6 +230,12 @@ void PointViewer::selectResultHandle(glviewer::SelectResult<void*>* _Rx) {
 		}
 		count++;
 	}
+	std::cout << "y_min : " << min_y << std::endl;
+	std::cout << "y_max : " << max_y << std::endl;
+	std::cout << "x_min : " << min_x << std::endl;
+	std::cout << "x_max : " << max_x << std::endl;
+	std::cout << "----------------------------------------------" << std::endl;
+
 	/*average_z /= (count - 1);
 	std::cout << "minZ: " << min_z << std::endl;
 	std::cout << "maxZ: " << max_z << std::endl;

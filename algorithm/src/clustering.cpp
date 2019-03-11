@@ -16,10 +16,10 @@ void DimensionReductionCluster::start_clusting(pcl::PointCloud<PointType>::Ptr &
 	passThrough.setInputCloud(cloud);
 	passThrough.setFilterLimitsNegative(false);
 	passThrough.setFilterFieldName("x");
-	passThrough.setFilterLimits(-10, 10); //100
+	passThrough.setFilterLimits(-15, 15); //100
 	passThrough.filter(*cloud);
 	passThrough.setFilterFieldName("y");
-	passThrough.setFilterLimits(-10, 10); //100
+	passThrough.setFilterLimits(-15, 15); //100
 	passThrough.filter(*cloud);
 	//pcl::io::savePCDFileBinary("test_pcd.pcd", *cloud);
 	for (int i = 0; i < cloud->size(); ++i) {//简易滤除地面
@@ -184,8 +184,8 @@ pcl::PointCloud<PointType>::Ptr DimensionReductionCluster::birdview_picture_grid
 		//cout << "point " <<filtered_contours[i].size() << endl;
 		//if ((rec.size.height <= 55 && rec.size.height >= 20 && rec.size.width <= 45 && rec.size.width >= 15 && filtered_contours[i].size() >= 5)||
 		//	(rec.size.height <= 45 && rec.size.height >= 15 && rec.size.width <= 55 && rec.size.height >= 20 && filtered_contours[i].size() >= 5))//判定为车
-		if ((sqrt(pow(rec.size.height, 2) + pow(rec.size.width, 2)) >= 25 && rec.size.height / rec.size.width <= 4 && rec.size.height <= 55 && rec.size.height >= 10 && rec.size.width <= 45 && rec.size.width >= 5 && filtered_contours[i].size() >= 20) ||
-			(sqrt(pow(rec.size.height, 2) + pow(rec.size.width, 2)) >= 25 && rec.size.width / rec.size.height <= 4 && rec.size.height <= 45 && rec.size.height >= 5 && rec.size.width <= 55 && rec.size.height >= 10 && filtered_contours[i].size() >= 20))//判定为车
+		if ((sqrt(pow(rec.size.height, 2) + pow(rec.size.width, 2)) >= 25 && rec.size.height / rec.size.width <= 4 && rec.size.height / rec.size.width >= 0.3 && rec.size.height <= 55 && rec.size.height >= 10 && rec.size.width <= 45 && rec.size.width >= 5 && filtered_contours[i].size() >= 20) ||
+			(sqrt(pow(rec.size.height, 2) + pow(rec.size.width, 2)) >= 25 && rec.size.width / rec.size.height <= 4 && rec.size.width / rec.size.height >= 0.3 && rec.size.height <= 45 && rec.size.height >= 5 && rec.size.width <= 55 && rec.size.height >= 10 && filtered_contours[i].size() >= 20))//判定为车
 			r = 255;
 		else if((zMax - zMin) <= 2.5 && (zMax - zMin) >= 1.2 && rec.size.height <= 7 && rec.size.height >= 0 &&
 			rec.size.width <= 7 && rec.size.width >= 0 && filtered_contours[i].size() >= 5 && filtered_contours[i].size() <= 700 && 

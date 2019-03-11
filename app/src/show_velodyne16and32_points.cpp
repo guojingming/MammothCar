@@ -3,6 +3,80 @@
 using namespace mammoth::io;
 using namespace mammoth::algorithm;
 
+
+#include <iostream>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv/cv.h>
+#include <opencv2/core/core.hpp>
+#include <opencv2/opencv.hpp>
+
+using namespace cv;
+using namespace std;
+
+void DrawRecWithId(Mat& img, int id, int center_x, int center_y, float px1, float py1, float px2, float py2, Scalar color) {
+	//draw rec
+	float long_width = fabs(px1) + fabs(px2);
+	float short_width = fabs(px1) - fabs(px2);
+	float long_height = fabs(py2) + fabs(py1);
+	float short_height = fabs(py2) - fabs(py1);
+
+	float p1_x = center_x - long_width / 2;
+	float p2_x = center_x + long_width / 2;
+	float p1_y = center_y + short_height / 2;
+	float p2_y = center_y - short_height / 2;
+	float p3_x = center_x - short_width / 2;
+	float p4_x = center_x + short_width / 2;
+	float p3_y = center_y - long_height / 2;
+	float p4_y = center_y + long_height / 2;
+
+	line(img, Point(p1_x, p1_y), Point(p3_x, p3_y), color, 2, CV_AA);
+	line(img, Point(p3_x, p3_y), Point(p2_x, p2_y), color, 2, CV_AA);
+	line(img, Point(p2_x, p2_y), Point(p4_x, p4_y), color, 2, CV_AA);
+	line(img, Point(p4_x, p4_y), Point(p1_x, p1_y), color, 2, CV_AA);
+
+	//draw id
+	char id_str[10] = { 0 };
+	sprintf(id_str, "ID:%d", id);
+	putText(img, id_str, Point(center_x, center_y), cv::FONT_HERSHEY_DUPLEX, 0.5, color, 1);
+}
+
+void DrawNewObj(Mat& img, int id, int center_x, int center_y, float px1, float py1, float px2, float py2) {
+	DrawRecWithId(img, id, center_x, center_y, px1, py1, px2, py2, Scalar(0, 0, 255)); 
+}
+
+void DrawTrackedObj(Mat& img, int id, int center_x, int center_y, float px1, float py1, float px2, float py2) {
+	DrawRecWithId(img, id, center_x, center_y, px1, py1, px2, py2, Scalar(0, 255, 0));
+}
+
+void DrawDetectedObj(Mat& img, int id, int center_x, int center_y, float px1, float py1, float px2, float py2) {
+	DrawRecWithId(img, id, center_x, center_y, px1, py1, px2, py2, Scalar(255, 0, 0));
+}
+
+void InitCheckingWindows(Mat& preImage, Mat& curImage) {
+	cvNamedWindow("Pre-Window", CV_WINDOW_AUTOSIZE);
+	cvNamedWindow("Cur-Window", CV_WINDOW_AUTOSIZE);
+	preImage = Mat(640, 640, CV_8UC3, cvScalar(0, 0, 0));
+	curImage = Mat(640, 640, CV_8UC3, cvScalar(0, 0, 0));
+}
+
+void ShowImage(Mat& preImage, Mat& curImage) {
+	imshow("Pre-Window", preImage);
+	imshow("Cur-Window", curImage);
+}
+
+void ryhtest() {
+	Mat preImage, curImage;
+	InitCheckingWindows(preImage, curImage);
+	DrawTrackedObj(preImage, 1, 200, 200, -30, -40, 50, -60);
+	DrawNewObj(preImage, 1, 220, 220, -40, -60, 45, -60);
+
+	DrawTrackedObj(curImage, 1, 200, 200, -30, -40, 50, -60);
+
+	ShowImage(preImage, curImage);
+	waitKey(0);
+}
+
+
 int lidar_count = 2;
 int * finish_signals = new int[lidar_count];
 int * grabbing_signals = new int[lidar_count];
@@ -64,24 +138,26 @@ int lidar_hdl32() {
 }
 
 int main(){
-    PointViewer::get_instance()->init_point_viewer();
-	pcl::PointCloud<PointType>::Ptr cloud(new pcl::PointCloud<PointType>());
-	clock_t start_time = 0, end_time = 0;
-	for (int i = 0; i < 10000; ++i) {
-		start_time = clock();
-		PcdUtil::read_pcd_file("E:/xbw/obj_dec_data/"+ to_string(i) +".pcd", cloud);
-	//	PcdUtil::read_pcd_file("03.pcd", cloud);
+	ryhtest();
 
-		//clustering.cpp
-		DimensionReductionCluster::start_clusting(cloud);
-		if (cloud->size() != 0)
-			PointViewer::get_instance()->set_point_cloud(cloud);
-		end_time = clock();
-		Sleep(50);
-		//cout << to_string(end_time - start_time) + "ms" << endl;
-		//cout << to_string(i) + ".pcd" << endl;
-	}
-	system("pause");
+	//PointViewer::get_instance()->init_point_viewer();
+	//pcl::PointCloud<PointType>::Ptr cloud(new pcl::PointCloud<PointType>());
+	//clock_t start_time = 0, end_time = 0;
+	//for (int i = 0; i < 10000; ++i) {
+	//	start_time = clock();
+	//	PcdUtil::read_pcd_file("E:/jungongxiangmuyanshou/hillside_dec/point/1/"+ to_string(i) +".pcd", cloud);
+	////	PcdUtil::read_pcd_file("03.pcd", cloud);
+
+	//	//clustering.cpp
+	//	DimensionReductionCluster::start_clusting(cloud);
+	//	if (cloud->size() != 0)
+	//		PointViewer::get_instance()->set_point_cloud(cloud);
+	//	end_time = clock();
+	//	Sleep(50);
+	//	//cout << to_string(end_time - start_time) + "ms" << endl;
+	//	//cout << to_string(i) + ".pcd" << endl;
+	//}
+	//system("pause");
 
 
 

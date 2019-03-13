@@ -156,7 +156,7 @@ void MultiDataGather::pcd_thread() {
 		pcd_count = 0;
 		char pcd_path[200];
 		long long pcd_start, pcd_end;
-		pcap_t* handle = PcapProcesser::get_instance()->get_pcap_dev_handle(3);
+		pcap_t* handle = PcapProcesser::get_instance()->get_pcap_dev_handle(1);
 		pcl::PointCloud<PointType>::Ptr cloud(new pcl::PointCloud<PointType>());
 		while (true) {
 			pcd_start = GetCurrentTimeMsec();

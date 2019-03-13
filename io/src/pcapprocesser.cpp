@@ -536,8 +536,7 @@ void PcapProcesser::get_current_frame_withnum(pcap_t * cur_device, pcl::PointClo
 	float * angles = new float[block_count];
 	int * distance_mm = new int[channel_count * block_count];
 	int * flectivity = new int[channel_count * block_count];
-	float angle_tags[240];
-	memset(angle_tags, 0, 240);
+
 	int angle_count = 0;
 	while (pcap_next_ex(cur_device, &pkthdr, &pktdata) >= 0) {
 		//printf("%d\n", pkthdr->caplen);
@@ -563,14 +562,7 @@ void PcapProcesser::get_current_frame_withnum(pcap_t * cur_device, pcl::PointClo
 				}
 				angles[i] = angles[i] / 100;
 				//printf("angle: %f\n", angles[i]);
-				int tag = angles[i] / 1.5;
-				if (tag >= 240) {
-					tag = 239;
-				}
-				if (angle_tags[tag] != 1) {
-					angle_count++;
-					angle_tags[tag] = 1;
-				}
+
 				//printf("%d %f\n", i, angles[i]);
 				for (int j = 0; j < channel_count; j++) {
 					float distance = 0;
@@ -639,14 +631,13 @@ void PcapProcesser::get_current_frame_withnum(pcap_t * cur_device, pcl::PointClo
 					scene->push_back(pclPoint);
 				}
 			}
-			if (count >= 239) { //235
+			if (count >= 177) { //235
 				if (count == 110) {
 					pcd_count++;
 				}
 				delete angles;
 				delete distance_mm;
 				delete flectivity;
-				memset(angle_tags, 0, 240);
 				angle_count = 0;
 				count = 0;
 				break;

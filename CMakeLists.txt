@@ -1,7 +1,8 @@
 project(mammoth C CXX)
 cmake_minimum_required(VERSION 3.5)
 
-set(MAIN_FILE_PATH "app/src/show_velodyne16and32_points.cpp")
+#set(MAIN_FILE_PATH "app/src/show_velodyne16and32_points.cpp")
+set(MAIN_FILE_PATH "app/src/grab_velodyne_camera.cpp")
 
 set(QT5_ROOT_PATH D:/Qt/Qt5.8.0)
 set(PCL_ROOT_PATH D:/PCL1.8.0)

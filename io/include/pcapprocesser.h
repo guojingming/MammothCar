@@ -37,6 +37,7 @@ namespace mammoth{
             void trans_pcap_to_pcd(std::string pcap_path, std::vector<pcl::PointCloud<PointType>::Ptr> & vec, int seg_count = 0);
             void play_pcap_file(std::string pcap_path, int start_packet_number = 0);
             void get_current_frame(pcap_t * cur_device, pcl::PointCloud<PointType>::Ptr & scene, int config);
+			void get_current_frame_withnum(pcap_t * cur_device, pcl::PointCloud<PointType>::Ptr & scene, int config, int& pcd_count);
             void parameter_init(float angle_piece, std::string path_prefix);
             ~PcapProcesser();
         private:

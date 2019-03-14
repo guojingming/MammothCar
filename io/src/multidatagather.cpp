@@ -90,7 +90,7 @@ void MultiDataGather::gps_thread() {
 		while (true) {
 			//memset(gps_path, 0, 200);
 			//memset(gps_content, 0, 100);
-			if (tcpAttitudeSolver.Capture()) {
+			if (tcpAttitudeSolver.Capture()) { 
 				/*printf("%.8f %.8f %.3f %.4f %.4f %.3f\n",
 				tcpAttitudeSolver.m_package.m_longitude,
 				tcpAttitudeSolver.m_package.m_latitude,
@@ -131,27 +131,30 @@ void MultiDataGather::pic_thread() {
 		camera.set(CV_CAP_PROP_FRAME_WIDTH, 1280);
 		camera.set(CV_CAP_PROP_FRAME_HEIGHT, 720);
 		camera.set(CV_CAP_PROP_FOURCC, CV_FOURCC('M', 'J', 'P', 'G'));
-		//cv::namedWindow("window1");
+		cv::namedWindow("window1");
 		while (true) {
 			pic_start = GetCurrentTimeMsec();
-			cv::Mat frame;
-			camera >> frame;
+			
 			if (pic_count == pcd_count) {
 				continue;
 			}
+			cv::Mat frame;
+
+			camera >> frame;
 			memset(pic_path, 0, 200);
 			sprintf(pic_path, "%s\\%d_pic.jpg", camera_folder_path.c_str(), pic_count);
-			//imshow("window1", frame);
+			imshow("window1", frame);
 			imwrite(pic_path, frame);
 			pic_end = GetCurrentTimeMsec();
 			cv::waitKey(1);	//延时30
-			printf("pic %d\n", pic_end - pic_start);
+			//printf("pic %d\n", pic_end - pic_start);
 			pic_count++;
 		}
 	}
 }
 
 void MultiDataGather::pcd_thread() {
+	PointViewer::get_instance()->init_point_viewer();
 	if (pcd_folder_path.compare("") != 0) {
 		pcd_count = 0;
 		char pcd_path[200];
@@ -163,10 +166,15 @@ void MultiDataGather::pcd_thread() {
 			memset(pcd_path, 0, 200);
 			sprintf(pcd_path, "%s\\%d_pcd.pcd", pcd_folder_path.c_str(), pcd_count);
 		
-			PcapProcesser::get_instance()->get_current_frame_withnum(handle, cloud, 0, pcd_count);
+			PcapProcesser::get_instance()->get_current_frame(handle, cloud, 0);
+			if (pcd_count - pic_count > 1) {
+				continue;
+			}
+			PointViewer::get_instance()->set_point_cloud(cloud);
 			PcdUtil::save_pcd_file(pcd_path, cloud);
 			pcd_end = GetCurrentTimeMsec();
-			printf("pcd %d\n", pcd_end - pcd_start);
+			//printf("pcd %d\n", pcd_end - pcd_start);
+			printf("pcd: %d pic: %d\n", pcd_count, pic_count);
 			pcd_count++;
 		}
 	}

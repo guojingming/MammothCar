@@ -1,6 +1,8 @@
 #pragma once
 
-#include "algorithm.h"
+#include "unionconfig.h"
+#include "pcdutil.h"
+#include "stdutil.h"
 #include "gnssprocesser.h"
 
 namespace mammoth {

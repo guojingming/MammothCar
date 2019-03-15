@@ -3,26 +3,26 @@
 using namespace mammoth::util;
 using namespace mammoth::algorithm;
 
-ClimbingLayer * ClimbingLayer::layer = nullptr;
+ClimbingChecking * ClimbingChecking::layer = nullptr;
 
-ClimbingLayer::ClimbingLayer() {
+ClimbingChecking::ClimbingChecking() {
 
 }
 
-ClimbingLayer * ClimbingLayer::get_instance() {
+ClimbingChecking * ClimbingChecking::get_instance() {
 	if (layer == nullptr) {
-		layer = new ClimbingLayer();
+		layer = new ClimbingChecking();
 	}
 	return layer;
 }
 
-ClimbingLayer::~ClimbingLayer() {
+ClimbingChecking::~ClimbingChecking() {
 	if (layer != nullptr) {
 		delete layer;
 	}
 }
 
-float ClimbingLayer::get_height_threshold(float min_x, float max_x) {
+float ClimbingChecking::get_height_threshold(float min_x, float max_x) {
 	float x_value = fabs(min_x) >= fabs(max_x) ? fabs(min_x) : fabs(max_x);
 	float board_min = 0.3;
 	float board_max = 0.6;
@@ -38,12 +38,12 @@ float ClimbingLayer::get_height_threshold(float min_x, float max_x) {
 	return board_height;
 }
 
-float ClimbingLayer::get_ground_average_altitude(pcl::PointCloud<PointType>::Ptr & cloud) {
+float ClimbingChecking::get_ground_average_altitude(pcl::PointCloud<PointType>::Ptr & cloud) {
 	
 	return -2.45;
 }
 
-void ClimbingLayer::climbing_check(pcl::PointCloud<PointType>::Ptr & cloud, char * point_path, char * result_path, int frame_count) {
+void ClimbingChecking::climbing_check(pcl::PointCloud<PointType>::Ptr & cloud, char * point_path, char * result_path, int frame_count) {
 
 	//filtering
 	pcl::PassThrough<PointType> passThrough;

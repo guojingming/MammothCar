@@ -1,6 +1,8 @@
 #pragma once
 
-#include "algorithm.h"
+#include "unionconfig.h"
+#include "pcdutil.h"
+#include "stdutil.h"
 
 #define _Key(x,y) ((x & 0x0000FFFF)|(y<<16))
 

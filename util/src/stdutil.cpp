@@ -355,8 +355,40 @@ void SerialUtil::write(ASynCom* com, const std::string& msg, int* cont) {
 	}
 }
 
+FileUtil::FileUtil() {
+	this->in_file_stream_ptr = nullptr;
+	this->out_file_stream_ptr = nullptr;
+}
 
 FileUtil::FileUtil(const char * path, unsigned open_mode) {
+	this->in_file_stream_ptr = nullptr;
+	this->out_file_stream_ptr = nullptr;
+	switch (open_mode) {
+	case 0:{
+		//read
+		this->in_file_stream_ptr = new std::ifstream(path);
+		break;
+	}
+	case 1:{
+		//append
+		this->out_file_stream_ptr = new std::ofstream(path, std::ios::app);
+		break;
+	}
+	case 2:{
+		//write
+		this->out_file_stream_ptr = new std::ofstream(path, std::ios::out);
+		break;
+	}
+	}
+};
+
+void FileUtil::reload_file(const char * path, unsigned open_mode) {
+	if (this->in_file_stream_ptr != nullptr) {
+		this->in_file_stream_ptr->close();
+	}
+	if (this->out_file_stream_ptr != nullptr) {
+		this->out_file_stream_ptr->close();
+	}
 	this->in_file_stream_ptr = nullptr;
 	this->out_file_stream_ptr = nullptr;
 	switch (open_mode) {

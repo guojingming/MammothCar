@@ -402,6 +402,7 @@ void PcapProcesser::get_current_frame(pcap_t * cur_device, pcl::PointCloud<Point
 	int * distance_mm = new int[channel_count * block_count];
 	int * flectivity = new int[channel_count * block_count];
 	while (pcap_next_ex(cur_device, &pkthdr, &pktdata) >= 0) {
+		
 		if (pkthdr->caplen == 1248) {
 			memset(angles, 0, sizeof(float) * block_count);
 			memset(distance_mm, 0, sizeof(int) * channel_count * block_count);
@@ -456,7 +457,7 @@ void PcapProcesser::get_current_frame(pcap_t * cur_device, pcl::PointCloud<Point
 					scene->push_back(pclPoint);
 				}
 			}
-			if (count >= 177) { //235
+			if (count >= 180) { //177  180
 				delete angles;
 				delete distance_mm;
 				delete flectivity;

@@ -11,20 +11,21 @@
 
 #include "stdutil.h"
 
+#define START_PCD_COUNT 0
+
 namespace mammoth {
 	namespace io {
 		class MultiDataGather {
 		public:
 			~MultiDataGather();
 			static MultiDataGather * get_instance();
-			void start_grab(const std::string& gps_folder_path, const std::string& pcd_folder_path, const std::string& imu_folder_path, const std::string& ori_imu_folder_path, const std::string& camera_folder_path);
+			void start_grab(const std::string& pcd_folder_path, const std::string& gps_folder_path, const std::string& camera_folder_path, const std::string& imu_folder_path);
 		private:
 			static MultiDataGather * layer;
 			MultiDataGather();
 			static std::string gps_folder_path;
 			static std::string pcd_folder_path;
 			static std::string imu_folder_path;
-			static std::string ori_imu_folder_path;
 			static std::string camera_folder_path;
 			static int gps_count;
 			static int pcd_count;

@@ -53,7 +53,6 @@ MultiDataGather* MultiDataGather::get_instance() {
 std::string MultiDataGather::gps_folder_path = "";
 std::string MultiDataGather::pcd_folder_path = "";
 std::string MultiDataGather::imu_folder_path = "";
-std::string MultiDataGather::ori_imu_folder_path = "";
 std::string MultiDataGather::camera_folder_path = "";
 
 int MultiDataGather::gps_count = 0;
@@ -61,17 +60,17 @@ int MultiDataGather::pcd_count = 0;
 int MultiDataGather::imu_count = 0;
 int MultiDataGather::pic_count = 0;
 
-void MultiDataGather::start_grab(const std::string& gps_folder_path, const std::string& pcd_folder_path, const std::string& imu_folder_path, const std::string& ori_imu_folder_path, const std::string& camera_folder_path) {
+void MultiDataGather::start_grab(const std::string& pcd_folder_path, const std::string& gps_folder_path, const std::string& camera_folder_path, const std::string& imu_folder_path) {
 	this->gps_folder_path = gps_folder_path;
 	this->pcd_folder_path = pcd_folder_path;
 	this->imu_folder_path = imu_folder_path;
-	this->ori_imu_folder_path = ori_imu_folder_path;
 	this->camera_folder_path = camera_folder_path;
 
 	std::thread pcd_t(pcd_thread);
 	std::thread pic_t(pic_thread);
 	std::thread gps_t(gps_thread);
 	std::thread imu_t(imu_thread);
+
 	pcd_t.join();
 	pic_t.join();
 	gps_t.join();
@@ -81,40 +80,44 @@ void MultiDataGather::start_grab(const std::string& gps_folder_path, const std::
 
 void MultiDataGather::gps_thread() {
 	if (gps_folder_path.compare("") != 0) {
-		gps_count = 0;
+		gps_count = -1;
+		int gps_item_count = 0;
 		char gps_path[200];
 		char gps_content[100];
 		UdpAttitude tcpAttitudeSolver;
 		int last_pcd_count = -1;
-		FileUtil * current_file = nullptr;
+		FileUtil file;
 		while (true) {
 			//memset(gps_path, 0, 200);
 			//memset(gps_content, 0, 100);
-			if (tcpAttitudeSolver.Capture()) { 
+			if (tcpAttitudeSolver.NoSyncCapture()) {
 				/*printf("%.8f %.8f %.3f %.4f %.4f %.3f\n",
 				tcpAttitudeSolver.m_package.m_longitude,
 				tcpAttitudeSolver.m_package.m_latitude,
 				tcpAttitudeSolver.m_package.m_elevation,
-				tcpAttitudeSolver.m_package.m_yaw,
+				tcpAttitudeSolver.m_package.m_yaw, 
 				tcpAttitudeSolver.m_package.m_pitch,
 				tcpAttitudeSolver.m_package.m_roll);*/
-				sprintf(gps_content, "%d#%.8f %.8f %.3f %.4f %.4f %.3f",
-					gps_count,
+				sprintf(gps_content, "%d#%.2f %.8f %.8f %.3f %.4f",
+					gps_item_count,
+					tcpAttitudeSolver.m_package.m_avrtime,
 					tcpAttitudeSolver.m_package.m_latitude,
 					tcpAttitudeSolver.m_package.m_longitude,
 					tcpAttitudeSolver.m_package.m_elevation,
-					tcpAttitudeSolver.m_package.m_yaw,
-					tcpAttitudeSolver.m_package.m_pitch,
-					tcpAttitudeSolver.m_package.m_roll);
-				if (last_pcd_count != pcd_count) {
-					sprintf(gps_path, "%s\\%d_gps.txt", gps_folder_path.c_str(), pcd_count);
-					FileUtil file(gps_path, 1);
-					current_file = &file;
-					current_file->write_line(gps_content);
+					tcpAttitudeSolver.m_package.m_yaw
+					//tcpAttitudeSolver.m_package.m_pitch,
+					//tcpAttitudeSolver.m_package.m_roll
+					);
+				if (gps_count < pcd_count) {
+					gps_count = pcd_count;
+					sprintf(gps_path, "%s\\%d_gps.txt", gps_folder_path.c_str(), gps_count);
+					
+					file.reload_file(gps_path, 1);
+					file.write_line(gps_content);
 				} else {
-					current_file->write_line(gps_content);
+					file.write_line(gps_content);
 				}
-				gps_count++;
+				gps_item_count++;
 			}
 		}
 	}
@@ -135,7 +138,7 @@ void MultiDataGather::pic_thread() {
 		while (true) {
 			pic_start = GetCurrentTimeMsec();
 			
-			if (pic_count == pcd_count) {
+			if (pic_count >= pcd_count) {
 				continue;
 			}
 			cv::Mat frame;
@@ -154,9 +157,9 @@ void MultiDataGather::pic_thread() {
 }
 
 void MultiDataGather::pcd_thread() {
-	PointViewer::get_instance()->init_point_viewer();
 	if (pcd_folder_path.compare("") != 0) {
-		pcd_count = 0;
+		PointViewer::get_instance()->init_point_viewer();
+		pcd_count = START_PCD_COUNT;
 		char pcd_path[200];
 		long long pcd_start, pcd_end;
 		pcap_t* handle = PcapProcesser::get_instance()->get_pcap_dev_handle(1);
@@ -167,14 +170,20 @@ void MultiDataGather::pcd_thread() {
 			sprintf(pcd_path, "%s\\%d_pcd.pcd", pcd_folder_path.c_str(), pcd_count);
 		
 			PcapProcesser::get_instance()->get_current_frame(handle, cloud, 0);
-			if (pcd_count - pic_count > 1) {
+			if (pcd_count - pic_count >= 1 && camera_folder_path.compare("") != 0) {
+				continue;
+			}
+			if (pcd_count - gps_count >= 1 && gps_folder_path.compare("") != 0) {
+				continue;
+			}
+			if (pcd_count - imu_count >= 1 && imu_folder_path.compare("") != 0) {
 				continue;
 			}
 			PointViewer::get_instance()->set_point_cloud(cloud);
 			PcdUtil::save_pcd_file(pcd_path, cloud);
 			pcd_end = GetCurrentTimeMsec();
 			//printf("pcd %d\n", pcd_end - pcd_start);
-			printf("pcd: %d pic: %d\n", pcd_count, pic_count);
+			printf("pcd: %d pic: %d gps: %d imu: %d\n", pcd_count, pic_count, gps_count, imu_count);
 			pcd_count++;
 		}
 	}
@@ -182,22 +191,21 @@ void MultiDataGather::pcd_thread() {
 
 void MultiDataGather::imu_thread() {
 	if (imu_folder_path.compare("")!=0){
-		imu_count = 0;
+		imu_count = -1;
+		int imu_item_count = 0;
 		int last_pcd_count = -1;
 		char imu_path[200];
 		char imu_content[100];
 		char ori_imu_path[200];
-		SyncCom sync_com = SerialUtil::openSync("COM5", 115200);
+		SyncCom sync_com = SerialUtil::openSync("COM4", 115200);
 		char buffer[512];
 		ImuSolver imuSolver;
 		std::vector<unsigned char> splits;
-		splits.push_back('*');
 		splits.push_back('\r');
 		splits.push_back('\n');
 		DataBuffer<unsigned char> dataBuffer(splits);
 		std::vector<std::vector<unsigned char> > segments;
-
-		FileUtil * current_imu_file = nullptr;
+		FileUtil imu_file;
 		std::ofstream * current_ori_imu_file = nullptr;
 		while (1) {
 			int readByte = sync_com.Read(buffer, 512);
@@ -205,60 +213,28 @@ void MultiDataGather::imu_thread() {
 				dataBuffer.Charge((unsigned char *)buffer, readByte);
 				dataBuffer.Discharge(segments);
 				for (std::vector<std::vector<unsigned char> >::iterator it = segments.begin(); it != segments.end(); it++) {
-					std::string seg(it->begin(), it->end());
-					imuSolver.Solve(*it);
+					double data[6];
+					memcpy(data, &(*it)[0], 48);
 					memset(imu_content, 0, 100);
-					sprintf(imu_content, "%d#%d#%f %f %f %f %f %f %f %f %f %f %f %f %f %f %f",
-						imu_count,
-						gps_count,
-						imuSolver.m_imuPackage.m_acclX,
-						imuSolver.m_imuPackage.m_acclY,
-						imuSolver.m_imuPackage.m_acclZ,
-						imuSolver.m_imuPackage.m_gyroX,
-						imuSolver.m_imuPackage.m_gyroY,
-						imuSolver.m_imuPackage.m_gyroZ,
-						imuSolver.m_imuPackage.m_deltaAngleX,
-						imuSolver.m_imuPackage.m_deltaAngleY,
-						imuSolver.m_imuPackage.m_deltaAngleZ,
-						imuSolver.m_imuPackage.m_deltaVelX,
-						imuSolver.m_imuPackage.m_deltaVelY,
-						imuSolver.m_imuPackage.m_deltaVelZ,
-						imuSolver.m_imuPackage.m_maginX,
-						imuSolver.m_imuPackage.m_maginY,
-						imuSolver.m_imuPackage.m_maginZ);
+					sprintf(imu_content, "%d#%.8f %.8f %.8f %.8f %.8f %.8f",
+						imu_item_count,
+						data[0],
+						data[1],
+						data[2],
+						data[3],
+						data[4],
+						data[5]);
 					//printf("%s\n", imu_content);
-					if (last_pcd_count != pcd_count) {
-						last_pcd_count = pcd_count;
+					if (imu_count < pcd_count) {
+						imu_count = pcd_count;
 						sprintf(imu_path, "%s\\%d_imu.txt", imu_folder_path.c_str(), pcd_count);
 
-						sprintf(ori_imu_path, "%s\\%d_imu.txt", ori_imu_folder_path.c_str(), pcd_count);
-						//FileUtil file(imu_path, 2);
-						if (current_imu_file != nullptr) {
-							delete current_imu_file;
-							current_imu_file = nullptr;
-						}
-						current_imu_file = new FileUtil(imu_path, 2);
-						current_imu_file->write_line(imu_content);
-
-						if (current_ori_imu_file != nullptr) {
-							current_ori_imu_file->close();
-							delete current_ori_imu_file;
-							current_ori_imu_file = nullptr;
-						}
-						current_ori_imu_file = new std::ofstream;
-						current_ori_imu_file->open(ori_imu_path, std::ios::out | std::ios::binary);
-
-						current_ori_imu_file->write((char *)&imu_count, sizeof(imu_count));
-						current_ori_imu_file->write((char *)&gps_count, sizeof(gps_count));
-						current_ori_imu_file->write(seg.c_str(), 54);
+						imu_file.reload_file(imu_path, 1);
+						imu_file.write_line(imu_content);
 					} else {
-						current_imu_file->write_line(imu_content);
-
-						current_ori_imu_file->write((char *)&imu_count, sizeof(imu_count));
-						current_ori_imu_file->write((char *)&gps_count, sizeof(gps_count));
-						current_ori_imu_file->write(seg.c_str(), 54);
+						imu_file.write_line(imu_content);
 					}
-					imu_count++;
+					imu_item_count++;
 				}
 			}
 		}

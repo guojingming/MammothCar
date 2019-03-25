@@ -274,7 +274,7 @@ void PointViewer::remove_cubes(std::vector<uint32_t>& cube_handles) {
 
 PointViewer* PointViewer::get_instance() {
 #ifdef USE_GLVIEWER
-	if (p_glviewer == nullptr) {
+	while (p_glviewer == nullptr) {
 		p_glviewer = GetGLDevice(0, NULL, "Point Cloud Window");
 	}
 #endif

@@ -42,6 +42,7 @@ namespace mammoth {
 		public:
 			UdpAttitude();
 			virtual bool Capture();
+			virtual bool NoSyncCapture();
 
 		private:
 			GnssEthernetInput m_gpsMain;

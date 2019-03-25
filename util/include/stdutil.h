@@ -32,10 +32,12 @@ namespace mammoth{
 		class FileUtil {
 		public:
 			//0 read-only 1 append 2 write 
+			FileUtil();
 			FileUtil(const char * path, unsigned open_mode);
 			~FileUtil();
 			std::string read_line();
 			void write_line(const std::string & content, bool new_line = true);
+			void reload_file(const char * path, unsigned open_mode);
 			static void get_all_files(std::string path, std::vector<std::string>& files);
 		private:
 			std::ofstream * out_file_stream_ptr;

@@ -130,6 +130,13 @@ bool UdpAttitude::Capture() {
 	return true;
 }
 
+bool UdpAttitude::NoSyncCapture() {
+	GPSPackage package;
+	if (!m_gpsMain.Solve(package))
+		return false;
+	m_package = package;
+	return true;
+}
 
 
 

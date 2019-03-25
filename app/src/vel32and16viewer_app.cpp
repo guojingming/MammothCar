@@ -1,5 +1,6 @@
 #include "mammoth.h"
-
+#include "app.h"
+ 
 using namespace mammoth::io;
 using namespace mammoth::algorithm;
 
@@ -20,7 +21,7 @@ int lidar_hdl32() {
 	return 0;
 }
 
-int main(){
+void Vel32and16ViewerApp::run(){
 	//PointViewer::get_instance()->init_point_viewer();
 	//pcl::PointCloud<PointType>::Ptr cloud(new pcl::PointCloud<PointType>());
 	//clock_t start_time = 0, end_time = 0;
@@ -71,6 +72,5 @@ int main(){
 			hdl32_cloud_ptr = nullptr;
 		}
     }*/
-    return 0;
 }
     

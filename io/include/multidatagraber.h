@@ -15,14 +15,14 @@
 
 namespace mammoth {
 	namespace io {
-		class MultiDataGather {
+		class MultiDataGraber {
 		public:
-			~MultiDataGather();
-			static MultiDataGather * get_instance();
+			~MultiDataGraber();
+			static MultiDataGraber * get_instance();
 			void start_grab(const std::string& pcd_folder_path, const std::string& gps_folder_path, const std::string& camera_folder_path, const std::string& imu_folder_path);
 		private:
-			static MultiDataGather * layer;
-			MultiDataGather();
+			static MultiDataGraber * layer;
+			MultiDataGraber();
 			static std::string gps_folder_path;
 			static std::string pcd_folder_path;
 			static std::string imu_folder_path;

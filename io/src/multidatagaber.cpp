@@ -1,9 +1,8 @@
-#include "multidatagather.h"
+#include "multidatagraber.h"
 
 #include <time.h>
 
-using namespace mammoth::util;
-using namespace mammoth::io;
+using namespace mammoth;
 
 
 unsigned long long GetCurrentTimeMsec() {
@@ -31,36 +30,36 @@ unsigned long long GetCurrentTimeMsec() {
 #endif
 }
 
-MultiDataGather * MultiDataGather::layer = nullptr;
+MultiDataGraber * MultiDataGraber::layer = nullptr;
 
-MultiDataGather::MultiDataGather() {
+MultiDataGraber::MultiDataGraber() {
 
 }
 
-MultiDataGather::~MultiDataGather() {
+MultiDataGraber::~MultiDataGraber() {
 	if (layer != nullptr) {
 		delete layer;
 	}
 }
 
-MultiDataGather* MultiDataGather::get_instance() {
+MultiDataGraber* MultiDataGraber::get_instance() {
 	if (layer == nullptr) {
-		layer = new MultiDataGather();
+		layer = new MultiDataGraber();
 	}
 	return layer;
 }
 
-std::string MultiDataGather::gps_folder_path = "";
-std::string MultiDataGather::pcd_folder_path = "";
-std::string MultiDataGather::imu_folder_path = "";
-std::string MultiDataGather::camera_folder_path = "";
+std::string MultiDataGraber::gps_folder_path = "";
+std::string MultiDataGraber::pcd_folder_path = "";
+std::string MultiDataGraber::imu_folder_path = "";
+std::string MultiDataGraber::camera_folder_path = "";
 
-int MultiDataGather::gps_count = 0;
-int MultiDataGather::pcd_count = 0; 
-int MultiDataGather::imu_count = 0;
-int MultiDataGather::pic_count = 0;
+int MultiDataGraber::gps_count = 0;
+int MultiDataGraber::pcd_count = 0; 
+int MultiDataGraber::imu_count = 0;
+int MultiDataGraber::pic_count = 0;
 
-void MultiDataGather::start_grab(const std::string& pcd_folder_path, const std::string& gps_folder_path, const std::string& camera_folder_path, const std::string& imu_folder_path) {
+void MultiDataGraber::start_grab(const std::string& pcd_folder_path, const std::string& gps_folder_path, const std::string& camera_folder_path, const std::string& imu_folder_path) {
 	this->gps_folder_path = gps_folder_path;
 	this->pcd_folder_path = pcd_folder_path;
 	this->imu_folder_path = imu_folder_path;
@@ -78,7 +77,7 @@ void MultiDataGather::start_grab(const std::string& pcd_folder_path, const std::
 
 }
 
-void MultiDataGather::gps_thread() {
+void MultiDataGraber::gps_thread() {
 	if (gps_folder_path.compare("") != 0) {
 		gps_count = -1;
 		int gps_item_count = 0;
@@ -125,7 +124,7 @@ void MultiDataGather::gps_thread() {
 
 
 
-void MultiDataGather::pic_thread() {
+void MultiDataGraber::pic_thread() {
 	if (camera_folder_path.compare("") != 0) {
 		pic_count = 0;
 		char pic_path[200];
@@ -156,7 +155,7 @@ void MultiDataGather::pic_thread() {
 	}
 }
 
-void MultiDataGather::pcd_thread() {
+void MultiDataGraber::pcd_thread() {
 	if (pcd_folder_path.compare("") != 0) {
 		PointViewer::get_instance()->init_point_viewer();
 		pcd_count = START_PCD_COUNT;
@@ -189,7 +188,7 @@ void MultiDataGather::pcd_thread() {
 	}
 }
 
-void MultiDataGather::imu_thread() {
+void MultiDataGraber::imu_thread() {
 	if (imu_folder_path.compare("")!=0){
 		imu_count = -1;
 		int imu_item_count = 0;

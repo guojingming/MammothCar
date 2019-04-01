@@ -1,7 +1,6 @@
 #include "pcdprocesser.h"
 
-using namespace mammoth::util;
-using namespace mammoth::io;
+using namespace mammoth;
 
 PcdProcesser * PcdProcesser::layer = nullptr;
 

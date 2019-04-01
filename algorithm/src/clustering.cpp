@@ -3,8 +3,7 @@
 #define GRID_SIZE 10//栅格大小，单位cm
 #define THRESHOLD 0.02//栅格z坐标方差阈值
 #define GROUD_DEV -2//地面点z坐标阈值
-using namespace mammoth::util;
-using namespace mammoth::algorithm;
+using namespace mammoth;
 
 std::vector<uint32_t> DimensionReductionCluster::cube_handles;
 

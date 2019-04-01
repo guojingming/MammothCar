@@ -15,7 +15,7 @@
 //io
 #include "gnssprocesser.h"
 #include "gyroscopeprocesser.h"
-#include "multidatagather.h"
+#include "multidatagraber.h"
 #include "pcapprocesser.h"
 #include "pcdprocesser.h"
 

@@ -10,7 +10,5 @@
 #include <pcl/visualization/pcl_visualizer.h>
 
 namespace mammoth {
-	namespace visualization {
-		
-	}
+
 }

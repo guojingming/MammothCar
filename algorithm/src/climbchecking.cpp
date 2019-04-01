@@ -1,7 +1,6 @@
 #include "climbchecking.h"
 
-using namespace mammoth::util;
-using namespace mammoth::algorithm;
+using namespace mammoth;
 
 ClimbingChecking * ClimbingChecking::layer = nullptr;
 

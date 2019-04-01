@@ -1,8 +1,6 @@
 #include "mapping.h"
 
-using namespace mammoth::util;
-using namespace mammoth::io;
-using namespace mammoth::algorithm;
+using namespace mammoth;
 
 MappingProcesser * MappingProcesser::layer = nullptr;
 

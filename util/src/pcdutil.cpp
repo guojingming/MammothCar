@@ -1,6 +1,6 @@
 #include "pcdutil.h"
 
-using namespace mammoth::util;
+using namespace mammoth;
 using namespace glviewer;
 
 int PcdUtil::read_pcd_file(const std::string pcd_file_path, pcl::PointCloud<PointType>::Ptr & cloud) {

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "multidatagraber.h"
 #include <vector>
 #include <unordered_map>
 #include <string>
@@ -57,8 +58,12 @@ namespace mammoth{
 
     class AppBase{
     public:
-        virtual void run() = 0;
-        virtual void run(int argc, char ** argv) = 0;
+		virtual void run() {
+			printf("AppBase");
+		};
+		virtual void run(int argc, char ** argv) {
+			run();
+		}
         ~AppBase(){
             if(app_names.size()!=0){
                 for(auto it = app_byname.begin(); it != app_byname.end(); it++){
@@ -70,14 +75,15 @@ namespace mammoth{
             return app_byname[app_name];
         };
         static std::vector<std::string> get_app_names(){
+			if (app_names.size() == 0) {
+				app_names.push_back("MultidataGraberApp");
+				app_names.push_back("Vel32and16ViewerApp");
+			}
             return app_names;
         }
     protected:
         AppBase(){
-            if(app_names.size() == 0){
-                app_names.push_back("MultidataGraberApp");
-                app_names.push_back("Vel32and16ViewerApp");
-            }
+            
         }
         static std::vector<std::string> app_names;
         static std::unordered_map<std::string, AppBase*> app_byname;
@@ -86,17 +92,15 @@ namespace mammoth{
     class MultidataGraberApp : public AppBase, public Reflex{
     public:
         virtual void run();
-        virtual void run(int argc, char ** argv){
-            run();
-        };
+		virtual void run(int argc, char ** argv);
+		DECLARE_CLASS(MultidataGraberApp)
     };
 
     class Vel32and16ViewerApp : public AppBase, public Reflex{
     public:
-        virtual void run();
-        virtual void run(int argc, char ** argv){
-            run();
-        };
+		virtual void run();
+		virtual void run(int argc, char ** argv);
+		DECLARE_CLASS(Vel32and16ViewerApp)
     };
 
 }

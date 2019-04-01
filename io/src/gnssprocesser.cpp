@@ -1,7 +1,6 @@
 #include "gnssprocesser.h"
 
-using namespace mammoth::util;
-using namespace mammoth::io;
+using namespace mammoth;
 
 AttitudeBase::AttitudeBase()
 	: m_availableCount(10) {

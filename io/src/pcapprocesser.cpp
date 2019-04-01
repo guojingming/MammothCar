@@ -1,7 +1,6 @@
 #include "pcapprocesser.h"
 
-using namespace mammoth::util;
-using namespace mammoth::io;
+using namespace mammoth;
 
 pcap_t * PcapProcesser::device = nullptr;
 

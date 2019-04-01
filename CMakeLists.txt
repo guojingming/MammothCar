@@ -1,9 +1,6 @@
 project(mammoth C CXX)
 cmake_minimum_required(VERSION 3.5)
 
-#set(MAIN_FILE_PATH "app/src/show_velodyne16and32_points.cpp")
-set(MAIN_FILE_PATH "app/src/grab_velodyne_camera.cpp")
-
 set(QT5_ROOT_PATH D:/Qt/Qt5.8.0)
 set(PCL_ROOT_PATH D:/PCL1.8.0)
 set(OpenCV_ROOT_PATH D:/opencv/opencv)
@@ -37,8 +34,7 @@ file(GLOB_RECURSE MY_SRCS
     "${UTIL_PATH}/src/*.c" "${UTIL_PATH}/src/*.cpp"
     "${ALGORITHM_PATH}/src/*.c" "${ALGORITHM_PATH}/src/*.cpp"
     "${VISIUALIZATION_PATH}/src/*.c" "${VISIUALIZATION_PATH}/src/*.cpp"
-    "${MAIN_FILE_PATH}"
-    #"${APP_PATH}/src/*.c" "${APP_PATH}/src/*.cpp"
+    "${APP_PATH}/src/*.c" "${APP_PATH}/src/*.cpp"
     #"${TEST_PATH}/src/*.c" "${TEST_PATH}/src/*.cpp"
 )
 

@@ -1,7 +1,5 @@
 #include "serialutil.h"
 
-#include <cassert>
-
 BaseCom::BaseCom() {
 #ifdef WIN32
 	Init();

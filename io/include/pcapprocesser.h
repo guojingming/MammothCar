@@ -1,22 +1,6 @@
 #pragma once
 
-#include "unionconfig.h"
-
-#include "pcdutil.h"
-
-#ifdef WIN32
-#include "pcap.h"
-#include <windows.h>
-#include <omp.h>
-#include <direct.h>  
-#include <io.h>
-#endif
-#include "stdutil.h"
-#include "pcdutil.h"
-
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv/cv.h>
-#include <opencv2/core/core.hpp>
+#include "header.h"
 
 class LidarConfig {
 public:

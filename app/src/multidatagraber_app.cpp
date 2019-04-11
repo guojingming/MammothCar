@@ -1,5 +1,3 @@
-#include "mammoth.h"
-#include "app.h"
 #include "multidatagraber.h"
  
 using namespace mammoth;

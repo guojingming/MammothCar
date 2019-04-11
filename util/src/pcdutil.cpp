@@ -61,6 +61,30 @@ void PcdUtil::save_pcd_file(const std::string pcd_file_path, const PCDFILE * pcd
 	}
 }
 
+pcl::PointCloud<pcl::PointXYZI>::Ptr PcdUtil::trans_kittibin_to_pcd(std::string &in_file) {
+	// load point cloud
+	std::fstream input(in_file.c_str(), std::ios::in | std::ios::binary);
+	if (!input.good()) {
+		std::cerr << "Could not read file: " << in_file << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	input.seekg(0, std::ios::beg);
+	pcl::PointCloud<pcl::PointXYZI>::Ptr points(new pcl::PointCloud<pcl::PointXYZI>);
+	int i;
+	for (i = 0; input.good() && !input.eof(); i++) {
+		pcl::PointXYZI point;
+		input.read((char *)&point.x, 3 * sizeof(float));
+		input.read((char *)&point.intensity, sizeof(float));
+		points->push_back(point);
+	}
+	input.close();
+	//    g_cloud_pub.publish( points );
+	//std::cout << "Read KTTI point cloud with " << i << " points, writing to " << out_file << std::endl;
+	//pcl::PCDWriter writer;
+	// Save DoN features
+	//writer.write< pcl::PointXYZI >(out_file, *points, false);
+	return points;
+}
 
 void PcdUtil::trans_pcd_to_xyz(const std::string pcd_file_path, const std::string xyz_file_path) {
 	pcl::PointCloud<PointType>::Ptr cloud(new pcl::PointCloud<PointType>());
@@ -77,7 +101,7 @@ void PcdUtil::trans_pcd_to_xyz(const std::string pcd_file_path, const std::strin
 	}
 }
 
-glviewer::GLDevice * PointViewer::p_glviewer = nullptr;
+GLDevice * PointViewer::p_glviewer = nullptr;
 PointViewer* PointViewer::p_viewer = nullptr;
 
 void PointViewer::print_camera_data() {
@@ -91,8 +115,8 @@ void PointViewer::print_camera_data() {
 
 void PointViewer::init_point_viewer() {
 #ifdef USE_GLVIEWER
-	p_glviewer->SetParam(glviewer::DeviceParams::Wave_ZPlane, -1.8f);
-	p_glviewer->SetParam(glviewer::DeviceParams::POINT_SIZE, 1.0f);
+	p_glviewer->SetParam(DeviceParams::Wave_ZPlane, -1.8f);
+	p_glviewer->SetParam(DeviceParams::POINT_SIZE, 1.0f);
 	//float camera_data[9] = { 0.074241, 0.990729, -0.113753, 0.008500, 0.113435,0.993508, 0.015301,2.194579, -1.845818 };
 
 	unsigned char b[64] = { 0xFF,0x4B,0x9B,0x3B,0x8D,0xF7,0x7C,0x3F,0xC7,0x12,0x1D,0xBE,0x0B,0xDD,0x40,0x3A,0x4F,0x12,0x1D,0x3E,0x39,0xF8,0x7C,0x3F,0xED,0x8A,0x93,0x3D,0x18,0x12,0x9C,0x40,0x81,0x21,0xF0,0xBF,0x00,0x00,0x80,0x40,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC,0xCC };
@@ -110,10 +134,10 @@ void PointViewer::init_point_viewer() {
 #endif
 }
 
-glviewer::TextNode* PointViewer::p_node;
+TextNode* PointViewer::p_node;
 std::vector<size_t> PointViewer::text_ids;
 
-size_t PointViewer::add_text(const char * str, int start_x, int start_y, float scale_rate, glviewer::Color4F color) {
+size_t PointViewer::add_text(const char * str, int start_x, int start_y, float scale_rate, Color4F color) {
 #ifdef USE_GLVIEWER
 	if (p_node == nullptr) {
 		p_node = p_glviewer->CreateTextNode();
@@ -125,7 +149,7 @@ size_t PointViewer::add_text(const char * str, int start_x, int start_y, float s
 #endif
 }
 
-void PointViewer::set_text(size_t id, const char * str, int start_x, int start_y, float scale_rate, glviewer::Color4F color) {
+void PointViewer::set_text(size_t id, const char * str, int start_x, int start_y, float scale_rate, Color4F color) {
 #ifdef USE_GLVIEWER
 	if (p_node == nullptr) {
 		p_node = p_glviewer->CreateTextNode();
@@ -181,8 +205,8 @@ void PointViewer::set_point_cloud(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &
 #endif
 }
 
-void PointViewer::selectResultHandle(glviewer::SelectResult<void*>* _Rx) {
-	auto * _R = (glviewer::SelectResult<PointType>*)_Rx;
+void PointViewer::selectResultHandle(SelectResult<void*>* _Rx) {
+	auto * _R = (SelectResult<PointType>*)_Rx;
 	int count = 0;
 	std::cout << std::endl << "----------------------------------------------" << std::endl;
 	float min_z = 100;
@@ -196,7 +220,7 @@ void PointViewer::selectResultHandle(glviewer::SelectResult<void*>* _Rx) {
 	float min_y = 100;
 	float max_y = -100;
 
-	for (glviewer::SelectResult<PointType>::iterator it = _R->begin(); it != _R->end(); it++) {
+	for (SelectResult<PointType>::iterator it = _R->begin(); it != _R->end(); it++) {
 		if (count >= 1) {
 			if (it->z <= min_z) {
 				min_z = it->z;
@@ -571,7 +595,7 @@ HPCD PcdUtil::pcdOpen(const char* filename) {
 	return p;
 }
 
-void PcdUtil::pcdWrite(HPCD hpcd, glviewer::DataFormatDesc dsc, void* Arr, size_t Count) {
+void PcdUtil::pcdWrite(HPCD hpcd, DataFormatDesc dsc, void* Arr, size_t Count) {
 	if (!hpcd->DataWrited) {
 		//build header
 		const char* comment = "# .PCD v0.7 - Point Cloud Data file format\nVERSION 0.7\nFIELDS x y z rgb\nSIZE 4 4 4 4\nTYPE F F F F\nCOUNT 1 1 1 1\nWIDTH                        \nHEIGHT 1\nVIEWPOINT 0 0 0 1 0 0 0\nPOINTS                        \nDATA binary\n";
@@ -601,8 +625,8 @@ void PcdUtil::pcdClose(HPCD hp) {
 }
 
 
-glviewer::DataFormatDesc PcdUtil::GetDataFormatDescFromPCD(PCDHEADER* pHeader) {
-	glviewer::DataFormatDesc desc;
+DataFormatDesc PcdUtil::GetDataFormatDescFromPCD(PCDHEADER* pHeader) {
+	DataFormatDesc desc;
 	FiledDesc* fdesc;
 	if (NULL == (fdesc = pcdContains(pHeader, "r"))) {
 		desc.bColorChannel = true;

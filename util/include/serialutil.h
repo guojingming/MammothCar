@@ -1,36 +1,6 @@
 #pragma once
 
-#include <thread>
-#include <string>
-#include <stdio.h>
-#include <stdlib.h>
-#include <algorithm>
-#ifdef WIN32
-#define _WINSOCKAPI_
-#include <windows.h>
-#else
-#include <fcntl.h>
-#include <unistd.h>
-#include <termios.h>
-#include <sys/select.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <errno.h>
-#include <sys/stat.h>
-#endif
-
-/* #include <winbase.h>
-#define NOPARITY            0
-#define ODDPARITY           1
-#define EVENPARITY          2
-#define MARKPARITY          3
-#define SPACEPARITY         4
-
-
-#define ONESTOPBIT          0
-#define ONE5STOPBITS        1
-#define TWOSTOPBITS         2
-*/
+#include "api.h"
 
 struct SerialPortInfo {
 	std::string name;
@@ -39,7 +9,6 @@ struct SerialPortInfo {
 	unsigned int dataBits{ 7 };
 	unsigned int stopBits{ 1 };
 };
-
 
 class BaseCom {
 public:

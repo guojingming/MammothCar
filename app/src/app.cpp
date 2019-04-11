@@ -31,7 +31,7 @@ Reflex* Reflex::create_app(std::string className){
 REGISTER_CLASS(MultidataGraberApp)
 
 void MultidataGraberApp::run() {
-	printf("MultidataGraber running!");
+	printf("MultidataGraberApp is running!\n");
 	//MultiDataGraber::get_instance()->start_grab("E:\\DataSpace\\multidata2019\\pcd_create", "E:\\DataSpace\\multidata2019\\gps_create", "E:\\DataSpace\\multidata2019\\pic_create", "E:\\DataSpace\\multidata2019\\imu");
 }
 
@@ -42,9 +42,30 @@ void MultidataGraberApp::run(int argc, char ** argv) {
 REGISTER_CLASS(Vel32and16ViewerApp)
 
 void Vel32and16ViewerApp::run() {
-	printf("Vel32and16Viewer running!");
+	printf("Vel32and16ViewerApp is running!\n");
 }
 
 void Vel32and16ViewerApp::run(int argc, char ** argv) {
 	run();
 }
+
+REGISTER_CLASS(KittiBinToPclApp)
+
+void KittiBinToPclApp::run() {
+	char temp1[100];
+	char temp2[100];
+	for (int i = 0; i < 7481; i++) {
+		memset(temp1, 0, 100);
+		memset(temp2, 0, 100);
+		sprintf(temp1, "E:/DataSpace/point/training/velodyne/%06d.bin", i);
+		sprintf(temp2, "E:/DataSpace/point/training/velodyne/%06d.pcd", i);
+		pcl::PointCloud<pcl::PointXYZI>::Ptr points = PcdUtil::trans_kittibin_to_pcd(string(temp1));
+		pcl::io::savePCDFileBinary(string(temp2), *points);
+	}
+	
+}
+
+void KittiBinToPclApp::run(int argc, char ** argv) {
+	run();
+}
+

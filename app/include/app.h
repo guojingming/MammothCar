@@ -1,10 +1,6 @@
 #pragma once
 
-#include "multidatagraber.h"
-#include <vector>
-#include <unordered_map>
-#include <string>
-#include <map>
+#include "header.h"
 
 namespace mammoth{
 
@@ -102,5 +98,12 @@ namespace mammoth{
 		virtual void run(int argc, char ** argv);
 		DECLARE_CLASS(Vel32and16ViewerApp)
     };
+
+	class KittiBinToPclApp : public AppBase, public Reflex {
+	public:
+		virtual void run();
+		virtual void run(int argc, char ** argv);
+		DECLARE_CLASS(KittiBinToPclApp)
+	};
 
 }

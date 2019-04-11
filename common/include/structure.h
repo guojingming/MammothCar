@@ -1,19 +1,12 @@
 #pragma once
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <iostream>
+#include "api.h"
+
 #include <string>
 #include <vector>
 #include <map>
-#include <algorithm>
-#include <sstream>
-#include <sys/types.h>
-#include <chrono>
-#include <fstream>
-
-#define PI 3.14159265357
+#include <unordered_map>
+#include <string>
 
 typedef struct {
 	int x;

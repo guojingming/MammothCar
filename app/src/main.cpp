@@ -1,13 +1,15 @@
-#include <iostream>
-#include "app.h"
+#include "mammoth.h"
 
 using namespace mammoth;
 
-#define APP MultidataGraberApp
-#define APP_NAME "MultidataGraberApp"
+//#define APP MultidataGraberApp
+//#define APP_NAME "MultidataGraberApp"
 
 //#define APP Vel32and16ViewerApp
 //#define APP_NAME "Vel32and16ViewerApp"
+
+#define APP KittiBinToPclApp
+#define APP_NAME "KittiBinToPclApp"
 
 
 int main(int argc, char** argv){

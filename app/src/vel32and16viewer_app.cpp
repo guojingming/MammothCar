@@ -1,4 +1,3 @@
-#include "mammoth.h"
 #include "app.h"
  
 using namespace mammoth;

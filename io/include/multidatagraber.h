@@ -1,15 +1,8 @@
 #pragma once
 
-#include "unionconfig.h"
-
+#include "header.h"
 #include "pcapprocesser.h"
 #include "gnssprocesser.h"
-
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv/cv.h>
-#include <opencv2/core/core.hpp>
-
-#include "stdutil.h"
 
 #define START_PCD_COUNT 0
 

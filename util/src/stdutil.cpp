@@ -33,7 +33,7 @@ bool UdpServer::Bind(const unsigned short & servicePort) {
 #endif
 	m_servAddr.sin_family = AF_INET;
 	m_servAddr.sin_port = htons(servicePort);
-	if (bind(m_sockFd, (struct sockaddr*)&m_servAddr, sizeof(m_servAddr)) != CRS_SOCKET_ERROR)
+	if (::bind(m_sockFd, (struct sockaddr*)&m_servAddr, sizeof(m_servAddr)) != CRS_SOCKET_ERROR)
 		return true;
 	else return false;
 }

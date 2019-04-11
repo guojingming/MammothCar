@@ -1,6 +1,7 @@
 #include "climbchecking.h"
 
 using namespace mammoth;
+using namespace glviewer;
 
 ClimbingChecking * ClimbingChecking::layer = nullptr;
 

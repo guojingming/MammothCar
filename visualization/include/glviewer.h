@@ -1,13 +1,12 @@
 #pragma once
+
 #ifndef glViewer_h__
 #define glViewer_h__
-#include <stdint.h>
-#include <functional>
-#include <stdio.h>
-#include "dataformat.h"
 
-namespace glviewer
-{
+#include "header.h"
+
+
+namespace glviewer {
 	template<typename T>
 	struct SelectResult
 	{	
@@ -18,7 +17,6 @@ namespace glviewer
 		T* _Values;
 		size_t Stride;
 	public:
-
 		struct iterator{
 		private:
 			uint32_t* _Pt;
@@ -176,6 +174,9 @@ namespace glviewer
 
 }
 
-glviewer::GLDevice* GetGLDevice(int argc,char** argv,const char* title);
+glviewer::GLDevice* GetGLDevice(int argc, char** argv, const char* title);
+
+
+
 
 #endif // glViewer_h__

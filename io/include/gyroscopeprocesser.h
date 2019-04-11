@@ -1,9 +1,6 @@
 #pragma once
 
-#include "unionconfig.h"
-
-#include "stdutil.h"
-#include <iomanip>
+#include "header.h"
 
 using namespace mammoth;
 

@@ -13,6 +13,7 @@ set(PREPROCESS_PATH "preprocess")
 set(UTIL_PATH "util")
 set(ALGORITHM_PATH "algorithm")
 set(VISIUALIZATION_PATH "visualization")
+#set(SLAM_PATH "slam")
 set(APP_PATH "app")
 set(TEST_PATH "test")
 
@@ -22,6 +23,7 @@ file(GLOB_RECURSE MY_HEADERS
     "${PREPROCESS_PATH}/include/*.h" "${PREPROCESS_PATH}/include/*.hpp"
     "${UTIL_PATH}/include/*.h" "${UTIL_PATH}/include/*.hpp"
     "${ALGORITHM_PATH}/include/*.h" "${ALGORITHM_PATH}/include/*.hpp"
+	#"${SLAM_PATH}/include/*.h" "${SLAM_PATH}/include/*.hpp"
     "${VISIUALIZATION_PATH}/include/*.h" "${VISIUALIZATION_PATH}/include/*.hpp"
     "${APP_PATH}/include/*.h" "${APP_PATH}/include/*.hpp"
     "${TEST_PATH}/include/*.h" "${TEST_PATH}/include/*.hpp"
@@ -33,6 +35,7 @@ file(GLOB_RECURSE MY_SRCS
     "${PREPROCESS_PATH}/src/*.c" "${PREPROCESS_PATH}/src/*.cpp"
     "${UTIL_PATH}/src/*.c" "${UTIL_PATH}/src/*.cpp"
     "${ALGORITHM_PATH}/src/*.c" "${ALGORITHM_PATH}/src/*.cpp"
+	#"${SLAM_PATH}/src/*.c" "${SLAM_PATH}/src/*.cpp"
     "${VISIUALIZATION_PATH}/src/*.c" "${VISIUALIZATION_PATH}/src/*.cpp"
     "${APP_PATH}/src/*.c" "${APP_PATH}/src/*.cpp"
     #"${TEST_PATH}/src/*.c" "${TEST_PATH}/src/*.cpp"

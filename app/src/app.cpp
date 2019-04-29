@@ -57,8 +57,8 @@ void KittiBinToPclApp::run() {
 	for (int i = 0; i < 7481; i++) {
 		memset(temp1, 0, 100);
 		memset(temp2, 0, 100);
-		sprintf(temp1, "E:/DataSpace/point/training/velodyne/%06d.bin", i);
-		sprintf(temp2, "E:/DataSpace/point/training/velodyne/%06d.pcd", i);
+		sprintf(temp1, "E:/DataSpace/velodyne_point/training/velodyne/%06d.bin", i);
+		sprintf(temp2, "E:/DataSpace/velodyne_point/training/velodyne/%06d.pcd", i);
 		pcl::PointCloud<pcl::PointXYZI>::Ptr points = PcdUtil::trans_kittibin_to_pcd(string(temp1));
 		pcl::io::savePCDFileBinary(string(temp2), *points);
 	}

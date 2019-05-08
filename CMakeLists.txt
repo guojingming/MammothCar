@@ -7,6 +7,8 @@ set(OpenCV_ROOT_PATH D:/opencv/opencv)
 set(PCAP_ROOT_PATH D:/WinPacp/WpdPack)
 set(GLEW_ROOT_PATH D:/glew)
 
+set(CANLIB_ROOT_PATH D:/Kvaser/Canlib)
+
 set(COMMON_PATH "common")
 set(IO_PATH "io")
 set(PREPROCESS_PATH "preprocess")
@@ -16,6 +18,7 @@ set(VISIUALIZATION_PATH "visualization")
 #set(SLAM_PATH "slam")
 set(APP_PATH "app")
 set(TEST_PATH "test")
+set(CAN_PATH "can")
 
 file(GLOB_RECURSE MY_HEADERS
     "${COMMON_PATH}/include/*.h" "${COMMON_PATH}/include/*.hpp"
@@ -27,6 +30,7 @@ file(GLOB_RECURSE MY_HEADERS
     "${VISIUALIZATION_PATH}/include/*.h" "${VISIUALIZATION_PATH}/include/*.hpp"
     "${APP_PATH}/include/*.h" "${APP_PATH}/include/*.hpp"
     "${TEST_PATH}/include/*.h" "${TEST_PATH}/include/*.hpp"
+	"${CAN_PATH}/src/*.h" "${CAN_PATH}/src/*.hpp"
 )
 
 file(GLOB_RECURSE MY_SRCS
@@ -38,6 +42,7 @@ file(GLOB_RECURSE MY_SRCS
 	#"${SLAM_PATH}/src/*.c" "${SLAM_PATH}/src/*.cpp"
     "${VISIUALIZATION_PATH}/src/*.c" "${VISIUALIZATION_PATH}/src/*.cpp"
     "${APP_PATH}/src/*.c" "${APP_PATH}/src/*.cpp"
+	"${CAN_PATH}/src/*.c" "${CAN_PATH}/src/*.cpp"
     #"${TEST_PATH}/src/*.c" "${TEST_PATH}/src/*.cpp"
 )
 
@@ -71,6 +76,7 @@ if(WIN32)
     file(GLOB_RECURSE PCAP_HEADERS "${PCAP_DIR}/Include/*.h" "${PCAP_DIR}/Include/pcap/*.h")
     file(GLOB_RECURSE PCAP_LIBS "${PCAP_DIR}/Lib/x64/*.lib")
     file(GLOB_RECURSE GLEW_LIBS "${GLEW_ROOT_PATH}/lib/*.lib")
+	file(GLOB_RECURSE CAN_LIBS "${CANLIB_ROOT_PATH}/Lib/x64/*.lib")
 elseif(UNIX)
     set(PCL_DIR /usr/local/pcl/share/pcl-1.8)
     find_package(Boost COMPONENTS filesystem REQUIRED)
@@ -96,10 +102,11 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${VISIUALIZATION_PATH}/include/)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${APP_PATH}/include/)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/${TEST_PATH}/include/)
 
+include_directories(${CANLIB_ROOT_PATH}/INC)
 
 if(WIN32)
     add_executable(${PROJECT_NAME} ${MY_SRCS} ${MY_HEADERS})
-    target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES} ${OpenCV_LIBRARIES} ${PCAP_LIBS} ${GLEW_LIBS} ${MY_LIBS})
+    target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES} ${OpenCV_LIBRARIES} ${PCAP_LIBS} ${GLEW_LIBS} ${CAN_LIBS} ${MY_LIBS})
     if(CMAKE_COMPILER_IS_GNUCXX AND NOT CMAKE_BUILD_TYPE MATCHES "Debug")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /O3")
     endif(CMAKE_COMPILER_IS_GNUCXX AND NOT CMAKE_BUILD_TYPE MATCHES "Debug")

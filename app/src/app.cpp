@@ -1,4 +1,5 @@
 #include "app.h"
+#include "mammoth.h"
 
 using namespace mammoth;
 
@@ -32,7 +33,8 @@ REGISTER_CLASS(MultidataGraberApp)
 
 void MultidataGraberApp::run() {
 	printf("MultidataGraberApp is running!\n");
-	//MultiDataGraber::get_instance()->start_grab("E:\\DataSpace\\multidata2019\\pcd_create", "E:\\DataSpace\\multidata2019\\gps_create", "E:\\DataSpace\\multidata2019\\pic_create", "E:\\DataSpace\\multidata2019\\imu");
+	//MultiDataGraber::get_instance()->start_grab("E:\\DataSpace\\can_multidata\\pcd_ori", "", "E:\\DataSpace\\can_multidata\\pic_ori", "");
+	MultiDataGraber::get_instance()->start_grab("D://20190507//pcd", "", "D://20190507//pic", "");
 }
 
 void MultidataGraberApp::run(int argc, char ** argv) {
@@ -69,3 +71,13 @@ void KittiBinToPclApp::run(int argc, char ** argv) {
 	run();
 }
 
+REGISTER_CLASS(CanMultidataGraberApp)
+
+void CanMultidataGraberApp::run() {
+	printf("CanMultidataGraberApp is running!\n");
+	CanMultiDataGraber::get_instance()->start_grab("E:\\DataSpace\\can_multidata\\pcd", "E:\\DataSpace\\can_multidata\\pic");
+}
+
+void CanMultidataGraberApp::run(int argc, char ** argv) {
+	run();
+}

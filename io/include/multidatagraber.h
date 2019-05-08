@@ -28,4 +28,20 @@ namespace mammoth {
 		static void imu_thread();
 		static void pic_thread();
 	};
+
+	class CanMultiDataGraber {
+	public:
+		~CanMultiDataGraber();
+		static CanMultiDataGraber * get_instance();
+		void start_grab(const std::string& pcd_folder_path, const std::string& camera_folder_path);
+	private:
+		static CanMultiDataGraber * layer;
+		CanMultiDataGraber();
+		static std::string pcd_folder_path;
+		static std::string camera_folder_path;
+		static int pcd_count;
+		static int pic_count;
+		static void pcd_thread();
+		static void pic_thread();
+	};
 }

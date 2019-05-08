@@ -106,4 +106,11 @@ namespace mammoth{
 		DECLARE_CLASS(KittiBinToPclApp)
 	};
 
+	class CanMultidataGraberApp : public AppBase, public Reflex {
+	public:
+		virtual void run();
+		virtual void run(int argc, char ** argv);
+		DECLARE_CLASS(CanMultidataGraberApp)
+	};
+
 }

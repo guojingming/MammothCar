@@ -381,6 +381,8 @@ void PcapProcesser::parameter_init(float angle_piece, std::string path_prefix) {
 	this->path_prefix = path_prefix;
 }
 
+
+
 void PcapProcesser::get_current_frame(pcap_t * cur_device, pcl::PointCloud<PointType>::Ptr & scene, int config) {
 	scene->clear();
 	pcap_pkthdr *pkthdr = 0;

@@ -1,16 +1,3 @@
-/*
-**                   Copyright 2005-2016 by KVASER AB, SWEDEN
-**                        WWW: http://www.kvaser.com
-**
-** This software is furnished under a license and may be used and copied
-** only in accordance with the terms of such license.
-**
-** Description:
-**   Demo program for CANLIB.
-** This program can send and receive CAN messages on all CAN channels installed
-** in your computer. Start it, and press 'h' to get a list of available commands.
-** ---------------------------------------------------------------------------
-*/
 #include "mammoth.h"
 
 #include <canlib.h>
@@ -278,7 +265,8 @@ void can_signal_get_current_frame(pcap_t * cur_device, pcl::PointCloud<PointType
 					scene->push_back(pclPoint);
 				}
 			}
-			if (last_pcd_signal_count != pcd_signal_count) { //177  180
+			if (count >= 179){
+			//if (last_pcd_signal_count != pcd_signal_count) { //177  180
 				last_pcd_signal_count = pcd_signal_count;
 				delete angles;
 				delete distance_mm;
@@ -296,8 +284,7 @@ void can_signal_get_current_frame(pcap_t * cur_device, pcl::PointCloud<PointType
 /*************************************************************/
 // MAIN
 ///////////////////////////////////////////////////////////////
-int can_main()
-{
+int can_main(){
 	HANDLE        th[MAX_CHANNELS + 1];
 	static int    running                 = 1;
 	DWORD         active_handle;
@@ -362,15 +349,15 @@ int can_main()
 					switch (stat) {
 					case canOK:
 						if (m_Verbose) {
-						pcd_signal_count = data;
-						//printf("RxMsg: Ch:%d ID:%08lx DLC:%u Flg:%02x T:%08lx Data:", m_channelData.channel[i].channel, id, dlc, flags, time);
-						if ((flags & canMSG_RTR) == 0) {
-							/*for (j = 0; j < dlc; j++) {
-							printf("%02x ", data[j]);
-							}*/
-							printf("%d", data);
-						}
-						printf("\n");
+							pcd_signal_count = data;
+							//printf("RxMsg: Ch:%d ID:%08lx DLC:%u Flg:%02x T:%08lx Data:", m_channelData.channel[i].channel, id, dlc, flags, time);
+							if ((flags & canMSG_RTR) == 0) {
+								/*for (j = 0; j < dlc; j++) {
+									printf("%02x ", data[j]);
+								}*/
+								//printf("can: %d", data);
+							}
+							//printf("\n");
 						}
 						moreDataExist = 1;
 						break;

@@ -5,9 +5,6 @@ using namespace mammoth;
 
 static std::map<std::string, ClassInfo*> *m_classInfoMap = NULL;
 
-std::vector<std::string> AppBase::app_names;
-std::unordered_map<std::string, AppBase*> AppBase::app_byname;
-
 bool Reflex::Register(ClassInfo* pCInfo){
     if (!m_classInfoMap){
         m_classInfoMap = new std::map<std::string, ClassInfo*>();
@@ -33,8 +30,8 @@ REGISTER_CLASS(MultidataGraberApp)
 
 void MultidataGraberApp::run() {
 	printf("MultidataGraberApp is running!\n");
-	//MultiDataGraber::get_instance()->start_grab("E:\\DataSpace\\can_multidata\\pcd_ori", "", "E:\\DataSpace\\can_multidata\\pic_ori", "");
-	MultiDataGraber::get_instance()->start_grab("D://20190507//pcd", "", "D://20190507//pic", "");
+	MultiDataGraber::get_instance()->start_grab("E:\\DataSpace\\can_multidata\\pcd_ori", "", "E:\\DataSpace\\can_multidata\\pic_ori", "");
+	//MultiDataGraber::get_instance()->start_grab("D://20190507//pcd", "", "D://20190507//pic", "");
 }
 
 void MultidataGraberApp::run(int argc, char ** argv) {

@@ -18,8 +18,7 @@ namespace mammoth{
     class ClassInfo{
     public:
         ClassInfo(const std::string className, ObjConstructorFun classConstructor)
-            :m_className(className), m_objectConstructor(classConstructor)
-        {
+            :m_className(className), m_objectConstructor(classConstructor){
             //classInfo的构造函数是传入类名和类对应的new函数然后自动注册进map中
             Reflex::Register(this);         
         }
@@ -61,28 +60,12 @@ namespace mammoth{
 			run();
 		}
         ~AppBase(){
-            if(app_names.size()!=0){
-                for(auto it = app_byname.begin(); it != app_byname.end(); it++){
-                    delete it->second;
-                }
-            }
+
         };
-        static AppBase* get_app_instance(std::string app_name){
-            return app_byname[app_name];
-        };
-        static std::vector<std::string> get_app_names(){
-			if (app_names.size() == 0) {
-				app_names.push_back("MultidataGraberApp");
-				app_names.push_back("Vel32and16ViewerApp");
-			}
-            return app_names;
-        }
     protected:
         AppBase(){
             
         }
-        static std::vector<std::string> app_names;
-        static std::unordered_map<std::string, AppBase*> app_byname;
     };
 
     class MultidataGraberApp : public AppBase, public Reflex{
@@ -112,5 +95,4 @@ namespace mammoth{
 		virtual void run(int argc, char ** argv);
 		DECLARE_CLASS(CanMultidataGraberApp)
 	};
-
 }

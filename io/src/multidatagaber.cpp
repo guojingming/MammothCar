@@ -144,10 +144,10 @@ void MultiDataGraber::pic_thread() {
 			memset(pic_path, 0, 200);
 			sprintf(pic_path, "%s\\%d_pic.jpg", camera_folder_path.c_str(), pic_count);
 			imshow("window1", frame);
+			cv::waitKey(1);	//延时30
 			imwrite(pic_path, frame);
 			pic_end = GetCurrentTimeMsec();
-			cv::waitKey(1);	//延时30
-			//printf("pic %d\n", pic_end - pic_start);
+			printf("pic %d\n", pic_end - pic_start);
 			pic_count++;
 		}
 	}
@@ -313,14 +313,14 @@ void CanMultiDataGraber::pic_thread() {
 			//}
 			last_pcd_count = pcd_signal_count;
 			
-			pic_count++;
+			pic_count = pcd_signal_count;
 			if (!isTroubled) {
 				imshow("window1", frame);
 			}
 			pic_end = GetCurrentTimeMsec();
 			cv::waitKey(1);	//延时30
 			//printf("pic %d\n", pic_end - pic_start);
-
+			
 			//int same_count = 0;
 			//auto begin_it = frame.begin<cv::Vec3b>();
 			//for (auto it = frame.begin<cv::Vec3b>(); it != frame.end<cv::Vec3b>(); it++) {
@@ -352,7 +352,7 @@ void CanMultiDataGraber::pic_thread() {
 void CanMultiDataGraber::pcd_thread() {
 	int last_pcd_count = -1;
 	if (pcd_folder_path.compare("") != 0) {
-		PointViewer::get_instance()->init_point_viewer();
+		//PointViewer::get_instance()->init_point_viewer();
 		pcd_count = START_PCD_COUNT;
 		char pcd_path[200];
 		long long pcd_start, pcd_end;
@@ -368,9 +368,9 @@ void CanMultiDataGraber::pcd_thread() {
 			/*if (pcd_count - pic_count >= 1 && camera_folder_path.compare("") != 0) {
 				continue;
 			}*/
-			PointViewer::get_instance()->set_point_cloud(cloud);
+			//PointViewer::get_instance()->set_point_cloud(cloud);
 			//if (last_pcd_count != pcd_count) {
-			PcdUtil::save_pcd_file(pcd_path, cloud);
+				PcdUtil::save_pcd_file(pcd_path, cloud);
 			//}
 			last_pcd_count = pcd_count;
 			pcd_end = GetCurrentTimeMsec();

@@ -72,7 +72,7 @@ REGISTER_CLASS(CanMultidataGraberApp)
 
 void CanMultidataGraberApp::run() {
 	printf("CanMultidataGraberApp is running!\n");
-	CanMultiDataGraber::get_instance()->start_grab("E:\\DataSpace\\can_multidata\\pcd", "E:\\DataSpace\\can_multidata\\pic");
+	CanMultiDataGraber::get_instance()->start_grab("G:\\DataSpace\\can_multidata\\pcd", "G:\\DataSpace\\can_multidata\\pic");
 }
 
 void CanMultidataGraberApp::run(int argc, char ** argv) {

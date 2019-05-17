@@ -349,8 +349,11 @@ int can_main(){
 					switch (stat) {
 					case canOK:
 						if (m_Verbose) {
-							pcd_signal_count = data;
-							//printf("RxMsg: Ch:%d ID:%08lx DLC:%u Flg:%02x T:%08lx Data:", m_channelData.channel[i].channel, id, dlc, flags, time);
+							if (id == 0x400) {
+								pcd_signal_count = data;
+								//printf("RxMsg: Ch:%d ID:%08lx DLC:%u Flg:%02x T:%08lx Data: \n", m_channelData.channel[i].channel, id, dlc, flags, time);
+							}
+							
 							if ((flags & canMSG_RTR) == 0) {
 								/*for (j = 0; j < dlc; j++) {
 									printf("%02x ", data[j]);

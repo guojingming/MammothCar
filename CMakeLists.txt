@@ -1,13 +1,13 @@
 project(mammoth C CXX)
 cmake_minimum_required(VERSION 3.5)
 
-set(QT5_ROOT_PATH D:/Qt/Qt5.8.0)
-set(PCL_ROOT_PATH D:/PCL1.8.0)
-set(OpenCV_ROOT_PATH D:/opencv/opencv)
-set(PCAP_ROOT_PATH D:/WinPacp/WpdPack)
-set(GLEW_ROOT_PATH D:/glew)
+set(QT5_ROOT_PATH C:/Qt/Qt5.8.0)
+set(PCL_ROOT_PATH C:/PCL1.8.0)
+set(OpenCV_ROOT_PATH C:/opencv/opencv)
+set(PCAP_ROOT_PATH C:/WinPcap/WpdPack)
+set(GLEW_ROOT_PATH C:/glew)
 
-set(CANLIB_ROOT_PATH D:/Kvaser/Canlib)
+set(CANLIB_ROOT_PATH C:/Kvaser/Canlib)
 
 set(COMMON_PATH "common")
 set(IO_PATH "io")

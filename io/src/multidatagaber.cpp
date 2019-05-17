@@ -364,7 +364,7 @@ void CanMultiDataGraber::pcd_thread() {
 			sprintf(pcd_path, "%s\\%d_pcd.pcd", pcd_folder_path.c_str(), pcd_signal_count);
 
 			can_signal_get_current_frame(handle, cloud, 0);
-			printf("can: %d pcd: %d pic: %d\n", pcd_signal_count, pcd_count, pic_count);
+			//printf("can: %d pcd: %d pic: %d\n", pcd_signal_count, pcd_count, pic_count);
 			/*if (pcd_count - pic_count >= 1 && camera_folder_path.compare("") != 0) {
 				continue;
 			}*/
